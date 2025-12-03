@@ -1,3 +1,5 @@
+using blogapp_server.Persistence;
+
 namespace blogapp_server.WebAPI
 {
     public class Program
@@ -12,6 +14,8 @@ namespace blogapp_server.WebAPI
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddPersistenceService(builder.Configuration);
 
             var app = builder.Build();
 
