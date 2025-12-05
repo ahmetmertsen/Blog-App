@@ -1,7 +1,9 @@
 ﻿using blogapp_server.Application.Repositories;
+using blogapp_server.Application.UnitOfWork;
 using blogapp_server.Domain.Entities.Identity;
 using blogapp_server.Persistence.Context;
 using blogapp_server.Persistence.Repositories;
+using blogapp_server.Persistence.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +31,8 @@ namespace blogapp_server.Persistence
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<ITagRepository, TagRepository>();
+
+            services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
 
 
             return services;
