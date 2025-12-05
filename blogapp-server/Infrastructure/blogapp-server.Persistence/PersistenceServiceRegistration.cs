@@ -1,5 +1,7 @@
-﻿using blogapp_server.Domain.Entities.Identity;
+﻿using blogapp_server.Application.Repositories;
+using blogapp_server.Domain.Entities.Identity;
 using blogapp_server.Persistence.Context;
+using blogapp_server.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +21,14 @@ namespace blogapp_server.Persistence
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
             services.AddIdentity<User, Role>().AddEntityFrameworkStores<BlogAppDbContext>();
+
+            services.AddScoped<IBookmarkRepository, BookmarkRepository>();
+            services.AddScoped<ICommentRepository, CommentRepository>();
+            services.AddScoped<IFollowerRepository, FollowerRepository>();
+            services.AddScoped<ILikeRepository, LikeRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<IPostRepository, PostRepository>();
+            services.AddScoped<ITagRepository, TagRepository>();
 
 
             return services;
