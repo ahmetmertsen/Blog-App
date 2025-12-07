@@ -11,4 +11,8 @@
     <ProjectReference Include="..\blogapp-server.Domain\blogapp-server.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="12.0.1" />
+  </ItemGroup>
+
 </Project>
