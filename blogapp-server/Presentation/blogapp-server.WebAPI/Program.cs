@@ -1,3 +1,5 @@
+using blogapp_server.Application.Features.Bookmarks.Commands.Create;
+using blogapp_server.Application.Mapping;
 using blogapp_server.Persistence;
 
 namespace blogapp_server.WebAPI
@@ -16,6 +18,9 @@ namespace blogapp_server.WebAPI
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddPersistenceService(builder.Configuration);
+            builder.Services.AddMediatR(cfg =>
+                    cfg.RegisterServicesFromAssemblyContaining<CreateBookmarksCommand>());
+            builder.Services.AddAutoMapper(typeof(UserProfile).Assembly);
 
             var app = builder.Build();
 
