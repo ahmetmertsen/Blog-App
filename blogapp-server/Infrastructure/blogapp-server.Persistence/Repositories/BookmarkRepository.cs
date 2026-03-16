@@ -1,5 +1,4 @@
 ﻿using blogapp_server.Application.Repositories;
-using blogapp_server.Application.Repositories.Common;
 using blogapp_server.Domain.Entities;
 using blogapp_server.Persistence.Context;
 using blogapp_server.Persistence.Repositories.Common;

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace blogapp_server.Application.Features.Users.Commands.Delete
 {
-    public record DeleteUsersCommand(int userId) : IRequest<DeleteUsersCommandResponse>
+    public record DeleteUsersCommand(string UserName) : IRequest<DeleteUsersCommandResponse>
     {
     }
 }

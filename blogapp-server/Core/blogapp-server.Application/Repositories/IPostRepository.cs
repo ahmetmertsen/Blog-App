@@ -10,5 +10,6 @@ namespace blogapp_server.Application.Repositories
 {
     public interface IPostRepository : IRepository<Post>
     {
+        Task<List<Post?>> GetAllByTagIdAsync(int TagId);
     }
 }

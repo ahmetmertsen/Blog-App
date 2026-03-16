@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
 using blogapp_server.Application.Dtos;
-using blogapp_server.Application.Features.Users.Commands.Delete;
-using blogapp_server.Application.Features.Users.Commands.Login;
-using blogapp_server.Application.Features.Users.Commands.Register;
+using blogapp_server.Application.Features.Auth.Register;
 using blogapp_server.Application.Features.Users.Commands.Update.UpdateEmail;
 using blogapp_server.Application.Features.Users.Commands.Update.UpdatePassword;
 using blogapp_server.Application.Features.Users.Commands.Update.UpdatePhoneNumber;
@@ -20,12 +18,19 @@ namespace blogapp_server.Application.Mapping
     {
         public UserProfile() 
         {
-            CreateMap<RegisterUsersCommand, User>();
+            //Register
+            CreateMap<RegisterUserCommand, User>();
+            CreateMap<RegisterUserCommand, RegisterUserRequestDto>();
+            CreateMap<RegisterUserRequestDto, User>();
+            CreateMap<User, RegisterUserCommandResponse>();
+
+            //Update
             CreateMap<UpdateUserProfileCommand, User>();
             CreateMap<UpdateUserEmailCommand, User>();
             CreateMap<UpdateUserPasswordCommand, User>();
             CreateMap<UpdateUserPhoneNumberCommand, User>();
 
+            //Dto
             CreateMap<User, UserDto>();
         }
     }

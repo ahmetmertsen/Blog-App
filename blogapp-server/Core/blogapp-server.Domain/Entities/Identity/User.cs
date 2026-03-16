@@ -10,8 +10,10 @@ namespace blogapp_server.Domain.Entities.Identity
     public class User : IdentityUser<int>
     {
         public string FullName { get; set; }
-        public string Bio { get; set; }
-        public string ImageUrl { get; set; }
+        public string? Bio { get; set; }
+        public string? ImageUrl { get; set; }
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenEndDate { get; set; }
 
         public ICollection<Post> Posts { get; set; }
         public ICollection<Notification> Notifications { get; set; }

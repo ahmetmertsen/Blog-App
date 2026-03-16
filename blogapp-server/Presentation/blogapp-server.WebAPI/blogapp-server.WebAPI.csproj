@@ -20,11 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\Core\blogapp-server.Application\blogapp-server.Application.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\blogapp-server.Infrastructure\blogapp-server.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Infrastructure\blogapp-server.Persistence\blogapp-server.Persistence.csproj" />
   </ItemGroup>
 
