@@ -1,4 +1,5 @@
-﻿using blogapp_server.Application.Features.Bookmarks.Commands.Create;
+﻿using blogapp_server.Application.Common.Behaviors;
+using blogapp_server.Application.Features.Bookmarks.Commands.Create;
 using blogapp_server.Application.Mapping;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -13,8 +14,15 @@ namespace blogapp_server.Application
     {
         public static IServiceCollection AddApplicationService(this IServiceCollection services)
         {
+            services.AddHttpContextAccessor();
+
             services.AddMediatR(cfg =>
-                cfg.RegisterServicesFromAssemblyContaining<CreateBookmarksCommand>());
+            {
+                cfg.RegisterServicesFromAssemblyContaining<CreateBookmarksCommand>();
+                cfg.AddOpenBehavior(typeof(CurrentUserBehavior<,>));
+            });
+                
+
             services.AddAutoMapper(typeof(UserProfile).Assembly);
 
             return services;

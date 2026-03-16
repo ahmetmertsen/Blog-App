@@ -15,7 +15,8 @@ namespace blogapp_server.Application.Mapping
     {
         public PostProfile()
         {
-            CreateMap<CreatePostsCommand, Post>();
+            CreateMap<CreatePostsCommand, Post>()
+                .ForMember(dest => dest.UserId, opt => opt.Ignore());
             CreateMap<UpdatePostsCommand, Post>();
 
             CreateMap<Post, PostDto>();

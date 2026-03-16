@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using blogapp_server.Application.Dtos;
+using blogapp_server.Application.Exceptions;
 using blogapp_server.Application.UnitOfWork;
 using MediatR;
 using System;
@@ -26,7 +27,7 @@ namespace blogapp_server.Application.Features.Posts.Queries.GetById
             var post = await _unitOfWork.PostRepository.GetByIdAsync(request.Id);
             if (post == null)
             {
-                //Exception yazılacak
+                throw new NotFoundException("Post bulunamadı!");
             }
 
             var response = _mapper.Map<PostDto>(post);

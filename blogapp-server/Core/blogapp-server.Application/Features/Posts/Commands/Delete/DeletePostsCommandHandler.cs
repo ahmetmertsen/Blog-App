@@ -1,4 +1,5 @@
-﻿using blogapp_server.Application.UnitOfWork;
+﻿using blogapp_server.Application.Exceptions;
+using blogapp_server.Application.UnitOfWork;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -22,8 +23,14 @@ namespace blogapp_server.Application.Features.Posts.Commands.Delete
             var post = await _unitOfWork.PostRepository.GetByIdAsync(request.Id);
             if (post == null)
             {
-                //Exception yazılacak
+                throw new NotFoundException("Post bulunamadı!");
             }
+            if (post.UserId != request.UserId)
+            {
+                throw new UnauthorizedAccesException("Bu postu silme yetkiniz yok.");
+            }
+                
+
             await _unitOfWork.PostRepository.DeleteAsync(request.Id);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return new DeletePostsCommandResponse(true, "Post başarıyla silinmiştir.");

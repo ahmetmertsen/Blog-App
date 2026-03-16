@@ -24,11 +24,12 @@ namespace blogapp_server.Application.Features.Posts.Commands.Create
         public async Task<CreatePostsCommandResponse> Handle(CreatePostsCommand request, CancellationToken cancellationToken)
         {
             var post = _mapper.Map<Post>(request);
+            post.UserId = request.UserId;
             post.CreatedAt = DateTime.UtcNow;
             post.isActive = true;
             post.isDeleted = false;
 
-            var result = await _unitOfWork.PostRepository.AddAsync(post);
+            await _unitOfWork.PostRepository.AddAsync(post);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return new CreatePostsCommandResponse(true, "Post başarıyla eklenmiştir.");
         }
