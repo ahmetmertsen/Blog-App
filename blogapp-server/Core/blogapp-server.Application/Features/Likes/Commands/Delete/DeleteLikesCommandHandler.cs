@@ -1,4 +1,6 @@
-﻿using blogapp_server.Application.UnitOfWork;
+﻿using blogapp_server.Application.Exceptions;
+using blogapp_server.Application.UnitOfWork;
+using blogapp_server.Domain.Entities;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -22,8 +24,13 @@ namespace blogapp_server.Application.Features.Likes.Commands.Delete
             var like = await _unitOfWork.LikeRepository.GetByIdAsync(request.Id);
             if (like == null)
             {
-                //Exception yazılacak
+                throw new NotFoundException("Like bulunamadı!");
             }
+            if (like.UserId != request.UserId)
+            {
+                throw new UnauthorizedAccesException("Bu like silme yetkiniz yok.");
+            }
+
             await _unitOfWork.LikeRepository.DeleteAsync(request.Id);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

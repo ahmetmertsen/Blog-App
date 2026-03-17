@@ -29,7 +29,6 @@ namespace blogapp_server.Application.Features.Posts.Commands.Delete
             {
                 throw new UnauthorizedAccesException("Bu postu silme yetkiniz yok.");
             }
-                
 
             await _unitOfWork.PostRepository.DeleteAsync(request.Id);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
