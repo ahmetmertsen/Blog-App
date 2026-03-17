@@ -33,8 +33,6 @@ namespace blogapp_server.Persistence.UnitOfWork
             TagRepository = tagRepository;
         }
 
-        public void Dispose() => _context.Dispose();
-
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken) => await _context.SaveChangesAsync(cancellationToken);
     }
 }

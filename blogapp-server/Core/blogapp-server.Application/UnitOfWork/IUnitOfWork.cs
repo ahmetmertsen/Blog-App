@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace blogapp_server.Application.UnitOfWork
 {
-    public interface IUnitOfWork : IDisposable
+    public interface IUnitOfWork
     {
         public IBookmarkRepository BookmarkRepository { get; }
         public ICommentRepository CommentRepository { get; }
