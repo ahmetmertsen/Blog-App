@@ -18,7 +18,7 @@ namespace blogapp_server.Persistence.Repositories
         public CommentRepository(BlogAppDbContext context) : base(context) { _context = context; }
 
         public async Task<List<Comment>> GetAllCommentsByUsernameAsync(string userName) => await _context.Comments
-            .Where(l => l.User.UserName == userName)
+            .Where(c => c.User.UserName == userName)
             .ToListAsync();
     }
 }

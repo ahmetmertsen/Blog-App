@@ -10,5 +10,6 @@ namespace blogapp_server.Application.Repositories
 {
     public interface IBookmarkRepository : IRepository<Bookmark>
     {
+        Task<List<Bookmark>> GetAllBookmarksByUsernameAsync(string userName);
     }
 }

@@ -36,7 +36,7 @@ namespace blogapp_server.Persistence.Services
                 user = await _userManager.FindByEmailAsync(usernameOrEmail);
                 if (user == null)
                 {
-                    throw new UnauthorizedAccesException("Kulalnıcı adı veya şifre hatalı!");
+                    throw new UnauthorizedAccesException("Kullanıcı adı veya şifre hatalı!");
                 }
             }
             var result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
@@ -49,7 +49,7 @@ namespace blogapp_server.Persistence.Services
             }
             else
             {
-                throw new UnauthorizedAccesException("Kulalnıcı adı veya şifre hatalı!");
+                throw new UnauthorizedAccesException("Kullanıcı adı veya şifre hatalı!");
             }
         }
 
