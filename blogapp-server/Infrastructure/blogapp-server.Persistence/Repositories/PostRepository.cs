@@ -22,5 +22,10 @@ namespace blogapp_server.Persistence.Repositories
             .Include(p => p.Tags)
             .Where(p => p.Tags.Any(t => t.Id == TagId))
             .ToListAsync();
+
+        public async Task<Post?> GetByIdWithTagsAsync(int id) =>
+            await _context.Posts
+                .Include(p => p.Tags)
+                .FirstOrDefaultAsync(p => p.Id == id);
     }
 }

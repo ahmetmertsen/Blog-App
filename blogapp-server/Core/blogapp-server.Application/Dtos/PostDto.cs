@@ -15,7 +15,7 @@ namespace blogapp_server.Application.Dtos
         public string CoverImgUrl { get; set; }
         public int UserId { get; set; }
 
-        public ICollection<Tag> Tags { get; set; }
+        public ICollection<string> Tags { get; set; } = new List<string>();
         public ICollection<Like> Likes { get; set; }
         public ICollection<Comment> Comments { get; set; }
         public ICollection<Bookmark> Bookmarks { get; set; }

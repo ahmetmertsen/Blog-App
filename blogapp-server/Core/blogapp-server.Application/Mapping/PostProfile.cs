@@ -16,10 +16,16 @@ namespace blogapp_server.Application.Mapping
         public PostProfile()
         {
             CreateMap<CreatePostsCommand, Post>()
-                .ForMember(dest => dest.UserId, opt => opt.Ignore());
-            CreateMap<UpdatePostsCommand, Post>();
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.Tags, opt => opt.Ignore());
 
-            CreateMap<Post, PostDto>();
+            CreateMap<UpdatePostsCommand, Post>()
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.Tags, opt => opt.Ignore());
+
+            CreateMap<Post, PostDto>()
+                .ForMember(dest => dest.Tags,
+                    opt => opt.MapFrom(src => src.Tags.Select(t => t.Name)));
         }
     }
 }

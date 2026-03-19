@@ -10,5 +10,6 @@ namespace blogapp_server.Application.Repositories
 {
     public interface ITagRepository : IRepository<Tag>
     {
+        Task<List<Tag>> GetByNamesAsync(List<string> tagNames);
     }
 }
