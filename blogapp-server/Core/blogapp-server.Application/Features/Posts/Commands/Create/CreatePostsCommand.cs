@@ -19,6 +19,6 @@ namespace blogapp_server.Application.Features.Posts.Commands.Create
         public string CoverImgUrl { get; set; }
         public bool isPublished { get; set; }
 
-        public List<string> TagNames { get; set; } = new();
+        public List<int> TagIds { get; set; } = new();
     }
 }

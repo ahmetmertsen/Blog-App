@@ -1,4 +1,5 @@
-﻿using blogapp_server.Application.Repositories.Common;
+﻿using blogapp_server.Application.Exceptions;
+using blogapp_server.Application.Repositories.Common;
 using blogapp_server.Domain.Entities.Common;
 using blogapp_server.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
@@ -22,9 +23,9 @@ namespace blogapp_server.Persistence.Repositories.Common
 
         public DbSet<T> Table => _context.Set<T>();
 
-        public async Task<List<T>> GetAllAsync() => await Table.ToListAsync();
+        public virtual async Task<List<T>> GetAllAsync() => await Table.ToListAsync();
 
-        public async Task<T> GetByIdAsync(int id) => await Table.FindAsync(id);
+        public virtual async Task<T> GetByIdAsync(int id) => await Table.FindAsync(id);
 
         public async Task<EntityEntry<T>> AddAsync(T entity) => await Table.AddAsync(entity);
 
@@ -35,7 +36,7 @@ namespace blogapp_server.Persistence.Repositories.Common
             var entity = await Table.FindAsync(id);
             if (entity == null)
             {
-                //Exception yazılacak.
+                throw new NotFoundException("Entity bulunamadı!");
             }
             var result = Table.Remove(entity);
             return result;

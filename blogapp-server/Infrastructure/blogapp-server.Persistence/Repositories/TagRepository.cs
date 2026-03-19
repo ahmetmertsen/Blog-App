@@ -17,9 +17,9 @@ namespace blogapp_server.Persistence.Repositories
 
         public TagRepository(BlogAppDbContext context) : base(context) { _context = context; }
 
-        public async Task<List<Tag>> GetByNamesAsync(List<string> tagNames) =>
+        public async Task<List<Tag>> GetByIdsAsync(List<int> ids) =>
             await _context.Tags
-                .Where(t => tagNames.Contains(t.Name))
+                .Where(t => ids.Contains(t.Id))
                 .ToListAsync();
     }
 }

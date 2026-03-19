@@ -25,23 +25,17 @@ namespace blogapp_server.Application.Features.Posts.Commands.Create
         public async Task<CreatePostsCommandResponse> Handle(CreatePostsCommand request, CancellationToken cancellationToken)
         {
             #region Tag Ekleme
-            var normalizedTagNames = request.TagNames?
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .Select(x => x.Trim().ToLower())
+            var tagIds = request.TagIds?
                 .Distinct()
-                .ToList() ?? new List<string>();
+                .ToList() ?? new List<int>();
 
-            var tags = await _unitOfWork.TagRepository.GetByNamesAsync(normalizedTagNames);
-            var foundTagNames = tags
-                .Select(t => t.Name.ToLower())
-                .ToHashSet();
-            var missingTags = normalizedTagNames
-                .Where(name => !foundTagNames.Contains(name))
-                .ToList();
+            var tags = await _unitOfWork.TagRepository.GetByIdsAsync(tagIds);
+            var foundTagIds = tags.Select(t => t.Id).ToHashSet();
+            var missingTagIds = tagIds.Where(id => !foundTagIds.Contains(id)).ToList();
 
-            if (missingTags.Any())
+            if (missingTagIds.Any())
             {
-                throw new BadRequestException($"Bu tag(ler) sistemde tanımlı değil: {string.Join(", ", missingTags)}");
+                throw new BadRequestException($"Geçersiz tag id(ler): {string.Join(", ", missingTagIds)}");
             }
             #endregion
 

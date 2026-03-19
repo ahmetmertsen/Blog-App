@@ -15,9 +15,9 @@ namespace blogapp_server.Application.Dtos
         public string Bio { get; set; }
         public string ImageUrl { get; set; }
 
-        public ICollection<Post> Posts { get; set; }
-        public ICollection<Follower> Followers { get; set; }
-        public ICollection<Follower> Followings { get; set; }
+        public ICollection<PostDto> Posts { get; set; }
+        public ICollection<FollowerDto> Followers { get; set; }
+        public ICollection<FollowerDto> Followings { get; set; }
 
     }
 }

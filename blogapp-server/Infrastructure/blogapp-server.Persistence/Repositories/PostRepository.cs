@@ -18,6 +18,22 @@ namespace blogapp_server.Persistence.Repositories
 
         public PostRepository(BlogAppDbContext context) : base(context) { _context = context; }
 
+        
+        public override async Task<List<Post>> GetAllAsync() =>
+            await _context.Posts
+                .Include(p => p.Tags)
+                .Include(p => p.Likes)
+                .Include(p => p.Comments)
+                .Include(p => p.Bookmarks)
+                .ToListAsync();
+        public override async Task<Post?> GetByIdAsync(int id) =>
+            await _context.Posts
+                .Include(p => p.Tags)
+                .Include(p => p.Likes)
+                .Include(p => p.Comments)
+                .Include(p => p.Bookmarks)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
         public async Task<List<Post?>> GetAllByTagIdAsync(int TagId) => await _context.Posts
             .Include(p => p.Tags)
             .Where(p => p.Tags.Any(t => t.Id == TagId))

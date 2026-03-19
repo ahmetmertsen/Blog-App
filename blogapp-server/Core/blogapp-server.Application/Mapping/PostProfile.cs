@@ -24,8 +24,12 @@ namespace blogapp_server.Application.Mapping
                 .ForMember(dest => dest.Tags, opt => opt.Ignore());
 
             CreateMap<Post, PostDto>()
-                .ForMember(dest => dest.Tags,
-                    opt => opt.MapFrom(src => src.Tags.Select(t => t.Name)));
+                .ForMember(dest => dest.LikeCount,
+                    opt => opt.MapFrom(src => src.Likes.Count))
+                .ForMember(dest => dest.CommentCount,
+                    opt => opt.MapFrom(src => src.Comments.Count))
+                .ForMember(dest => dest.BookmarkCount,
+                    opt => opt.MapFrom(src => src.Bookmarks.Count));
         }
     }
 }
