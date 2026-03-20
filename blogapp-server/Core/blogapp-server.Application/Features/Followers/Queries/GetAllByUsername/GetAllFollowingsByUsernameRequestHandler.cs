@@ -10,20 +10,20 @@ using System.Threading.Tasks;
 
 namespace blogapp_server.Application.Features.Followers.Queries.GetAllByUsername
 {
-    public class GetAllFollowersByUsernameRequestHandler : IRequestHandler<GetAllFollowersByUsernameRequest, List<FollowerDto>>
+    public class GetAllFollowingsByUsernameRequestHandler : IRequestHandler<GetAllFollowingsByUsernameRequest, List<FollowerDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public GetAllFollowersByUsernameRequestHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public GetAllFollowingsByUsernameRequestHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
-        public async Task<List<FollowerDto>> Handle(GetAllFollowersByUsernameRequest request, CancellationToken cancellationToken)
+        public async Task<List<FollowerDto>> Handle(GetAllFollowingsByUsernameRequest request, CancellationToken cancellationToken)
         {
-            var followers = await _unitOfWork.FollowerRepository.GetAllFollowersByUsernameAsync(request.UserName);
+            var followers = await _unitOfWork.FollowerRepository.GetAllFollowingsByUsernameAsync(request.UserName);
             var response = _mapper.Map<List<FollowerDto>>(followers);
             return response;
         }

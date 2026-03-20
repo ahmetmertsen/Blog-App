@@ -26,8 +26,6 @@ namespace blogapp_server.Persistence.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-
             modelBuilder.Entity<Follower>()
                 .HasOne(f => f.FollowerUser)
                 .WithMany(u => u.Followings)
@@ -39,6 +37,12 @@ namespace blogapp_server.Persistence.Context
                 .WithMany(u => u.Followers)
                 .HasForeignKey(f => f.FollowingId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Follower>()
+                .HasIndex(x => new { x.FollowerId, x.FollowingId })
+                .IsUnique();
+
+            base.OnModelCreating(modelBuilder);
         }
 
     }
