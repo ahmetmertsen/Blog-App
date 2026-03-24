@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
 using blogapp_server.Application.Dtos;
-using blogapp_server.Application.Features.Notifications.Commands.Create;
-using blogapp_server.Application.Features.Notifications.Commands.Update;
 using blogapp_server.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -15,9 +13,6 @@ namespace blogapp_server.Application.Mapping
     {
         public NotificationProfile()
         {
-            CreateMap<CreateNotificationsCommand, Notification>();
-            CreateMap<UpdateNotificationsCommand, Notification>();
-
             CreateMap<Notification, NotificationDto>();
         }
     }

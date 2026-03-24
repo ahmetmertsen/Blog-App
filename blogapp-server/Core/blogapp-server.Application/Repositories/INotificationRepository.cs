@@ -10,5 +10,6 @@ namespace blogapp_server.Application.Repositories
 {
     public interface INotificationRepository : IRepository<Notification>
     {
+        Task<List<Notification>> GetAllNotificationsByUserIdAsync(int userId);
     }
 }
