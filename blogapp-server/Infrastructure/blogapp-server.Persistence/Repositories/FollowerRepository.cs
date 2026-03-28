@@ -27,18 +27,19 @@ namespace blogapp_server.Persistence.Repositories
 
         public EntityEntry<Follower> Delete(Follower entity) => Table.Remove(entity);
 
-        public async Task<List<Follower>> GetAllFollowersByUsernameAsync(string userName) =>
+        public async Task<List<Follower>> GetAllFollowersByUserIdAsync(int userId) =>
             await _context.Followers
                 .Include(f => f.FollowerUser)
                 .Include(f => f.FollowingUser)
-                .Where(f => f.FollowingUser.UserName == userName)
+                .Where(f => f.FollowingUser.Id == userId)
                 .ToListAsync();
 
-        public async Task<List<Follower>> GetAllFollowingsByUsernameAsync(string userName) =>
+        public async Task<List<Follower>> GetAllFollowingsByUserIdAsync(int userId) =>
             await _context.Followers
                 .Include(f => f.FollowerUser)
                 .Include(f => f.FollowingUser)
-                .Where(f => f.FollowerUser.UserName == userName)
+                .Where(f => f.FollowerUser.Id == userId)
                 .ToListAsync();
+
     }
 }

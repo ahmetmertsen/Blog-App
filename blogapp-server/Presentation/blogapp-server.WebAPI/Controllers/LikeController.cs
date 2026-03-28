@@ -1,7 +1,6 @@
 ﻿using blogapp_server.Application.Features.Likes.Commands.Create;
 using blogapp_server.Application.Features.Likes.Commands.Delete;
 using blogapp_server.Application.Features.Likes.Queries.GetAll;
-using blogapp_server.Application.Features.Likes.Queries.GetAllByUsername;
 using blogapp_server.Application.Features.Likes.Queries.GetById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -52,14 +51,6 @@ namespace blogapp_server.WebAPI.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var response = await _mediatR.Send(new GetLikeByIdRequest(id));
-            return Ok(response);
-        }
-
-        [HttpGet]
-        [Route("getByUserName/{userName}")]
-        public async Task<IActionResult> GetByUserName(string userName)
-        {
-            var response = await _mediatR.Send(new GetAllLikesByUsernameRequest(userName));
             return Ok(response);
         }
 

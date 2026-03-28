@@ -15,7 +15,7 @@ namespace blogapp_server.Application.Repositories
         Task<bool> IsFollowExistsAsync(int followerId, int followingId);
         Task<Follower?> GetFollowAsync(int followerId, int followingId);
         EntityEntry<Follower> Delete(Follower entity);
-        Task<List<Follower>> GetAllFollowersByUsernameAsync(string userName);
-        Task<List<Follower>> GetAllFollowingsByUsernameAsync(string userName);
+        Task<List<Follower>> GetAllFollowersByUserIdAsync(int userId);
+        Task<List<Follower>> GetAllFollowingsByUserIdAsync(int userId);
     }
 }

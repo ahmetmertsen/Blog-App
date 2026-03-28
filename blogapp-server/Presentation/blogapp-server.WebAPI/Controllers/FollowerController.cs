@@ -1,13 +1,8 @@
 ﻿using blogapp_server.Application.Features.Followers.Commands.Create;
 using blogapp_server.Application.Features.Followers.Commands.Delete;
 using blogapp_server.Application.Features.Followers.Queries.GetAll;
-using blogapp_server.Application.Features.Followers.Queries.GetAllByUsername;
+using blogapp_server.Application.Features.Followers.Queries.GetAllByUserId;
 using blogapp_server.Application.Features.Followers.Queries.GetById;
-using blogapp_server.Application.Features.Likes.Commands.Create;
-using blogapp_server.Application.Features.Likes.Commands.Delete;
-using blogapp_server.Application.Features.Likes.Queries.GetAll;
-using blogapp_server.Application.Features.Likes.Queries.GetAllByUsername;
-using blogapp_server.Application.Features.Likes.Queries.GetById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -60,20 +55,22 @@ namespace blogapp_server.WebAPI.Controllers
             return Ok(response);
         }
 
+        
         [HttpGet]
-        [Route("getAllFollowersByUserName/{userName}")]
-        public async Task<IActionResult> GetAllFollowersByUserName(string userName)
+        [Route("getAllFollowersByUserId/{userId}")]
+        public async Task<IActionResult> GetAllFollowersByUserId(int userId)
         {
-            var response = await _mediatR.Send(new GetAllFollowersByUsernameRequest(userName));
+            var response = await _mediatR.Send(new GetAllFollowersByUserIdRequest(userId));
             return Ok(response);
         }
 
         [HttpGet]
-        [Route("getAllFollowingsByUserName/{userName}")]
-        public async Task<IActionResult> GetAllFollowinsByUserName(string userName)
+        [Route("getAllFollowingsByUserId/{userId}")]
+        public async Task<IActionResult> GetAllFollowinsByUserId(int userId)
         {
-            var response = await _mediatR.Send(new GetAllFollowingsByUsernameRequest(userName));
+            var response = await _mediatR.Send(new GetAllFollowingsByUserIdRequest(userId));
             return Ok(response);
         }
+        
     }
 }

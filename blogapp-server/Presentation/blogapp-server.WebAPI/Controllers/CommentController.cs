@@ -2,7 +2,6 @@
 using blogapp_server.Application.Features.Comments.Commands.Delete;
 using blogapp_server.Application.Features.Comments.Commands.Update;
 using blogapp_server.Application.Features.Comments.Queries.GetAll;
-using blogapp_server.Application.Features.Comments.Queries.GetAllByUsername;
 using blogapp_server.Application.Features.Comments.Queries.GetById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -65,12 +64,5 @@ namespace blogapp_server.WebAPI.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
-        [Route("getByUserName/{userName}")]
-        public async Task<IActionResult> GetByUserName(string userName)
-        {
-            var response = await _mediatR.Send(new GetAllCommentsByUsernameRequest(userName));
-            return Ok(response);
-        }
     }
 }
