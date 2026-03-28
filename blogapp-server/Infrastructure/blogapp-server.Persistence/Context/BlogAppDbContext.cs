@@ -22,6 +22,7 @@ namespace blogapp_server.Persistence.Context
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Follower> Followers { get; set; }
         public DbSet<Bookmark> Bookmarks { get; set; }
+        public DbSet<Utility> Utilities { get; set; }
         
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

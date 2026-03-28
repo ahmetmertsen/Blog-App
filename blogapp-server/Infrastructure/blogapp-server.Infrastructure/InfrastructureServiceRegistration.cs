@@ -1,4 +1,6 @@
-﻿using blogapp_server.Application.Abstractions.Token;
+﻿using blogapp_server.Application.Abstractions.Services;
+using blogapp_server.Application.Abstractions.Token;
+using blogapp_server.Infrastructure.Services.Mail;
 using blogapp_server.Infrastructure.Services.Token;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +17,7 @@ namespace blogapp_server.Infrastructure
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<ITokenHandler, TokenHandler>();
+            services.AddScoped<IMailService, MailService>();
 
             return services;
         }

@@ -16,6 +16,7 @@ namespace blogapp_server.Application.UnitOfWork
         public INotificationRepository NotificationRepository { get; }
         public IPostRepository PostRepository { get; }
         public ITagRepository TagRepository { get; }
+        public IUtilityRepository UtilityRepository { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }

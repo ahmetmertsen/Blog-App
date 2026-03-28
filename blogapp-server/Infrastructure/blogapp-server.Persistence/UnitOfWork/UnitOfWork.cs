@@ -20,8 +20,9 @@ namespace blogapp_server.Persistence.UnitOfWork
         public INotificationRepository NotificationRepository { get; }
         public IPostRepository PostRepository { get; }
         public ITagRepository TagRepository { get; }
+        public IUtilityRepository UtilityRepository { get; }
 
-        public UnitOfWork(BlogAppDbContext context, IBookmarkRepository bookmarkRepository, ICommentRepository commentRepository, IFollowerRepository followerRepository, ILikeRepository likeRepository, INotificationRepository notificationRepository, IPostRepository postRepository, ITagRepository tagRepository)
+        public UnitOfWork(BlogAppDbContext context, IBookmarkRepository bookmarkRepository, ICommentRepository commentRepository, IFollowerRepository followerRepository, ILikeRepository likeRepository, INotificationRepository notificationRepository, IPostRepository postRepository, ITagRepository tagRepository, IUtilityRepository utilityRepository)
         {
             _context = context;
             BookmarkRepository = bookmarkRepository;
@@ -31,6 +32,7 @@ namespace blogapp_server.Persistence.UnitOfWork
             NotificationRepository = notificationRepository;
             PostRepository = postRepository;
             TagRepository = tagRepository;
+            UtilityRepository = utilityRepository;
         }
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken) => await _context.SaveChangesAsync(cancellationToken);

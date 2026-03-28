@@ -6,6 +6,7 @@ using blogapp_server.Persistence.Context;
 using blogapp_server.Persistence.Repositories;
 using blogapp_server.Persistence.Services;
 using blogapp_server.Persistence.UnitOfWork;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +25,9 @@ namespace blogapp_server.Persistence
             services.AddDbContext<BlogAppDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddIdentity<User, Role>().AddEntityFrameworkStores<BlogAppDbContext>();
+            services.AddIdentity<User, Role>()
+                .AddEntityFrameworkStores<BlogAppDbContext>()
+                .AddDefaultTokenProviders(); // Password reset vs. tokenları için
 
             services.AddScoped<IBookmarkRepository, BookmarkRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
@@ -33,6 +36,7 @@ namespace blogapp_server.Persistence
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<ITagRepository, TagRepository>();
+            services.AddScoped<IUtilityRepository, UtilityRepository>();
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
