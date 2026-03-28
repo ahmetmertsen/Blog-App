@@ -42,6 +42,10 @@ namespace blogapp_server.Persistence.Context
                 .HasIndex(x => new { x.FollowerId, x.FollowingId })
                 .IsUnique();
 
+            modelBuilder.Entity<Notification>()
+                .Property(n => n.Type)
+                .HasConversion<string>();
+
             base.OnModelCreating(modelBuilder);
         }
 

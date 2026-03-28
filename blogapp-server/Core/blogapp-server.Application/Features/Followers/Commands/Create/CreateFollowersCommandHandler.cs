@@ -3,6 +3,7 @@ using blogapp_server.Application.Exceptions;
 using blogapp_server.Application.UnitOfWork;
 using blogapp_server.Domain.Entities;
 using blogapp_server.Domain.Entities.Identity;
+using blogapp_server.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -47,13 +48,13 @@ namespace blogapp_server.Application.Features.Followers.Commands.Create
 
             #region Takip edilen kişiye bildirim gönderme
             // Takip eden kullanıcı
-            var user = await _userManager.FindByIdAsync(Convert.ToString(request.UserId));
+            var followerUser = await _userManager.FindByIdAsync(Convert.ToString(request.UserId));
 
             Notification notification = new()
             {
-                Type = "Following",
-                Message = $"{user.UserName} sizi takip etmeye başladı",
-                UserId = request.UserId,
+                Type = NotificationType.NEW_FOLLOWER,
+                Message = $"{followerUser.UserName} sizi takip etmeye başladı",
+                UserId = request.FollowingId,
                 CreatedAt = DateTime.UtcNow,
                 isActive = true,
                 isDeleted = false

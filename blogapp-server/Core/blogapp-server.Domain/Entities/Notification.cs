@@ -1,5 +1,6 @@
 ﻿using blogapp_server.Domain.Entities.Common;
 using blogapp_server.Domain.Entities.Identity;
+using blogapp_server.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace blogapp_server.Domain.Entities
 {
     public class Notification : BaseEntity
     {
-        public string Type { get; set; }
+        public NotificationType Type { get; set; }
         public string Message { get; set; }
 
         public int UserId { get; set; }

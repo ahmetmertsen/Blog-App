@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using blogapp_server.Application.Common.Interfaces;
+using blogapp_server.Application.Exceptions;
 using blogapp_server.Application.UnitOfWork;
 using blogapp_server.Domain.Entities;
 using MediatR;
@@ -28,6 +29,24 @@ namespace blogapp_server.Application.Features.Comments.Commands.Create
             comment.CreatedAt = DateTime.UtcNow;
             comment.isActive = true;
             comment.isDeleted = false;
+
+            #region Notification
+            var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
+            if (post == null)
+            {
+                throw new NotFoundException("Yorum atılırken bir hata oluştu.");
+            }
+            Notification notification = new()
+            {
+                Type = Domain.Enums.NotificationType.POST_COMMENTED,
+                Message = $"{post.Title} başlıklı gönderiniz yorum aldı.",
+                UserId = post.UserId,
+                CreatedAt = DateTime.UtcNow,
+                isActive = true,
+                isDeleted = false,
+            };
+            await _unitOfWork.NotificationRepository.AddAsync(notification);
+            #endregion
 
             await _unitOfWork.CommentRepository.AddAsync(comment);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

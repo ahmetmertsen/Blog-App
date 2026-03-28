@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using blogapp_server.Application.Exceptions;
 using blogapp_server.Application.UnitOfWork;
 using blogapp_server.Domain.Entities;
 using MediatR;
@@ -27,6 +28,25 @@ namespace blogapp_server.Application.Features.Likes.Commands.Create
             like.isActive = true;
             like.CreatedAt = DateTime.UtcNow;
             like.isDeleted = false;
+
+            #region Like notification
+            var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
+            if (post == null) 
+            {
+                throw new NotFoundException("Bir hata oluştu.");
+            }
+
+            Notification notification = new()
+            {
+                Type = Domain.Enums.NotificationType.POST_LIKED,
+                Message = $"{post.Title} başlıklı göndederiniz beğeni aldı.",
+                UserId = post.UserId,
+                CreatedAt = DateTime.UtcNow,
+                isActive = true,
+                isDeleted = false,
+            };
+            await _unitOfWork.NotificationRepository.AddAsync(notification);
+            #endregion
 
             await _unitOfWork.LikeRepository.AddAsync(like);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
