@@ -1,7 +1,9 @@
 ﻿using blogapp_server.Application.Abstractions.Services;
 using blogapp_server.Application.Abstractions.Token;
 using blogapp_server.Application.Dtos;
+using blogapp_server.Application.Dtos.Auth;
 using blogapp_server.Application.Exceptions;
+using blogapp_server.Application.Helpers;
 using blogapp_server.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,13 +21,15 @@ namespace blogapp_server.Persistence.Services
         private readonly SignInManager<User> _signInManager;
         private readonly ITokenHandler _tokenHandler;
         private readonly IUserService _userService;
+        private readonly IMailService _mailService;
 
-        public AuthService(UserManager<User> userManager, SignInManager<User> signInManager, ITokenHandler tokenHandler,  IUserService userService)
+        public AuthService(UserManager<User> userManager, SignInManager<User> signInManager, ITokenHandler tokenHandler,  IUserService userService, IMailService mailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenHandler = tokenHandler;
             _userService = userService;
+            _mailService = mailService;
         }
 
         public async Task<Token> LoginAsync(string usernameOrEmail, string password)
@@ -67,6 +71,73 @@ namespace blogapp_server.Persistence.Services
             {
                 throw new NotFoundException("Kullanıcı bulunumadı!");
             }
+        }
+
+        public async Task<ForgotPasswordResponse> ForgotPasswordResetAsync(ForgotPasswordRequest request)
+        {
+            ForgotPasswordResponse response = new()
+            {
+                Succeeded = true,
+                Message = "Mail adresi doğru ise Şifre Sıfırlama bağlantısı gönderildi"
+            };
+
+            if (string.IsNullOrWhiteSpace(request.EmailOrUsername))
+            {
+                return response;
+            }
+
+            User user = await _userManager.FindByEmailAsync(request.EmailOrUsername);
+            if (user == null)
+            {
+                user = await _userManager.FindByNameAsync(request.EmailOrUsername);
+                if (user == null)
+                {
+                    return response;
+                }
+            }
+
+            // Reset token üretiliyor
+            string resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            resetToken = resetToken.UrlEncode();
+
+            await _mailService.SendForgotPasswordMailAsync(user.Email, user.FullName, user.Id, resetToken);
+            return response;
+        }
+
+
+        public async Task<MailVerifyResponse> MailVerifyAsync(MailVerifyRequest request)
+        {
+            MailVerifyResponse response = new()
+            {
+                Succeeded = true,
+                Message = "Mail adresi doğru ise doğrulama bağlantısı gönderildi"
+            };
+
+            if (string.IsNullOrWhiteSpace(request.Email))
+            {
+                return response;
+            }
+
+            User user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+            {
+                return response;
+            }
+
+            if (user.EmailConfirmed == true)
+            {
+                return new MailVerifyResponse
+                {
+                    Succeeded = true,
+                    Message = "E-posta adresi zaten doğrulanmış."
+                };
+            }
+
+            string emailConfirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            emailConfirmToken = emailConfirmToken.UrlEncode();
+
+            await _mailService.SendVerifyMailAsync(user.Email, user.FullName, user.Id, emailConfirmToken);
+            return response;
         }
     }
 }

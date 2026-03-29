@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using blogapp_server.Application.Abstractions.Services;
-using blogapp_server.Application.Dtos;
+using blogapp_server.Application.Dtos.User;
 using MediatR;
 using System;
 using System.Collections.Generic;
