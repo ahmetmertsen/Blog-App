@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using blogapp_server.Application.Dtos;
+using blogapp_server.Application.Dtos.User;
 using blogapp_server.Application.Features.Auth.Register;
 using blogapp_server.Application.Features.Users.Commands.Update.UpdateEmail;
 using blogapp_server.Application.Features.Users.Commands.Update.UpdatePassword;

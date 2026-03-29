@@ -1,4 +1,4 @@
-﻿using blogapp_server.Application.Dtos;
+﻿using blogapp_server.Application.Dtos.User;
 using blogapp_server.Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;
@@ -12,5 +12,8 @@ namespace blogapp_server.Application.Abstractions.Services
     {
         Task<RegisterUserResponseDto> RegisterAsync(RegisterUserRequestDto request);
         Task UpdateRefreshToken(string refreshToken, User user, DateTime accessTokenDate);
+        Task<UpdateUserPasswordResponse> UpdatePasswordAsync(UpdateUserPasswordRequest request);
+        Task<UpdateUserMailVerifyResponse> UpdateUserMailVerify(UpdateUserMailVerifyRequest request);
+
     }
 }

@@ -14,6 +14,7 @@ namespace blogapp_server.Domain.Entities.Identity
         public string? ImageUrl { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenEndDate { get; set; }
+        public DateTime? LastPasswordChangedDate { get; set; }
 
         public ICollection<Post> Posts { get; set; }
         public ICollection<Notification> Notifications { get; set; }

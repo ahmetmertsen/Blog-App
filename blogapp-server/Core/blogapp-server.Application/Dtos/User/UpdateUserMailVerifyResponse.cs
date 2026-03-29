@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace blogapp_server.Application.Features.Users.Commands.Update.UpdatePassword
+namespace blogapp_server.Application.Dtos.User
 {
-    public class UpdateUserPasswordCommandResponse
+    public class UpdateUserMailVerifyResponse
     {
         public bool Succeeded { get; set; }
         public string Message { get; set; }
