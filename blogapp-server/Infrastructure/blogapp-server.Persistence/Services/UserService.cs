@@ -98,7 +98,7 @@ namespace blogapp_server.Persistence.Services
 
                 return new UpdateUserPasswordResponse
                 {
-                    Succedded = true,
+                    Succeeded = true,
                     Message = "Şifre başarılı bir şekilde güncellenmiştir."
                 };
             }
@@ -145,6 +145,33 @@ namespace blogapp_server.Persistence.Services
             else
             {
                 throw new MailVerifyFailedException("E-posta doğrulama başarısız. Bağlantı süresi dolmuş olabilir.");
+            }
+        }
+
+        public async Task<UpdateUserProfileResponse> UpdateUserProfile(UpdateUserProfileRequest request)
+        {
+            User user = await _userManager.FindByIdAsync(request.UserId.ToString());
+            if (user == null)
+            {
+                throw new NotFoundException("Kullanıcı bulunamadı.");
+            }
+
+            user.FullName = request.FullName;
+            user.Bio = request.Bio;
+            user.ImageUrl = request.ImageUrl;
+
+            IdentityResult result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                return new UpdateUserProfileResponse
+                {
+                    Succeeded = true,
+                    Message = "Profil başarıyla güncellendi."
+                };
+            }
+            else
+            {
+                throw new BadRequestException($"Profil güncellenirken bir hata oluştu.");
             }
         }
     }

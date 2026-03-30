@@ -1,7 +1,9 @@
 ﻿using blogapp_server.Application.Features.Auth.Register;
 using blogapp_server.Application.Features.Users.Commands.Update.UpdateMailVerify;
 using blogapp_server.Application.Features.Users.Commands.Update.UpdatePassword;
+using blogapp_server.Application.Features.Users.Commands.Update.UpdateProfile;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,6 +28,7 @@ namespace blogapp_server.WebAPI.Controllers
             return Ok(response);
         }
 
+        [Authorize]
         [HttpPost]
         [Route("updatePassword")]
         public async Task<IActionResult> UpdateUserPassword([FromBody] UpdateUserPasswordCommand request)
@@ -34,12 +37,22 @@ namespace blogapp_server.WebAPI.Controllers
             return Ok(response);
         }
 
+        [Authorize]
         [HttpPost]
         [Route("updateMailVerify")]
         public async Task<IActionResult> UpdateUserMailVerify([FromBody] UpdateUserMailVerifyCommand request)
         {
-            var respone = await _mediatR.Send(request);
-            return Ok(respone);
+            var response = await _mediatR.Send(request);
+            return Ok(response);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("updateUserProfile")]
+        public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateUserProfileCommand request)
+        {
+            var response = await _mediatR.Send(request);
+            return Ok(response);
         }
     }
 }

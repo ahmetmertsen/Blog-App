@@ -14,6 +14,7 @@ namespace blogapp_server.Application.Abstractions.Services
         Task UpdateRefreshToken(string refreshToken, User user, DateTime accessTokenDate);
         Task<UpdateUserPasswordResponse> UpdatePasswordAsync(UpdateUserPasswordRequest request);
         Task<UpdateUserMailVerifyResponse> UpdateUserMailVerify(UpdateUserMailVerifyRequest request);
+        Task<UpdateUserProfileResponse> UpdateUserProfile(UpdateUserProfileRequest request);
 
     }
 }

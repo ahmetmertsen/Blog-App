@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace blogapp_server.Application.Dtos.User
 {
-    public class UpdateUserPasswordResponse
+    public class UpdateUserProfileResponse
     {
         public bool Succeeded { get; set; }
         public string Message { get; set; }

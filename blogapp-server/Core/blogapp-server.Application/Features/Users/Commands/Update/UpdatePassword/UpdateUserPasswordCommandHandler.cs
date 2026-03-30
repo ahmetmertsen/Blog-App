@@ -32,7 +32,7 @@ namespace blogapp_server.Application.Features.Users.Commands.Update.UpdatePasswo
 
             UpdateUserPasswordCommandResponse commandResponse = new()
             {
-                Succeeded = response.Succedded,
+                Succeeded = response.Succeeded,
                 Message = response.Message
             };
             return commandResponse;
