@@ -174,5 +174,37 @@ namespace blogapp_server.Persistence.Services
                 throw new BadRequestException($"Profil güncellenirken bir hata oluştu.");
             }
         }
+
+        public async Task<UpdateUserEmailResponse> UpdateUserEmailAsync(UpdateUserEmailRequest request)
+        {
+            User user = await _userManager.FindByIdAsync(request.UserId.ToString());
+            if (user == null)
+            {
+                throw new NotFoundException("Kullanıcı bulunamadı.");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.ChangeEmailToken))
+            {
+                throw new BadRequestException("Doğrulama bağlantısı geçersiz.");
+            }
+            string token = request.ChangeEmailToken.UrlDecode();
+            IdentityResult result = await _userManager.ChangeEmailAsync(user, request.NewEmail, token);
+
+            if (result.Succeeded)
+            {
+                await _userManager.UpdateSecurityStampAsync(user);
+                await _userManager.UpdateAsync(user);
+
+                return new UpdateUserEmailResponse
+                {
+                    Succeeded = true,
+                    Message = "Email başarılı bir şekilde güncellenmiştir."
+                };
+            }
+            else
+            {
+                throw new ChangeEmailFailedException("Email güncellenirken hata oluştu...");
+            }
+        }
     }
 }

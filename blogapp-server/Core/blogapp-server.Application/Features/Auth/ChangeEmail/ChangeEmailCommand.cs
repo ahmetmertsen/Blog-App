@@ -7,14 +7,12 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace blogapp_server.Application.Features.Users.Commands.Update.UpdateEmail
+namespace blogapp_server.Application.Features.Auth.ChangeEmail
 {
-    public class UpdateUserEmailCommand : IRequest<UpdateUserEmailCommandResponse>, ICurrentUserRequest
+    public class ChangeEmailCommand : IRequest<ChangeEmailCommandResponse>, ICurrentUserRequest
     {
         [JsonIgnore]
         public int UserId { get; set; }
-        public string ChangeEmailToken { get; set; }
-
         public string NewEmail { get; set; }
     }
 }

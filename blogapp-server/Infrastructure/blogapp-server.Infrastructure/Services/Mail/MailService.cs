@@ -56,7 +56,7 @@ namespace blogapp_server.Infrastructure.Services.Mail
         }
 
         // Şifre Sıfırlama Maili
-        public async Task SendForgotPasswordMailAsync(string to, string fullName, long userId, string resetToken)
+        public async Task SendForgotPasswordMailAsync(string to, string fullName, int userId, string resetToken)
         {
             var utilityResponse = await _unitOfWork.UtilityRepository.GetByNameAsync("FORGOT_PASSWORD");
             string description = utilityResponse.Value;
@@ -68,7 +68,7 @@ namespace blogapp_server.Infrastructure.Services.Mail
         }
 
         // Mail Doğrulama
-        public async Task SendVerifyMailAsync(string to, string fullName, long userId, string emailConfirmToken)
+        public async Task SendVerifyMailAsync(string to, string fullName, int userId, string emailConfirmToken)
         {
             var utilityResponse = await _unitOfWork.UtilityRepository.GetByNameAsync("MAIL_VERIFY");
             string description = utilityResponse.Value;
@@ -77,6 +77,18 @@ namespace blogapp_server.Infrastructure.Services.Mail
             description = description.Replace("{app_name}", "BlogApp");
 
             await SendMailAsync(to, "E-Posta Doğrulama", description);
+        }
+
+        // Email Değiştirme
+        public async Task SendChangeEmailMailAsync(string to, string fullName, int userId, string emailChangeToken)
+        {
+            var utilityResponse = await _unitOfWork.UtilityRepository.GetByNameAsync("CHANGE_EMAIL");
+            string description = utilityResponse.Value;
+            description = description.Replace("{full_name}", $"{fullName}");
+            description = description.Replace("{confirm_link}", $"https://www.google.com/change-email/{userId}/{emailChangeToken}");
+            description = description.Replace("{app_name}", "BlogApp");
+
+            await SendMailAsync(to, "E-Posta Değişikliği Talebi", description);
         }
     }
 }

@@ -13,5 +13,6 @@ namespace blogapp_server.Application.Abstractions.Services
         Task<Dtos.Token> RefreshTokenLoginAsync(string refreshToken);
         Task<ForgotPasswordResponse> ForgotPasswordResetAsync(ForgotPasswordRequest request);
         Task<MailVerifyResponse> MailVerifyAsync(MailVerifyRequest request);
+        Task<ChangeEmailResponse> ChangeEmailAsync(ChangeEmailRequest request);
     }
 }

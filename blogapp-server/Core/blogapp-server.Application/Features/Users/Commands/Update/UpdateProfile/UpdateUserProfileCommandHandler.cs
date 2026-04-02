@@ -1,5 +1,6 @@
 ﻿using blogapp_server.Application.Abstractions.Services;
 using blogapp_server.Application.Dtos.User;
+using blogapp_server.Domain.Entities.Identity;
 using MediatR;
 using System;
 using System.Collections.Generic;

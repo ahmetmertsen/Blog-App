@@ -5,6 +5,7 @@ using blogapp_server.Application.Dtos.Auth;
 using blogapp_server.Application.Exceptions;
 using blogapp_server.Application.Helpers;
 using blogapp_server.Domain.Entities.Identity;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -137,6 +138,39 @@ namespace blogapp_server.Persistence.Services
             emailConfirmToken = emailConfirmToken.UrlEncode();
 
             await _mailService.SendVerifyMailAsync(user.Email, user.FullName, user.Id, emailConfirmToken);
+            return response;
+        }
+
+        public async Task<ChangeEmailResponse> ChangeEmailAsync(ChangeEmailRequest request)
+        {
+            ChangeEmailResponse response = new()
+            {
+                Succeeded = true,
+                Message = "Yeni e-posta adresiniz doğrulama için kontrol edilmelidir. Uygunsa doğrulama bağlantısı gönderildi."
+            };
+
+            if (string.IsNullOrWhiteSpace(request.NewEmail))
+            {
+                return response;
+            }
+
+            User user = await _userManager.FindByIdAsync(request.UserId.ToString());
+            if (user == null)
+            {
+                return response;
+            }
+
+            string newEmail = request.NewEmail.Trim().ToLower();
+            User user2 = await _userManager.FindByEmailAsync(newEmail);
+            if (user2 != null)
+            {
+                return response;
+            }
+
+            string emailChangeToken = await _userManager.GenerateChangeEmailTokenAsync(user, newEmail);
+            emailChangeToken = emailChangeToken.UrlEncode();
+
+            await _mailService.SendChangeEmailMailAsync(newEmail, user.FullName, user.Id, emailChangeToken);
             return response;
         }
     }

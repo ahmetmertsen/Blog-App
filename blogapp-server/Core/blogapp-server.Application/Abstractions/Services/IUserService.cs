@@ -15,6 +15,7 @@ namespace blogapp_server.Application.Abstractions.Services
         Task<UpdateUserPasswordResponse> UpdatePasswordAsync(UpdateUserPasswordRequest request);
         Task<UpdateUserMailVerifyResponse> UpdateUserMailVerify(UpdateUserMailVerifyRequest request);
         Task<UpdateUserProfileResponse> UpdateUserProfile(UpdateUserProfileRequest request);
+        Task<UpdateUserEmailResponse> UpdateUserEmailAsync(UpdateUserEmailRequest request);
 
     }
 }

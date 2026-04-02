@@ -1,4 +1,5 @@
 ﻿using blogapp_server.Application.Features.Auth.Register;
+using blogapp_server.Application.Features.Users.Commands.Update.UpdateEmail;
 using blogapp_server.Application.Features.Users.Commands.Update.UpdateMailVerify;
 using blogapp_server.Application.Features.Users.Commands.Update.UpdatePassword;
 using blogapp_server.Application.Features.Users.Commands.Update.UpdateProfile;
@@ -50,6 +51,15 @@ namespace blogapp_server.WebAPI.Controllers
         [HttpPost]
         [Route("updateUserProfile")]
         public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateUserProfileCommand request)
+        {
+            var response = await _mediatR.Send(request);
+            return Ok(response);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("updateUserEmail")]
+        public async Task<IActionResult> UpdateUserEmail([FromBody] UpdateUserEmailCommand request)
         {
             var response = await _mediatR.Send(request);
             return Ok(response);
