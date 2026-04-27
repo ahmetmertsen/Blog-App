@@ -1,7 +1,7 @@
 ﻿using blogapp_server.Application.Features.Bookmarks.Commands.Create;
 using blogapp_server.Application.Features.Bookmarks.Commands.Delete;
-using blogapp_server.Application.Features.Bookmarks.Queries.GetAll;
 using blogapp_server.Application.Features.Bookmarks.Queries.GetById;
+using blogapp_server.Application.Features.Bookmarks.Queries.GetUserId;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -38,14 +38,7 @@ namespace blogapp_server.WebAPI.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
-        [Route("getAll")]
-        public async Task<IActionResult> GetAll()
-        {
-            var response = await _mediatR.Send(new GetAllBookmarksRequest());
-            return Ok(response);
-        }
-
+        [Authorize]
         [HttpGet]
         [Route("getById/{id}")]
         public async Task<IActionResult> GetById(int id)
@@ -53,6 +46,17 @@ namespace blogapp_server.WebAPI.Controllers
             var response = await _mediatR.Send(new GetBookmarkByIdRequest(id));
             return Ok(response);
         }
+
+        [Authorize]
+        [HttpGet]
+        [Route("getByUserId/{userId}")]
+        public async Task<IActionResult> GetByUserId(int userId)
+        {
+            var response = await _mediatR.Send(new GetBookmarksByUserIdRequest { UserId = userId });
+            return Ok(response);
+        }
+
+        
 
     }
 }

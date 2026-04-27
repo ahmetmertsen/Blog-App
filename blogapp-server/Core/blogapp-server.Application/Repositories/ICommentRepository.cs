@@ -10,6 +10,7 @@ namespace blogapp_server.Application.Repositories
 {
     public interface ICommentRepository : IRepository<Comment>
     {
-        Task<List<Comment>> GetAllCommentsByUsernameAsync(string userName);
+        Task<List<Comment>> GetCommentsByUserIdAsync(int userId);
+        Task<List<Comment>> GetCommentsByPostIdAsync(int postId);
     }
 }

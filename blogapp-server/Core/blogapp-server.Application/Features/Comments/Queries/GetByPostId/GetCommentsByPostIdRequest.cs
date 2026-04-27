@@ -6,9 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace blogapp_server.Application.Features.Bookmarks.Queries.GetAll
+namespace blogapp_server.Application.Features.Comments.Queries.GetByPostId
 {
-    public record GetAllBookmarksRequest : IRequest<List<BookmarkDto>>
+    public class GetCommentsByPostIdRequest : IRequest<List<CommentDto>>
     {
+        public int PostId { get; set; }
     }
 }

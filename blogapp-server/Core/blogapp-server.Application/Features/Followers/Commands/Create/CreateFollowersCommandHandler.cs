@@ -46,6 +46,9 @@ namespace blogapp_server.Application.Features.Followers.Commands.Create
                 isDeleted = false
             };
 
+            await _unitOfWork.FollowerRepository.AddAsync(follow);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
             #region Takip edilen kişiye bildirim gönderme
             // Takip eden kullanıcı
             var followerUser = await _userManager.FindByIdAsync(Convert.ToString(request.UserId));
@@ -61,10 +64,6 @@ namespace blogapp_server.Application.Features.Followers.Commands.Create
             };
             await _unitOfWork.NotificationRepository.AddAsync(notification);
             #endregion
-
-
-            await _unitOfWork.FollowerRepository.AddAsync(follow);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return new CreateFollowersCommandResponse(Succeeded: true, Message: "Kullanıcı takip edildi.");
         }

@@ -8,22 +8,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace blogapp_server.Application.Features.Bookmarks.Queries.GetAll
+namespace blogapp_server.Application.Features.Bookmarks.Queries.GetUserId
 {
-    public class GetAllBookmarksRequestHandler : IRequestHandler<GetAllBookmarksRequest, List<BookmarkDto>>
+    public class GetBookmarksByUserIdRequestHandler : IRequestHandler<GetBookmarksByUserIdRequest, List<BookmarkDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public GetAllBookmarksRequestHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public GetBookmarksByUserIdRequestHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
-        public async Task<List<BookmarkDto>> Handle(GetAllBookmarksRequest request, CancellationToken cancellationToken)
+        public async Task<List<BookmarkDto>> Handle(GetBookmarksByUserIdRequest request, CancellationToken cancellationToken)
         {
-            var bookmarks = await _unitOfWork.BookmarkRepository.GetAllAsync();
+            var bookmarks = await _unitOfWork.BookmarkRepository.GetBookmarksByUserIdAsync(request.UserId);
+
             var response = _mapper.Map<List<BookmarkDto>>(bookmarks);
             return response;
         }

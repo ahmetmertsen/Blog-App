@@ -17,8 +17,8 @@ namespace blogapp_server.Persistence.Repositories
 
         public BookmarkRepository(BlogAppDbContext context) : base(context) { _context = context; }
 
-        public async Task<List<Bookmark>> GetAllBookmarksByUsernameAsync(string userName) => await _context.Bookmarks
-            .Where(b => b.User.UserName == userName)
+        public async Task<List<Bookmark>> GetBookmarksByUserIdAsync(int userId) => await _context.Bookmarks
+            .Where(b => b.User.Id == userId)
             .ToListAsync();
 
     }

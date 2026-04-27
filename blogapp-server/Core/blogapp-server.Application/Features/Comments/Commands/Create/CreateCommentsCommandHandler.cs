@@ -25,17 +25,21 @@ namespace blogapp_server.Application.Features.Comments.Commands.Create
 
         public async Task<CreateCommentsCommandResponse> Handle(CreateCommentsCommand request, CancellationToken cancellationToken)
         {
-            var comment = _mapper.Map<Comment>(request);
-            comment.CreatedAt = DateTime.UtcNow;
-            comment.isActive = true;
-            comment.isDeleted = false;
-
-            #region Notification
             var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
             if (post == null)
             {
                 throw new NotFoundException("Yorum atılırken bir hata oluştu.");
             }
+
+            var comment = _mapper.Map<Comment>(request);
+            comment.CreatedAt = DateTime.UtcNow;
+            comment.isActive = true;
+            comment.isDeleted = false;
+
+            await _unitOfWork.CommentRepository.AddAsync(comment);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            #region Notification
             Notification notification = new()
             {
                 Type = Domain.Enums.NotificationType.POST_COMMENTED,
@@ -48,8 +52,6 @@ namespace blogapp_server.Application.Features.Comments.Commands.Create
             await _unitOfWork.NotificationRepository.AddAsync(notification);
             #endregion
 
-            await _unitOfWork.CommentRepository.AddAsync(comment);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
             return new CreateCommentsCommandResponse(Succeeded: true, Message:"Yorum başarıyla eklendi.");
         }
     }

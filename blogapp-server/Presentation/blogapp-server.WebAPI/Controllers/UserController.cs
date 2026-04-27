@@ -29,7 +29,6 @@ namespace blogapp_server.WebAPI.Controllers
             return Ok(response);
         }
 
-        [Authorize]
         [HttpPost]
         [Route("updatePassword")]
         public async Task<IActionResult> UpdateUserPassword([FromBody] UpdateUserPasswordCommand request)

@@ -12,8 +12,8 @@ namespace blogapp_server.Application.Features.Users.Commands.Update.UpdatePasswo
     public class UpdateUserPasswordCommand : IRequest<UpdateUserPasswordCommandResponse>
     {
         public int UserId { get; set; }
-        public string ResetToken { get; set; }
-        public string newPassword { get; set; }
-        public string newPasswordConfirmed { get; set; }
+        public string ResetToken { get; set; } = null!;
+        public string newPassword { get; set; } = null!;
+        public string newPasswordConfirmed { get; set; } = null!;
     }
 }
