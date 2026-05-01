@@ -1,7 +1,8 @@
 ﻿using blogapp_server.Application.Features.Likes.Commands.Create;
 using blogapp_server.Application.Features.Likes.Commands.Delete;
-using blogapp_server.Application.Features.Likes.Queries.GetAll;
 using blogapp_server.Application.Features.Likes.Queries.GetById;
+using blogapp_server.Application.Features.Likes.Queries.GetByPostId;
+using blogapp_server.Application.Features.Likes.Queries.GetByUserId;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -38,19 +39,29 @@ namespace blogapp_server.WebAPI.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
-        [Route("getAll")]
-        public async Task<IActionResult> GetAll()
-        {
-            var response = await _mediatR.Send(new GetAllLikesRequest());
-            return Ok(response);
-        }
 
         [HttpGet]
         [Route("getById/{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             var response = await _mediatR.Send(new GetLikeByIdRequest(id));
+            return Ok(response);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("getByUserId")]
+        public async Task<IActionResult> GetByUserId(int userId)
+        {
+            var response = await _mediatR.Send(new GetLikesByUserIdRequest { UserId = userId});
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("getByPostId")]
+        public async Task<IActionResult> GetByPostId(int postId)
+        {
+            var response = await _mediatR.Send(new GetLikesByPostIdRequest { PostId = postId });
             return Ok(response);
         }
 

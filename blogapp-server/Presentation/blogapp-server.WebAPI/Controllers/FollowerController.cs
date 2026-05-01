@@ -1,6 +1,5 @@
 ﻿using blogapp_server.Application.Features.Followers.Commands.Create;
 using blogapp_server.Application.Features.Followers.Commands.Delete;
-using blogapp_server.Application.Features.Followers.Queries.GetAll;
 using blogapp_server.Application.Features.Followers.Queries.GetAllByUserId;
 using blogapp_server.Application.Features.Followers.Queries.GetById;
 using MediatR;
@@ -36,14 +35,6 @@ namespace blogapp_server.WebAPI.Controllers
         public async Task<IActionResult> Delete([FromBody] DeleteFollowersCommand request)
         {
             var response = await _mediatR.Send(request);
-            return Ok(response);
-        }
-
-        [HttpGet]
-        [Route("getAll")]
-        public async Task<IActionResult> GetAll()
-        {
-            var response = await _mediatR.Send(new GetAllFollowersRequest());
             return Ok(response);
         }
 

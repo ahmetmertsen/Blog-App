@@ -6,9 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace blogapp_server.Application.Features.Likes.Queries.GetAll
+namespace blogapp_server.Application.Features.Likes.Queries.GetByPostId
 {
-    public record GetAllLikesRequest : IRequest<List<LikeDto>>
+    public class GetLikesByPostIdRequest : IRequest<List<LikeDto>>
     {
+        public int PostId { get; set; }
     }
 }

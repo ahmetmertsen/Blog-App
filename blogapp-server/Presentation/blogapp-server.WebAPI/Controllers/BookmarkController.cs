@@ -38,7 +38,6 @@ namespace blogapp_server.WebAPI.Controllers
             return Ok(response);
         }
 
-        [Authorize]
         [HttpGet]
         [Route("getById/{id}")]
         public async Task<IActionResult> GetById(int id)

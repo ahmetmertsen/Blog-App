@@ -10,6 +10,7 @@ namespace blogapp_server.Application.Repositories
 {
     public interface ILikeRepository : IRepository<Like>
     {
-        Task<List<Like>> GetAllLikesByUsernameAsync(string userName);
+        Task<List<Like>> GetLikesByUserIdAsync(int userId);
+        Task<List<Like>> GetLikesByPostIdAsync(int postId);
     }
 }

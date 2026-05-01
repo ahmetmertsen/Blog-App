@@ -17,8 +17,12 @@ namespace blogapp_server.Persistence.Repositories
 
         public LikeRepository(BlogAppDbContext context) : base(context) { _context = context; }
 
-        public async Task<List<Like>> GetAllLikesByUsernameAsync(string userName) => await _context.Likes
-            .Where(l => l.User.UserName == userName)
+        public async Task<List<Like>> GetLikesByUserIdAsync(int userId) => await _context.Likes
+            .Where(l => l.UserId == userId)
+            .ToListAsync();
+
+        public async Task<List<Like>> GetLikesByPostIdAsync(int postId) => await _context.Likes
+            .Where(l => l.PostId == postId)
             .ToListAsync();
     }
 }
