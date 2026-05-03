@@ -37,6 +37,7 @@ namespace blogapp_server.Persistence
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<ITagRepository, TagRepository>();
             services.AddScoped<IUtilityRepository, UtilityRepository>();
+            services.AddScoped<IReportRepository, ReportRepository>();
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
