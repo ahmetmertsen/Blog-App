@@ -7,13 +7,13 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace blogapp_server.Application.Features.Users.Commands.Update.UpdatePhoneNumber
+namespace blogapp_server.Application.Features.Auth.ChangePhoneNumber
 {
-    public class UpdateUserPhoneNumberCommand : IRequest<UpdateUserPhoneNumberCommandResponse>, ICurrentUserRequest
+    public class ChangePhoneNumberCommand : IRequest<ChangePhoneNumberCommandResponse> , ICurrentUserRequest
     {
         [JsonIgnore]
         public int UserId { get; set; }
+
         public string NewPhoneNumber { get; set; } = null!;
-        public string Token { get; set; } = null!;
     }
 }

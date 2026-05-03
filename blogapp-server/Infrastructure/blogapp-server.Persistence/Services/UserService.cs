@@ -5,6 +5,7 @@ using blogapp_server.Application.Exceptions;
 using blogapp_server.Application.Helpers;
 using blogapp_server.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
@@ -205,6 +206,53 @@ namespace blogapp_server.Persistence.Services
             {
                 throw new ChangeEmailFailedException("Email güncellenirken hata oluştu...");
             }
+        }
+
+        public async Task<UpdateUserPhoneNumberResponse> UpdateUserPhoneNumberAsync(UpdateUserPhoneNumberRequest request)
+        {
+            User user = await _userManager.FindByIdAsync(request.UserId.ToString());
+            if (user == null)
+            {
+                throw new NotFoundException("Kullanıcı bulunamadı.");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.NewPhoneNumber))
+            {
+                throw new BadRequestException("Telefon numarası boş olamaz.");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.PhoneNumberChangeToken))
+            {
+                throw new BadRequestException("Doğrulama kodu geçersiz.");
+            }
+
+            string newPhoneNumber = request.NewPhoneNumber.UrlDecode().Trim();
+            newPhoneNumber = PhoneNumberHelper.NormalizeTurkeyPhoneNumber(request.NewPhoneNumber);
+            string token = request.PhoneNumberChangeToken.UrlDecode();
+
+            bool phoneNumberExists = await _userManager.Users.AnyAsync(u => u.PhoneNumber == newPhoneNumber && u.Id != user.Id);
+            if (phoneNumberExists)
+            {
+                throw new BadRequestException("Bu telefon numarası başka bir kullanıcı tarafından kullanılıyor.");
+            }
+
+            IdentityResult result = await _userManager.ChangePhoneNumberAsync(user, newPhoneNumber, request.PhoneNumberChangeToken);
+            if (result.Succeeded)
+            {
+                await _userManager.UpdateSecurityStampAsync(user);
+                await _userManager.UpdateAsync(user);
+
+                return new UpdateUserPhoneNumberResponse
+                {
+                    Succeeded = true,
+                    Message = "Telefon numarası başarıyla güncellendi."
+                };
+            }
+            else
+            {
+                throw new ChangePhoneNumberFailedException("Telefon numarası güncellenirken hata oluştu...");
+            }
+
         }
     }
 }

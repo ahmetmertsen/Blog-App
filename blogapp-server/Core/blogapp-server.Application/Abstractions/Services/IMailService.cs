@@ -14,5 +14,6 @@ namespace blogapp_server.Application.Abstractions.Services
         Task SendForgotPasswordMailAsync(string to, string userFullName, int userId, string resetToken);
         Task SendVerifyMailAsync(string to, string fullName, int userId, string emailConfirmToken);
         Task SendChangeEmailMailAsync(string to, string fullName, int userId, string emailChangeToken);
+        Task SendChangePhoneNumberMailAsync(string to, string fullName, int userId, string newPhoneNumber, string phoneNumberChangeToken);
     }
 }

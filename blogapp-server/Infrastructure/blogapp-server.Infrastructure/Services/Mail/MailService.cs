@@ -1,5 +1,7 @@
 ﻿using blogapp_server.Application.Abstractions.Services;
+using blogapp_server.Application.Helpers;
 using blogapp_server.Application.UnitOfWork;
+using blogapp_server.Domain.Entities.Identity;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -89,6 +91,25 @@ namespace blogapp_server.Infrastructure.Services.Mail
             description = description.Replace("{app_name}", "BlogApp");
 
             await SendMailAsync(to, "E-Posta Değişikliği Talebi", description);
+        }
+
+        // Telefon numarası değiştirme
+        public async Task SendChangePhoneNumberMailAsync(string to, string fullName, int userId, string newPhoneNumber, string phoneNumberChangeToken)
+        {
+            var utilityReposne = await _unitOfWork.UtilityRepository.GetByNameAsync("CHANGE_PHONE_NUMBER");
+            string description = utilityReposne.Value;
+
+            string encodedPhoneNumber = newPhoneNumber.UrlEncode();
+
+            string confirmLink = $"https://www.google.com/change-phone-number/{userId}/{encodedPhoneNumber}/{phoneNumberChangeToken}";
+
+            description = description.Replace("{full_name}", $"{fullName}");
+            description = description.Replace("{new_phone_number}", $"{newPhoneNumber}");
+            description = description.Replace("{confirm_link}", confirmLink);
+            description = description.Replace("{app_name}", "BlogApp");
+
+
+            await SendMailAsync(to, "Telefon Numarası Değişikliği", description);
         }
     }
 }

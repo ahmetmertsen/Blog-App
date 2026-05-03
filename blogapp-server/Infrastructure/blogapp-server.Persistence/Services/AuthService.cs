@@ -173,5 +173,43 @@ namespace blogapp_server.Persistence.Services
             await _mailService.SendChangeEmailMailAsync(newEmail, user.FullName, user.Id, emailChangeToken);
             return response;
         }
+
+        public async Task<ChangePhoneNumberResponse> ChangePhoneNumberAsync(ChangePhoneNumberRequest request)
+        {
+            ChangePhoneNumberResponse response = new()
+            {
+                Succeeded = true,
+                Message = "Telefon numarası uygunsa doğrulama kodu e-posta adresinize gönderildi."
+            };
+
+            if (string.IsNullOrWhiteSpace(request.NewPhoneNumber))
+            {
+                return response;
+            }
+
+            User user = await _userManager.FindByIdAsync(request.UserId.ToString());
+            if (user == null)
+            {
+                return response;
+            }
+            if (string.IsNullOrWhiteSpace(user.Email))
+            {
+                return response;
+            }
+
+            string newPhoneNumber = request.NewPhoneNumber.Trim();
+            newPhoneNumber = PhoneNumberHelper.NormalizeTurkeyPhoneNumber(request.NewPhoneNumber);
+
+            bool phoneNumberExists = await _userManager.Users.AnyAsync(u => u.PhoneNumber == newPhoneNumber && u.Id != user.Id);
+            if (phoneNumberExists == true)
+            {
+                return response;
+            }
+
+            string token = await _userManager.GenerateChangePhoneNumberTokenAsync(user, newPhoneNumber);
+
+            await _mailService.SendChangePhoneNumberMailAsync(user.Email, user.FullName, user.Id, newPhoneNumber, token);
+            return response;
+        }
     }
 }

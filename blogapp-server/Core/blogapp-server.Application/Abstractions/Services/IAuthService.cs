@@ -14,5 +14,6 @@ namespace blogapp_server.Application.Abstractions.Services
         Task<ForgotPasswordResponse> ForgotPasswordResetAsync(ForgotPasswordRequest request);
         Task<MailVerifyResponse> MailVerifyAsync(MailVerifyRequest request);
         Task<ChangeEmailResponse> ChangeEmailAsync(ChangeEmailRequest request);
+        Task<ChangePhoneNumberResponse> ChangePhoneNumberAsync(ChangePhoneNumberRequest request);
     }
 }
