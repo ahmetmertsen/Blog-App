@@ -1,5 +1,6 @@
 ﻿using blogapp_server.Application.Features.Report.Commands.CreatePostReport;
 using blogapp_server.Application.Features.Report.Commands.CreateUserReport;
+using blogapp_server.Application.Features.Report.Commands.ReviewReport;
 using blogapp_server.Application.Features.Report.Queries.GetById;
 using blogapp_server.Application.Features.Report.Queries.GetReports;
 using MediatR;
@@ -50,6 +51,14 @@ namespace blogapp_server.WebAPI.Controllers
         public async Task<IActionResult> GetReportById(int reportId)
         {
             var response = await _mediatR.Send(new GetReportByIdRequest { ReportId = reportId });
+            return Ok(response);
+        }
+
+        [Authorize]
+        [HttpPost("review")]
+        public async Task<IActionResult> ReviewReport([FromBody] ReviewReportCommand request)
+        {
+            var response = await _mediatR.Send(request);
             return Ok(response);
         }
     }
