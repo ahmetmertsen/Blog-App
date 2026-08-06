@@ -20,7 +20,7 @@ namespace buduns_server.IntegrationTests.Fixtures;
 public sealed class BudunsWebApplicationFactory : WebApplicationFactory<WebAPI.Program>, IAsyncLifetime
 {
     private const string TestSecurityKey = "integration-test-security-key-at-least-thirty-two-characters";
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder().WithImage("postgres:16-alpine").WithDatabase("buduns_integration_tests").WithUsername("postgres").WithPassword("postgres").Build();
+    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:16-alpine").WithDatabase("buduns_integration_tests").WithUsername("postgres").WithPassword("postgres").Build();
     private Respawner? _respawner;
 
     public string ConnectionString => _postgres.GetConnectionString();

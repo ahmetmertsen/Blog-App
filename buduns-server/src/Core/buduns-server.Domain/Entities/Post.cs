@@ -11,7 +11,6 @@ namespace buduns_server.Domain.Entities
 {
     public class Post : BaseEntity
     {
-        public int Id { get; set; }
         public string Content { get; set; } = string.Empty;
         public bool isPublished { get; set; }
         public PostStatus Status { get; set; } = PostStatus.Published;

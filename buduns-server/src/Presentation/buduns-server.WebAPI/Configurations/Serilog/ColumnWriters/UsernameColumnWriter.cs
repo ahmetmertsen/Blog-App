@@ -10,7 +10,7 @@ namespace buduns_server.WebAPI.Configurations.Serilog.ColumnWriters
         {
         }
 
-        public override object GetValue(LogEvent logEvent, IFormatProvider formatProvider = null!)
+        public override object GetValue(LogEvent logEvent, IFormatProvider? formatProvider = null)
         {
             if (logEvent.Properties.TryGetValue("user_name", out var value) && value is ScalarValue scalarValue)
             {

@@ -10,8 +10,6 @@ namespace buduns_server.Domain.Entities
 {
     public class Bookmark : BaseEntity
     {
-        public int Id { get; set; }
-
         public int UserId { get; set; }
         public User User { get; set; }
 
