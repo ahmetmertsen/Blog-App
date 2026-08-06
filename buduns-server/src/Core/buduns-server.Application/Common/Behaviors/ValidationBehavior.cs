@@ -17,7 +17,7 @@ namespace buduns_server.Application.Common.Behaviors
         {
             if (!_validators.Any())
             {
-                return await next();
+                return await next(cancellationToken);
             }
 
             var context = new ValidationContext<TRequest>(request);
@@ -34,7 +34,7 @@ namespace buduns_server.Application.Common.Behaviors
                 throw new ValidationException(failures);
             }
 
-            return await next();
+            return await next(cancellationToken);
         }
     }
 }

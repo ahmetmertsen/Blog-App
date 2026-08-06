@@ -56,7 +56,7 @@ namespace buduns_server.Application.Common.Behaviors
                     currentSessionRequest.CurrentSessionId = sessionId;
                 }
             }
-            return await next();
+            return await next(cancellationToken);
         }
     }
 }

@@ -1,6 +1,6 @@
 using NpgsqlTypes;
 using Serilog.Events;
-using Serilog.Sinks.PostgreSQL;
+using Serilog.Sinks.PostgreSQL.ColumnWriters;
 
 namespace buduns_server.WebAPI.Configurations.Serilog.ColumnWriters
 {

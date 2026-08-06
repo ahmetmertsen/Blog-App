@@ -25,7 +25,7 @@ namespace buduns_server.Application.Common.Behaviors
             var principal = _httpContextAccessor.HttpContext?.User;
             if (principal?.Identity?.IsAuthenticated != true)
             {
-                return await next();
+                return await next(cancellationToken);
             }
 
             var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
@@ -69,7 +69,7 @@ namespace buduns_server.Application.Common.Behaviors
                 throw new EmailVerificationRequiredException("İşleme devam etmek için e-posta adresinizi doğrulamalısınız.");
             }
 
-            return await next();
+            return await next(cancellationToken);
         }
     }
 }

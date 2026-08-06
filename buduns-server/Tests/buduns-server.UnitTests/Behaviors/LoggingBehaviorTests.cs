@@ -10,7 +10,7 @@ public class LoggingBehaviorTests
     {
         var behavior = new LoggingBehavior<TestRequest, string>(NullLogger<LoggingBehavior<TestRequest, string>>.Instance);
 
-        var result = await behavior.Handle(new TestRequest(), () => Task.FromResult("response"), CancellationToken.None);
+        var result = await behavior.Handle(new TestRequest(), _ => Task.FromResult("response"), CancellationToken.None);
 
         Assert.Equal("response", result);
     }
@@ -22,7 +22,7 @@ public class LoggingBehaviorTests
         var expected = new InvalidOperationException("failure");
 
         var actual = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            behavior.Handle(new TestRequest(), () => Task.FromException<string>(expected), CancellationToken.None));
+            behavior.Handle(new TestRequest(), _ => Task.FromException<string>(expected), CancellationToken.None));
 
         Assert.Same(expected, actual);
     }

@@ -1,15 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>buduns_server.Domain</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Identity" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <!--
+      Domain yalnizca IdentityUser<int> ve IdentityRole<int> turlerini kullanir.
+      Bu turler Identity.Stores icinde yer alir; boylece Domain katmanina
+      EF Core veya ASP.NET Core bagimliligi girmez.
+    -->
+    <PackageReference Include="Microsoft.Extensions.Identity.Stores" />
   </ItemGroup>
 
 </Project>

@@ -21,7 +21,7 @@ public class AccountStatusBehaviorTests
         var userManager = CreateUserManager(user);
         var behavior = CreateBehavior<TestRequest>(userManager, authenticated: true);
 
-        var result = await behavior.Handle(new TestRequest(), () => Task.FromResult("ok"), CancellationToken.None);
+        var result = await behavior.Handle(new TestRequest(), _ => Task.FromResult("ok"), CancellationToken.None);
 
         Assert.Equal("ok", result);
     }
@@ -33,7 +33,7 @@ public class AccountStatusBehaviorTests
         var behavior = CreateBehavior<TestRequest>(userManager, authenticated: true);
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
-            behavior.Handle(new TestRequest(), () => Task.FromResult("ok"), CancellationToken.None));
+            behavior.Handle(new TestRequest(), _ => Task.FromResult("ok"), CancellationToken.None));
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class AccountStatusBehaviorTests
         var behavior = CreateBehavior<TestRequest>(userManager, authenticated: true);
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
-            behavior.Handle(new TestRequest(), () => Task.FromResult("ok"), CancellationToken.None));
+            behavior.Handle(new TestRequest(), _ => Task.FromResult("ok"), CancellationToken.None));
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class AccountStatusBehaviorTests
         userManager.UpdateAsync(user).Returns(IdentityResult.Success);
         var behavior = CreateBehavior<TestRequest>(userManager, authenticated: true);
 
-        var result = await behavior.Handle(new TestRequest(), () => Task.FromResult("ok"), CancellationToken.None);
+        var result = await behavior.Handle(new TestRequest(), _ => Task.FromResult("ok"), CancellationToken.None);
 
         Assert.Equal("ok", result);
         Assert.Equal(UserStatus.Active, user.Status);
@@ -72,7 +72,7 @@ public class AccountStatusBehaviorTests
         var behavior = CreateBehavior<TestRequest>(userManager, authenticated: true);
 
         await Assert.ThrowsAsync<EmailVerificationRequiredException>(() =>
-            behavior.Handle(new TestRequest(), () => Task.FromResult("ok"), CancellationToken.None));
+            behavior.Handle(new TestRequest(), _ => Task.FromResult("ok"), CancellationToken.None));
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public class AccountStatusBehaviorTests
         var userManager = CreateUserManager(CreateUser(UserStatus.Active, emailConfirmed: false));
         var behavior = CreateBehavior<AllowUnverifiedRequest>(userManager, authenticated: true);
 
-        var result = await behavior.Handle(new AllowUnverifiedRequest(), () => Task.FromResult("ok"), CancellationToken.None);
+        var result = await behavior.Handle(new AllowUnverifiedRequest(), _ => Task.FromResult("ok"), CancellationToken.None);
 
         Assert.Equal("ok", result);
     }
@@ -92,7 +92,7 @@ public class AccountStatusBehaviorTests
         var userManager = CreateUserManager(CreateUser(UserStatus.Banned, emailConfirmed: false));
         var behavior = CreateBehavior<TestRequest>(userManager, authenticated: false);
 
-        var result = await behavior.Handle(new TestRequest(), () => Task.FromResult("public"), CancellationToken.None);
+        var result = await behavior.Handle(new TestRequest(), _ => Task.FromResult("public"), CancellationToken.None);
 
         Assert.Equal("public", result);
         await userManager.DidNotReceiveWithAnyArgs().FindByIdAsync(default!);

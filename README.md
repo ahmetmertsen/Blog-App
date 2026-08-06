@@ -6,7 +6,7 @@ Buduns, blog altyapısı üzerine kurulan sosyal platform API'sidir. Proje; kull
 
 ## Projenin Özellikleri
 
-Teknolojiler: .NET 6, ASP.NET Core Web API, Entity Framework Core, PostgreSQL, ASP.NET Core Identity, MediatR, CQRS, FluentValidation, AutoMapper, JWT Bearer Authentication, Serilog, Seq, Swagger, xUnit
+Teknolojiler: .NET 8, ASP.NET Core Web API, Entity Framework Core, PostgreSQL, ASP.NET Core Identity, MediatR, CQRS, FluentValidation, AutoMapper, JWT Bearer Authentication, Serilog, Seq, Swagger, xUnit
 
 Mimari: Onion Architecture / katmanlı backend yapısı: Domain, Application, Persistence, Infrastructure ve WebAPI
 

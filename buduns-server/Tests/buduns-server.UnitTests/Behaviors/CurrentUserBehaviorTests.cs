@@ -15,7 +15,7 @@ public class CurrentUserBehaviorTests
         var behavior = new CurrentUserBehavior<UserRequest, string>(new HttpContextAccessor { HttpContext = context });
         var request = new UserRequest { UserId = 999 };
 
-        var result = await behavior.Handle(request, () => Task.FromResult("ok"), CancellationToken.None);
+        var result = await behavior.Handle(request, _ => Task.FromResult("ok"), CancellationToken.None);
 
         Assert.Equal("ok", result);
         Assert.Equal(42, request.UserId);
@@ -28,7 +28,7 @@ public class CurrentUserBehaviorTests
         var behavior = new CurrentUserBehavior<UserRequest, string>(new HttpContextAccessor { HttpContext = context });
 
         await Assert.ThrowsAsync<UnauthorizedAccesException>(() =>
-            behavior.Handle(new UserRequest(), () => Task.FromResult("ok"), CancellationToken.None));
+            behavior.Handle(new UserRequest(), _ => Task.FromResult("ok"), CancellationToken.None));
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class CurrentUserBehaviorTests
         var behavior = new CurrentUserBehavior<UserRequest, string>(new HttpContextAccessor { HttpContext = context });
 
         await Assert.ThrowsAsync<UnauthorizedAccesException>(() =>
-            behavior.Handle(new UserRequest(), () => Task.FromResult("ok"), CancellationToken.None));
+            behavior.Handle(new UserRequest(), _ => Task.FromResult("ok"), CancellationToken.None));
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class CurrentUserBehaviorTests
         var request = new UserAndSessionRequest();
         var behavior = new CurrentUserBehavior<UserAndSessionRequest, string>(new HttpContextAccessor { HttpContext = context });
 
-        await behavior.Handle(request, () => Task.FromResult("ok"), CancellationToken.None);
+        await behavior.Handle(request, _ => Task.FromResult("ok"), CancellationToken.None);
 
         Assert.Equal(5, request.UserId);
         Assert.Equal(sessionId, request.CurrentSessionId);
@@ -66,7 +66,7 @@ public class CurrentUserBehaviorTests
         var behavior = new CurrentUserBehavior<UserAndSessionRequest, string>(new HttpContextAccessor { HttpContext = context });
 
         await Assert.ThrowsAsync<UnauthorizedAccesException>(() =>
-            behavior.Handle(new UserAndSessionRequest(), () => Task.FromResult("ok"), CancellationToken.None));
+            behavior.Handle(new UserAndSessionRequest(), _ => Task.FromResult("ok"), CancellationToken.None));
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class CurrentUserBehaviorTests
         var context = new DefaultHttpContext();
         var behavior = new CurrentUserBehavior<PublicRequest, string>(new HttpContextAccessor { HttpContext = context });
 
-        var result = await behavior.Handle(new PublicRequest(), () => Task.FromResult("public"), CancellationToken.None);
+        var result = await behavior.Handle(new PublicRequest(), _ => Task.FromResult("public"), CancellationToken.None);
 
         Assert.Equal("public", result);
     }

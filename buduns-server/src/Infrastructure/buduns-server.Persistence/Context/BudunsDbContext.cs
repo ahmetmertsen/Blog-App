@@ -154,7 +154,7 @@ namespace buduns_server.Persistence.Context
 
             modelBuilder.Entity<Follower>(entity =>
             {
-                entity.HasCheckConstraint("CK_Followers_DifferentUsers", "\"FollowerId\" <> \"FollowingId\"");
+                entity.ToTable(table => table.HasCheckConstraint("CK_Followers_DifferentUsers", "\"FollowerId\" <> \"FollowingId\""));
 
                 entity.HasOne(f => f.FollowerUser)
                     .WithMany(u => u.Followings)
@@ -198,14 +198,22 @@ namespace buduns_server.Persistence.Context
 
             modelBuilder.Entity<Report>(entity =>
             {
-                entity.UseXminAsConcurrencyToken();
+                // PostgreSQL sistem sutunu xmin, iyimser eszamanlilik tokeni olarak
+                // kullanilir. Npgsql saglayicisinda UseXminAsConcurrencyToken()
+                // kaldirildigi icin golge ozellik olarak elle tanimlaniyor.
+                entity.Property<uint>("xmin")
+                    .HasColumnName("xmin")
+                    .HasColumnType("xid")
+                    .ValueGeneratedOnAddOrUpdate()
+                    .IsConcurrencyToken();
+
                 entity.HasKey(r => r.Id);
 
-                entity.HasCheckConstraint(
+                entity.ToTable(table => table.HasCheckConstraint(
                     "CK_Reports_Target",
                     "(\"TargetType\" = 0 AND \"TargetPostId\" IS NOT NULL AND \"TargetUserId\" IS NULL AND \"TargetCommentId\" IS NULL) OR " +
                     "(\"TargetType\" = 1 AND \"TargetPostId\" IS NULL AND \"TargetUserId\" IS NOT NULL AND \"TargetCommentId\" IS NULL) OR " +
-                    "(\"TargetType\" = 2 AND \"TargetPostId\" IS NULL AND \"TargetUserId\" IS NULL AND \"TargetCommentId\" IS NOT NULL)");
+                    "(\"TargetType\" = 2 AND \"TargetPostId\" IS NULL AND \"TargetUserId\" IS NULL AND \"TargetCommentId\" IS NOT NULL)"));
 
                 entity.Property(r => r.Description)
                     .HasMaxLength(1000);
@@ -285,11 +293,11 @@ namespace buduns_server.Persistence.Context
             {
                 entity.HasKey(action => action.Id);
 
-                entity.HasCheckConstraint(
+                entity.ToTable(table => table.HasCheckConstraint(
                     "CK_ModerationActions_Target",
                     "(\"TargetType\" = 0 AND \"TargetPostId\" IS NOT NULL AND \"TargetCommentId\" IS NULL) OR " +
                     "(\"TargetType\" = 1 AND \"TargetPostId\" IS NULL AND \"TargetUserId\" IS NOT NULL AND \"TargetCommentId\" IS NULL) OR " +
-                    "(\"TargetType\" = 2 AND \"TargetPostId\" IS NULL AND \"TargetCommentId\" IS NOT NULL)");
+                    "(\"TargetType\" = 2 AND \"TargetPostId\" IS NULL AND \"TargetCommentId\" IS NOT NULL)"));
 
                 entity.Property(action => action.Note)
                     .HasMaxLength(1000);

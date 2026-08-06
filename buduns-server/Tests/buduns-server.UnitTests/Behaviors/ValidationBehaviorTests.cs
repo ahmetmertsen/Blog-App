@@ -11,7 +11,7 @@ public class ValidationBehaviorTests
         var behavior = new ValidationBehavior<TestRequest, string>(Array.Empty<IValidator<TestRequest>>());
         var nextCalled = false;
 
-        var result = await behavior.Handle(new TestRequest(), () =>
+        var result = await behavior.Handle(new TestRequest(), _ =>
         {
             nextCalled = true;
             return Task.FromResult("ok");
@@ -28,7 +28,7 @@ public class ValidationBehaviorTests
         validator.RuleFor(request => request.Value).NotEmpty();
         var behavior = new ValidationBehavior<TestRequest, string>(new[] { validator });
 
-        var result = await behavior.Handle(new TestRequest { Value = "valid" }, () => Task.FromResult("handled"), CancellationToken.None);
+        var result = await behavior.Handle(new TestRequest { Value = "valid" }, _ => Task.FromResult("handled"), CancellationToken.None);
 
         Assert.Equal("handled", result);
     }
@@ -41,7 +41,7 @@ public class ValidationBehaviorTests
         var behavior = new ValidationBehavior<TestRequest, string>(new[] { validator });
         var nextCalled = false;
 
-        var exception = await Assert.ThrowsAsync<ValidationException>(() => behavior.Handle(new TestRequest(), () =>
+        var exception = await Assert.ThrowsAsync<ValidationException>(() => behavior.Handle(new TestRequest(), _ =>
         {
             nextCalled = true;
             return Task.FromResult("handled");
@@ -61,7 +61,7 @@ public class ValidationBehaviorTests
         var behavior = new ValidationBehavior<TestRequest, string>(new IValidator<TestRequest>[] { first, second });
 
         var exception = await Assert.ThrowsAsync<ValidationException>(() =>
-            behavior.Handle(new TestRequest(), () => Task.FromResult("handled"), CancellationToken.None));
+            behavior.Handle(new TestRequest(), _ => Task.FromResult("handled"), CancellationToken.None));
 
         Assert.Contains(exception.Errors, error => error.PropertyName == nameof(TestRequest.Value));
         Assert.Contains(exception.Errors, error => error.PropertyName == nameof(TestRequest.OtherValue));

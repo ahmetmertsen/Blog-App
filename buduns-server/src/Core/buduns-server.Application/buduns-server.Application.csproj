@@ -1,11 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>buduns_server.Application</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      IHttpContextAccessor ve UserManager gibi ASP.NET Core turleri paylasilan
+      framework'ten gelir. Eskiden bunlari Microsoft.AspNetCore.Identity 2.3.1
+      (legacy netstandard paketi) transitif olarak sagliyordu.
+    -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\buduns-server.Domain\buduns-server.Domain.csproj" />
@@ -16,6 +22,12 @@
     <PackageReference Include="FluentValidation" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <PackageReference Include="MediatR" />
+    <!--
+      TODO: Application katmani yalnizca DbUpdateConcurrencyException icin
+      EF Core'a bagli (ReviewReportCommandHandler). Bu istisna Persistence
+      icinde uygulama seviyesi bir exception'a cevrilirse bu referans kalkar.
+    -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
   </ItemGroup>
 

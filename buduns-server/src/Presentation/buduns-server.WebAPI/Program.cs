@@ -16,6 +16,7 @@ using Serilog.Context;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.PostgreSQL;
+using Serilog.Sinks.PostgreSQL.ColumnWriters;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -112,7 +113,7 @@ namespace buduns_server.WebAPI
                     Scheme = "bearer",
                     BearerFormat = "JWT",
                     In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                    Description = "JWT Authorization header kullanýmý: token"
+                    Description = "JWT Authorization header kullanï¿½mï¿½: token"
                 });
 
                 c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement()
@@ -147,16 +148,16 @@ namespace buduns_server.WebAPI
                 {
                     options.TokenValidationParameters = new()
                     {
-                        // Doðrulamasý gereken deðerler
-                        ValidateAudience = true, //Oluþturulacak token deðerini kimlerin/hangi originlerin/sitelerin kullanýcýðýný belirlediðimiz deðerdir.
-                        ValidateIssuer = true, // Oluþturulacak token deðerini kimin daðýttýný ifade edeceðimiz alanýdýr.
-                        ValidateLifetime = true, //Oluþturulan token deðerinin süresini kontrol edecek olan doðrulamadýr.
-                        ValidateIssuerSigningKey = true, //Üretilecek token deðerinin uygulamamýza ait bir deðer olduðunu ifade eden security key verisinin doðrulanmasýdýr.
+                        // Doï¿½rulamasï¿½ gereken deï¿½erler
+                        ValidateAudience = true, //Oluï¿½turulacak token deï¿½erini kimlerin/hangi originlerin/sitelerin kullanï¿½cï¿½ï¿½ï¿½nï¿½ belirlediï¿½imiz deï¿½erdir.
+                        ValidateIssuer = true, // Oluï¿½turulacak token deï¿½erini kimin daï¿½ï¿½ttï¿½nï¿½ ifade edeceï¿½imiz alanï¿½dï¿½r.
+                        ValidateLifetime = true, //Oluï¿½turulan token deï¿½erinin sï¿½resini kontrol edecek olan doï¿½rulamadï¿½r.
+                        ValidateIssuerSigningKey = true, //ï¿½retilecek token deï¿½erinin uygulamamï¿½za ait bir deï¿½er olduï¿½unu ifade eden security key verisinin doï¿½rulanmasï¿½dï¿½r.
 
                         ValidAudience = builder.Configuration["Token:Audience"],
                         ValidIssuer = builder.Configuration["Token:Issuer"],
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Token:SecurityKey"])),
-                        NameClaimType = ClaimTypes.Name, //Jwt üzerinden gelen Name claimine karþýlýk gelen deðeri User.Identity.Name propertysinden elde edilir.
+                        NameClaimType = ClaimTypes.Name, //Jwt ï¿½zerinden gelen Name claimine karï¿½ï¿½lï¿½k gelen deï¿½eri User.Identity.Name propertysinden elde edilir.
                         RoleClaimType = ClaimTypes.Role,
                         ClockSkew = TimeSpan.FromMinutes(1)
                     };
@@ -174,7 +175,7 @@ namespace buduns_server.WebAPI
                             if (!int.TryParse(userIdValue, out var userId) ||
                                 !Guid.TryParse(sessionIdValue, out var sessionId))
                             {
-                                context.Fail("Geçerli kullanýcý veya oturum bilgisi bulunamadý.");
+                                context.Fail("Geï¿½erli kullanï¿½cï¿½ veya oturum bilgisi bulunamadï¿½.");
                                 return;
                             }
 
@@ -187,7 +188,7 @@ namespace buduns_server.WebAPI
 
                             if (!isActive)
                             {
-                                context.Fail("Oturum geçersiz veya süresi dolmuþ.");
+                                context.Fail("Oturum geï¿½ersiz veya sï¿½resi dolmuï¿½.");
                             }
                         }
                     };

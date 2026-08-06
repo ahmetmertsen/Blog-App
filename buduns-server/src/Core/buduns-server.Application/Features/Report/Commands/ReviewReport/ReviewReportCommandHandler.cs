@@ -5,9 +5,9 @@ using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Entities;
 using buduns_server.Domain.Entities.Identity;
 using buduns_server.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ReportEntity = buduns_server.Domain.Entities.Report;
 
