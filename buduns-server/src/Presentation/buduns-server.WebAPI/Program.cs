@@ -46,10 +46,6 @@ namespace buduns_server.WebAPI
                 builder.Configuration.GetSection(ReportPolicyOptions.SectionName));
             
             #region CORS
-            // Origin listesi builder.Configuration'dan degil, DI'dan cozulen
-            // IConfiguration'dan okunuyor: host kurulurken eklenen kaynaklar
-            // (orn. integration testlerin WebApplicationFactory ayarlari)
-            // ancak bu asamada gorunur oluyor.
             builder.Services.AddCors();
             builder.Services.AddOptions<CorsOptions>().Configure<IConfiguration>((corsOptions, configuration) =>
             {

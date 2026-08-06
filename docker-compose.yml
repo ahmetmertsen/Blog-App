@@ -1,0 +1,68 @@
+name: buduns
+
+x-app-config: &app-config
+  ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-BudunsDb};User ID=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres};"
+  Seq__ServerURL: "http://seq:5341"
+  Token__SecurityKey: "${TOKEN_SECURITY_KEY:?TOKEN_SECURITY_KEY tanimlanmali (bkz. .env.example)}"
+  VerificationCode__Secret: "${VERIFICATION_CODE_SECRET:?VERIFICATION_CODE_SECRET tanimlanmali (bkz. .env.example)}"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-BudunsDb}
+    # Host'ta 5432 genelde yerel bir Postgres tarafindan kullanildigi icin 55432.
+    ports:
+      - "55432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-BudunsDb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  seq:
+    image: datalust/seq:2024.3
+    environment:
+      ACCEPT_EULA: "Y"
+    ports:
+      - "8081:80"
+      - "5341:5341"
+    volumes:
+      - seq-data:/data
+
+  migrator:
+    build:
+      context: ./buduns-server
+      target: migrator
+    environment:
+      <<: *app-config
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: ./buduns-server
+      target: runtime
+    environment:
+      <<: *app-config
+      ASPNETCORE_ENVIRONMENT: Development
+      Cors__AllowedOrigins__0: ${CORS_ORIGIN:-http://localhost:5173}
+      Mail__Username: ${MAIL_USERNAME:-}
+      Mail__Password: ${MAIL_PASSWORD:-}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
+
+volumes:
+  postgres-data:
+  seq-data:

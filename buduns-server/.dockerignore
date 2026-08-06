@@ -1,0 +1,7 @@
+**/bin/
+**/obj/
+**/TestResults/
+**/logs/
+**/.vs/
+**/appsettings.Local.json
+Tests/
