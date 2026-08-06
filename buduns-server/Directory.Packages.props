@@ -34,6 +34,34 @@
       AutoMapper 14.0.0+ -> ticari lisans (son MIT surum: 13.0.1)
     Ayni durum test tarafinda FluentAssertions 8.0.0+ icin de gecerli.
   -->
+  <!--
+    AutoMapper 13.0.1 / GHSA-rvv3-g6hj-g44x (yuksek onem, NU1903)
+    ============================================================
+    Aciklik: Kendine referans veren derin nesne grafikleri map edilirken
+    ozyineleme sinirlanmadigi icin StackOverflowException olusuyor ve surec
+    komple sonlaniyor (DoS).
+
+    Yama yalnizca 15.1.1+ ve 16.1.1+ surumlerinde var; her ikisi de
+    AutoMapper 14.0.0 ile baslayan TICARI lisansa tabi. Yani 13.0.1'in
+    yamali bir ucretsiz karsiligi bulunmuyor.
+
+    Bu kod tabanindaki maruziyet degerlendirmesi:
+      - Command -> Entity map'lerinin kaynagi HTTP govdesinden baglanan duz
+        DTO'lar (Content, TagIds vb.); ozyinelemeli yapi icermiyorlar.
+      - Entity -> Dto map'lerinin hedefleri duz (PostDto, ReportDetailDto).
+        AutoMapper hedef uyeler uzerinden gezindigi icin ozyineleme hedef
+        seklinin derinligiyle sinirli kaliyor.
+    Bu nedenle pratik somurulebilirlik dusuk kabul edildi ve surum sabit
+    birakildi.
+
+    TAKIP: AutoMapper'dan tamamen cikilmasi (elle mapping veya Mapperly gibi
+    MIT lisansli bir kaynak uretici) planlanmalidir. Cikis yapildiginda
+    asagidaki NoWarn satiri da kaldirilmalidir.
+  -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup Label="Uygulama kutuphaneleri">
     <PackageVersion Include="AutoMapper" Version="13.0.1" />
     <PackageVersion Include="FluentValidation" Version="11.12.0" />
