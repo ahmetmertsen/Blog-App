@@ -9,6 +9,7 @@ using buduns_server.WebAPI.Filters;
 using buduns_server.WebAPI.Middlewares;
 using buduns_server.WebAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -25,6 +26,8 @@ namespace buduns_server.WebAPI
 {
     public class Program
     {
+        private const string CorsPolicyName = "BudunsCorsPolicy";
+
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -43,15 +46,33 @@ namespace buduns_server.WebAPI
                 builder.Configuration.GetSection(ReportPolicyOptions.SectionName));
             
             #region CORS
-            builder.Services.AddCors(options =>
+            // Origin listesi builder.Configuration'dan degil, DI'dan cozulen
+            // IConfiguration'dan okunuyor: host kurulurken eklenen kaynaklar
+            // (orn. integration testlerin WebApplicationFactory ayarlari)
+            // ancak bu asamada gorunur oluyor.
+            builder.Services.AddCors();
+            builder.Services.AddOptions<CorsOptions>().Configure<IConfiguration>((corsOptions, configuration) =>
             {
-                options.AddPolicy("AllowVueDev", policy =>
+                var allowedOrigins = configuration
+                    .GetSection("Cors:AllowedOrigins")
+                    .Get<string[]>() ?? Array.Empty<string>();
+
+                if (allowedOrigins.Length == 0)
                 {
+                    Log.Warning("CORS icin izin verilen origin tanimlanmamis. Cross-origin istekler reddedilecek. Cors:AllowedOrigins ayarini kontrol edin.");
+                }
+
+                corsOptions.AddPolicy(CorsPolicyName, policy =>
+                {
+                    // Origin tanimli degilse politika bos kalir; sessizce
+                    // herkese acik hale gelmemesi icin.
+                    if (allowedOrigins.Length == 0)
+                    {
+                        return;
+                    }
+
                     policy
-                        .WithOrigins(
-                            "http://localhost:8080",
-                            "http://127.0.0.1:8080"
-                        )
+                        .WithOrigins(allowedOrigins)
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
@@ -90,7 +111,10 @@ namespace buduns_server.WebAPI
                 .WriteTo.Seq(builder.Configuration["Seq:ServerURL"])
                 .Enrich.FromLogContext()
                 .MinimumLevel.Information()
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
                 .CreateLogger();
+
+            Log.Logger = log;
 
             builder.Host.UseSerilog(log);
             #endregion
@@ -102,7 +126,7 @@ namespace buduns_server.WebAPI
             {
                 c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
                 {
-                    Title = "blogAppAPI",
+                    Title = "budunsAPI",
                     Version = "v1"
                 });
 
@@ -221,29 +245,40 @@ namespace buduns_server.WebAPI
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            app.UseSerilogRequestLogging(options =>
+            {
+                options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+                {
+                    var userName = httpContext.User?.Identity?.IsAuthenticated == true
+                        ? httpContext.User.Identity.Name
+                        : null;
+
+                    if (!string.IsNullOrWhiteSpace(userName))
+                    {
+                        diagnosticContext.Set("user_name", userName);
+                    }
+                };
+            });
+
+            app.UseMiddleware<GlobalExceptionMiddleware>();
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-            // app.UseHttpsRedirection();
-            if (!app.Environment.IsDevelopment())
+            else
             {
                 app.UseHttpsRedirection();
             }
 
-            app.UseCors("AllowVueDev");
+            app.UseCors(CorsPolicyName);
+
+            app.UseMiddleware<SensitiveEndpointRateLimitMiddleware>();
 
             app.UseAuthentication();
 
             app.UseMiddleware<UserNameLogContextMiddleware>();
-
-            app.UseSerilogRequestLogging();
-
-            app.UseMiddleware<GlobalExceptionMiddleware>();
-
-            app.UseMiddleware<SensitiveEndpointRateLimitMiddleware>();
 
             app.UseAuthorization();
 

@@ -107,6 +107,16 @@ namespace buduns_server.WebAPI.Middlewares
 
         private static async Task WriteErrorResponseAsync(HttpContext context, int statusCode, ApiResponse response)
         {
+            // Bu middleware pipeline'in en distaki katmanlarindan biri oldugu
+            // icin, alttaki bir katman cevaba yazmaya baslamisken hata
+            // firlatabilir. O noktada status kodu ve govde artik
+            // degistirilemez; yazmaya calismak InvalidOperationException
+            // uretir. Hata zaten loglandi, sessizce cikiliyor.
+            if (context.Response.HasStarted)
+            {
+                return;
+            }
+
             context.Response.StatusCode = statusCode;
             context.Response.ContentType = "application/json";
 

@@ -20,6 +20,13 @@ namespace buduns_server.IntegrationTests.Fixtures;
 public sealed class BudunsWebApplicationFactory : WebApplicationFactory<WebAPI.Program>, IAsyncLifetime
 {
     private const string TestSecurityKey = "integration-test-security-key-at-least-thirty-two-characters";
+
+    /// <summary>
+    /// Testlerde CORS politikasinin izin verdigi tek origin. appsettings.json
+    /// icindeki Cors:AllowedOrigins bos oldugu icin buradan veriliyor.
+    /// </summary>
+    public const string AllowedCorsOrigin = "https://allowed.integration.test";
+
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:16-alpine").WithDatabase("buduns_integration_tests").WithUsername("postgres").WithPassword("postgres").Build();
     private Respawner? _respawner;
 
@@ -36,7 +43,8 @@ public sealed class BudunsWebApplicationFactory : WebApplicationFactory<WebAPI.P
             ["Token:SecurityKey"] = TestSecurityKey,
             ["Token:AccessTokenExpirationMinutes"] = "15",
             ["Token:RefreshTokenExpirationDays"] = "30",
-            ["Seq:ServerURL"] = "http://127.0.0.1:5341"
+            ["Seq:ServerURL"] = "http://127.0.0.1:5341",
+            ["Cors:AllowedOrigins:0"] = AllowedCorsOrigin
         }));
         builder.ConfigureTestServices(services =>
         {
