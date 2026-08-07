@@ -1,6 +1,6 @@
-using AutoMapper;
 using buduns_server.Application.Dtos;
 using buduns_server.Application.Exceptions;
+using buduns_server.Application.Mapping;
 using buduns_server.Application.UnitOfWork;
 using MediatR;
 using System;
@@ -14,12 +14,10 @@ namespace buduns_server.Application.Features.Likes.Queries.GetById
     public class GetLikeByIdQueryHandler : IRequestHandler<GetLikeByIdQuery, LikeDto>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public GetLikeByIdQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public GetLikeByIdQueryHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
         }
 
         public async Task<LikeDto> Handle(GetLikeByIdQuery request, CancellationToken cancellationToken)
@@ -29,7 +27,7 @@ namespace buduns_server.Application.Features.Likes.Queries.GetById
             {
                 throw new NotFoundException("Like bulunamadı!");
             }
-            var response = _mapper.Map<LikeDto>(like);
+            var response = like.ToDto();
             return response;
         }
     }

@@ -1,5 +1,5 @@
-using AutoMapper;
 using buduns_server.Application.Exceptions;
+using buduns_server.Application.Mapping;
 using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Entities;
 using MediatR;
@@ -15,13 +15,11 @@ namespace buduns_server.Application.Features.Posts.Commands.Create
     public class CreatePostsCommandHandler : IRequestHandler<CreatePostsCommand, CreatePostsCommandResponse>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
         private readonly ILogger<CreatePostsCommandHandler> _logger;
 
-        public CreatePostsCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, ILogger<CreatePostsCommandHandler> logger)
+        public CreatePostsCommandHandler(IUnitOfWork unitOfWork, ILogger<CreatePostsCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             _logger = logger;
         }
 
@@ -43,7 +41,7 @@ namespace buduns_server.Application.Features.Posts.Commands.Create
             #endregion
 
 
-            var post = _mapper.Map<Post>(request);
+            var post = request.ToEntity();
             post.UserId = request.UserId;
             post.CreatedAt = DateTime.UtcNow;
             post.UpdateAt = post.CreatedAt;

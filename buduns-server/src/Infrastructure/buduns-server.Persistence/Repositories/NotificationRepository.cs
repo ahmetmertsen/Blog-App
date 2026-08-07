@@ -1,11 +1,10 @@
+using buduns_server.Application.Mapping;
 using buduns_server.Application.Repositories;
 using buduns_server.Domain.Entities;
 using buduns_server.Application.Dtos;
 using buduns_server.Domain.Enums;
 using buduns_server.Persistence.Context;
 using buduns_server.Persistence.Repositories.Common;
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -18,12 +17,10 @@ namespace buduns_server.Persistence.Repositories
     public class NotificationRepository : Repository<Notification> , INotificationRepository
     {
         private readonly BudunsDbContext _context;
-        private readonly IMapper _mapper;
 
-        public NotificationRepository(BudunsDbContext context, IMapper mapper) : base(context)
+        public NotificationRepository(BudunsDbContext context) : base(context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<(List<NotificationDto> Items, int TotalCount)> GetPagedByUserIdAsync(int userId, int page, int size, bool onlyUnread, CancellationToken cancellationToken)
@@ -35,7 +32,7 @@ namespace buduns_server.Persistence.Repositories
             }
 
             var totalCount = await query.CountAsync(cancellationToken);
-            var items = await query.OrderByDescending(notification => notification.CreatedAt).ThenByDescending(notification => notification.Id).Skip((page - 1) * size).Take(size).ProjectTo<NotificationDto>(_mapper.ConfigurationProvider).ToListAsync(cancellationToken);
+            var items = await query.OrderByDescending(notification => notification.CreatedAt).ThenByDescending(notification => notification.Id).Skip((page - 1) * size).Take(size).Select(NotificationMappings.ToDto).ToListAsync(cancellationToken);
             return (items, totalCount);
         }
 

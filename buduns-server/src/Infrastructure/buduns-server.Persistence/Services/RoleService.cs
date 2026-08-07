@@ -1,8 +1,8 @@
-using AutoMapper;
 using buduns_server.Application.Abstractions.Services;
 using buduns_server.Application.Common.Consts;
 using buduns_server.Application.Dtos.Role;
 using buduns_server.Application.Exceptions;
+using buduns_server.Application.Mapping;
 using buduns_server.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -13,19 +13,17 @@ namespace buduns_server.Persistence.Services
     {
         private readonly RoleManager<Role> _roleManager;
         private readonly UserManager<User> _userManager;
-        private readonly IMapper _mapper;
 
-        public RoleService(RoleManager<Role> roleManager, UserManager<User> userManager, IMapper mapper)
+        public RoleService(RoleManager<Role> roleManager, UserManager<User> userManager)
         {
             _roleManager = roleManager;
             _userManager = userManager;
-            _mapper = mapper;
         }
 
         public async Task<List<RoleDto>> GetAllRoles(CancellationToken cancellationToken)
         {
             var roles = await _roleManager.Roles.AsNoTracking().OrderBy(role => role.Name).ToListAsync(cancellationToken);
-            return _mapper.Map<List<RoleDto>>(roles);
+            return roles.ToDtoList();
         }
 
         public async Task<List<RoleDto>> GetRolesByUsername(string userName, CancellationToken cancellationToken)
@@ -43,7 +41,7 @@ namespace buduns_server.Persistence.Services
             }
 
             var roles = await _roleManager.Roles.AsNoTracking().Where(role => role.Name != null && userRoleNames.Contains(role.Name)).OrderBy(role => role.Name).ToListAsync(cancellationToken);
-            return _mapper.Map<List<RoleDto>>(roles);
+            return roles.ToDtoList();
         }
 
         public async Task<RoleDto> GetRoleById(int id, CancellationToken cancellationToken)
@@ -54,7 +52,7 @@ namespace buduns_server.Persistence.Services
                 throw new NotFoundException("Rol bulunamadı.");
             }
 
-            return _mapper.Map<RoleDto>(role);
+            return role.ToDto();
         }
 
         public async Task CreateRole(string name, CancellationToken cancellationToken)

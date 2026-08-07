@@ -1,9 +1,9 @@
-using AutoMapper;
 using buduns_server.Application.Abstractions.Services;
 using buduns_server.Application.Common.Consts;
 using buduns_server.Application.Dtos;
 using buduns_server.Application.Dtos.User;
 using buduns_server.Application.Exceptions;
+using buduns_server.Application.Mapping;
 using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Entities;
 using buduns_server.Domain.Entities.Identity;
@@ -25,17 +25,15 @@ namespace buduns_server.Persistence.Services
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<Role> _roleManager;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
         private readonly IAuthSessionService _authSessionService;
         private readonly IMailService _mailService;
         private readonly IVerificationChallengeService _verificationChallengeService;
         private readonly ILogger<UserService> _logger;
         
-        public UserService(UserManager<User> userManager, RoleManager<Role> roleManager, IMapper mapper, IUnitOfWork unitOfWork, IAuthSessionService authSessionService, IMailService mailService, IVerificationChallengeService verificationChallengeService, ILogger<UserService> logger)
+        public UserService(UserManager<User> userManager, RoleManager<Role> roleManager, IUnitOfWork unitOfWork, IAuthSessionService authSessionService, IMailService mailService, IVerificationChallengeService verificationChallengeService, ILogger<UserService> logger)
         {
             _userManager = userManager;
             _roleManager = roleManager;
-            _mapper = mapper;
             _unitOfWork = unitOfWork;
             _authSessionService = authSessionService;
             _mailService = mailService;
@@ -64,7 +62,7 @@ namespace buduns_server.Persistence.Services
                 throw new RegisterFailedException("Kayıt tamamlanamadı. User rolü sistemde tanımlı değil.");
             }
 
-            user = _mapper.Map<User>(request);
+            user = request.ToEntity();
 
             var result = await _userManager.CreateAsync(user, request.Password);
             if (result.Succeeded)

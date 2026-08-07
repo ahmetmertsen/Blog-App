@@ -1,5 +1,5 @@
-using AutoMapper;
 using buduns_server.Application.Exceptions;
+using buduns_server.Application.Mapping;
 using buduns_server.Application.UnitOfWork;
 using MediatR;
 using System;
@@ -13,12 +13,10 @@ namespace buduns_server.Application.Features.Posts.Commands.Update
     public class UpdatePostsCommandHandler : IRequestHandler<UpdatePostsCommand, UpdatePostsCommandResponse>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public UpdatePostsCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public UpdatePostsCommandHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
         }
 
         public async Task<UpdatePostsCommandResponse> Handle(UpdatePostsCommand request, CancellationToken cancellationToken)
@@ -53,7 +51,7 @@ namespace buduns_server.Application.Features.Posts.Commands.Update
             }
             #endregion
 
-            _mapper.Map(request, post);
+            request.ApplyTo(post);
             post.UpdateAt = DateTime.UtcNow;
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return new UpdatePostsCommandResponse(true, "Post başarıyla güncellenmiştir");

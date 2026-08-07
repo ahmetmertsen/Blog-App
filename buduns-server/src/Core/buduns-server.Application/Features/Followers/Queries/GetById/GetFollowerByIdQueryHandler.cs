@@ -1,6 +1,6 @@
-using AutoMapper;
 using buduns_server.Application.Dtos;
 using buduns_server.Application.Exceptions;
+using buduns_server.Application.Mapping;
 using buduns_server.Application.UnitOfWork;
 using MediatR;
 using System;
@@ -14,12 +14,10 @@ namespace buduns_server.Application.Features.Followers.Queries.GetById
     public class GetFollowerByIdQueryHandler : IRequestHandler<GetFollowerByIdQuery, FollowerDto>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public GetFollowerByIdQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public GetFollowerByIdQueryHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
         }
 
         public async Task<FollowerDto> Handle(GetFollowerByIdQuery request, CancellationToken cancellationToken)
@@ -29,7 +27,7 @@ namespace buduns_server.Application.Features.Followers.Queries.GetById
             {
                 throw new NotFoundException("Takipçi bulunamadı!");
             }
-            var response = _mapper.Map<FollowerDto>(follower);
+            var response = follower.ToDto();
             return response;
         }
     }

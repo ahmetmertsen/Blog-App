@@ -1,6 +1,5 @@
 using buduns_server.Application.Common.Behaviors;
 using buduns_server.Application.Features.Bookmarks.Commands.Create;
-using buduns_server.Application.Mapping;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -26,8 +25,6 @@ namespace buduns_server.Application
                 cfg.AddOpenBehavior(typeof(AccountStatusBehavior<,>));
             });
 
-
-            services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly);
             services.AddValidatorsFromAssembly(typeof(ApplicationServiceRegistration).Assembly);
 
             return services;

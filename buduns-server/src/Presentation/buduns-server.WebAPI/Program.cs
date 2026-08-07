@@ -40,16 +40,15 @@ namespace buduns_server.WebAPI
             {
                 options.Filters.Add<RolePermissionFilter>();
             });
+
             builder.Services.AddScoped<IClientContext, HttpClientContext>();
+
             builder.Services.Configure<SensitiveEndpointRateLimitOptions>(
                 builder.Configuration.GetSection("SensitiveEndpointRateLimit"));
+
             builder.Services.Configure<ReportPolicyOptions>(
                 builder.Configuration.GetSection(ReportPolicyOptions.SectionName));
 
-            // Dogrulama ValidateOnStart ile host acilisinda calisir. Burada
-            // Configuration'dan okuyup dogrulamak yanlis olurdu: test host'unun
-            // (WebApplicationFactory) ekledigi kaynaklar bu noktada henuz
-            // birlestirilmemis oluyor.
             builder.Services.AddOptions<JwtTokenOptions>()
                 .Bind(builder.Configuration.GetSection(JwtTokenOptions.SectionName))
                 .Validate(options => !string.IsNullOrWhiteSpace(options.SecurityKey), "'Token:SecurityKey' yapilandirmasi zorunlu.")
@@ -108,9 +107,6 @@ namespace buduns_server.WebAPI
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning);
 
-            // Veritabani ve Seq sink'leri opsiyonel: yapilandirilmamislarsa
-            // eklenmiyorlar. Eskiden null/bos deger gecilip uygulama acilista
-            // duser ya da sink sessizce hata uretirdi.
             var logConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             if (!string.IsNullOrWhiteSpace(logConnectionString))
             {

@@ -1,6 +1,6 @@
-using AutoMapper;
 using buduns_server.Application.Common.Helpers;
 using buduns_server.Application.Dtos;
+using buduns_server.Application.Mapping;
 using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Enums;
 using MediatR;
@@ -10,12 +10,10 @@ namespace buduns_server.Application.Features.Report.Queries.GetReports
     public class GetReportsQueryHandler : IRequestHandler<GetReportsQuery, PagedResponse<ReportListDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public GetReportsQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public GetReportsQueryHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
         }
 
         public async Task<PagedResponse<ReportListDto>> Handle(GetReportsQuery request, CancellationToken cancellationToken)
@@ -31,7 +29,7 @@ namespace buduns_server.Application.Features.Report.Queries.GetReports
                 .Select(group =>
                 {
                     var latestReport = group.OrderByDescending(report => report.CreatedAt).First();
-                    var item = _mapper.Map<ReportListDto>(latestReport);
+                    var item = latestReport.ToListDto();
 
                     item.TargetPostContentPreview = CreateContentPreview(latestReport.TargetPost?.Content ?? latestReport.TargetContentSnapshot);
                     item.TargetCommentContentPreview = CreateContentPreview(latestReport.TargetComment?.Content ?? latestReport.TargetContentSnapshot);

@@ -1,7 +1,7 @@
-using AutoMapper;
 using buduns_server.Application.Common.Helpers;
 using buduns_server.Application.Dtos;
 using buduns_server.Application.Exceptions;
+using buduns_server.Application.Mapping;
 using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Enums;
 using MediatR;
@@ -11,12 +11,10 @@ namespace buduns_server.Application.Features.Report.Queries.GetById
     public class GetReportByIdQueryHandler : IRequestHandler<GetReportByIdQuery, ReportDetailDto>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public GetReportByIdQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public GetReportByIdQueryHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
         }
 
         public async Task<ReportDetailDto> Handle(GetReportByIdQuery request, CancellationToken cancellationToken)
@@ -35,13 +33,14 @@ namespace buduns_server.Application.Features.Report.Queries.GetById
 
             var relatedReports = await _unitOfWork.ReportRepository.GetReportsForTargetAsync(report.TargetType, targetId.Value, cancellationToken);
 
-            var response = _mapper.Map<ReportDetailDto>(report);
+            var response = report.ToDetailDto();
             response.Priority = ReportPriorityHelper.GetHighestPriority(relatedReports.Select(relatedReport => relatedReport.Reason));
             response.ReportCount = relatedReports.Count;
-            response.RelatedReports = _mapper.Map<List<RelatedReportDto>>(relatedReports);
-            response.ModerationActions = _mapper.Map<List<ModerationActionDto>>(relatedReports
+            response.RelatedReports = relatedReports.ToRelatedDtoList();
+            response.ModerationActions = relatedReports
                     .SelectMany(relatedReport => relatedReport.ModerationActions)
-                    .OrderByDescending(action => action.CreatedAt));
+                    .OrderByDescending(action => action.CreatedAt)
+                    .ToDtoList();
 
             return response;
         }

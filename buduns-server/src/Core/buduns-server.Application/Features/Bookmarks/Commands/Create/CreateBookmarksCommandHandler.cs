@@ -1,5 +1,5 @@
-using AutoMapper;
 using buduns_server.Application.Exceptions;
+using buduns_server.Application.Mapping;
 using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Entities;
 using MediatR;
@@ -14,12 +14,10 @@ namespace buduns_server.Application.Features.Bookmarks.Commands.Create
     public class CreateBookmarksCommandHandler : IRequestHandler<CreateBookmarksCommand, CreateBookmarksCommandResponse>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public CreateBookmarksCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public CreateBookmarksCommandHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
         }
 
         public async Task<CreateBookmarksCommandResponse> Handle(CreateBookmarksCommand request, CancellationToken cancellationToken)
@@ -30,7 +28,7 @@ namespace buduns_server.Application.Features.Bookmarks.Commands.Create
                 throw new NotFoundException("Kaydedilecek paylaşım bulunamadı.");
             }
 
-            var bookmark = _mapper.Map<Bookmark>(request);
+            var bookmark = request.ToEntity();
             bookmark.isDeleted = false;
             bookmark.CreatedAt = DateTime.UtcNow;
             bookmark.isActive = true;
