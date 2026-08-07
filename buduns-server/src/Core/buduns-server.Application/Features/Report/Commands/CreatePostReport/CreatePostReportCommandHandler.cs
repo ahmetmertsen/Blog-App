@@ -34,30 +34,30 @@ namespace buduns_server.Application.Features.Report.Commands.CreatePostReport
             Post? post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
             if (post == null)
             {
-                throw new NotFoundException("Gönderi bulunamadý.");
+                throw new NotFoundException("GÃ¶nderi bulunamadÄ±.");
             }
 
             if (post.UserId == request.UserId)
             {
-                throw new BadRequestException("Kendi gönderinizi þikayet edemezsiniz.");
+                throw new BadRequestException("Kendi gÃ¶nderinizi ÅŸikayet edemezsiniz.");
             }
 
             if (post.Status != PostStatus.Published || !post.isPublished || post.isDeleted)
             {
-                throw new BadRequestException("Bu gönderi þikayet edilmeye uygun deðil.");
+                throw new BadRequestException("Bu gÃ¶nderi ÅŸikayet edilmeye uygun deÄŸil.");
             }
 
             var recentReportCount = await _unitOfWork.ReportRepository.CountRecentReportsByUserAsync(request.UserId, DateTime.UtcNow.AddHours(-24), cancellationToken);
             var dailyReportLimit = Math.Max(1, _reportPolicyOptions.DailyReportLimit);
             if (recentReportCount >= dailyReportLimit)
             {
-                throw new TooManyRequestsException($"24 saat içinde en fazla {dailyReportLimit} þikayet oluþturabilirsiniz.");
+                throw new TooManyRequestsException($"24 saat iÃ§inde en fazla {dailyReportLimit} ÅŸikayet oluÅŸturabilirsiniz.");
             }
                 
             bool alreadyReported = await _unitOfWork.ReportRepository.HasPendingPostReportAsync(request.UserId, request.PostId, cancellationToken);
             if (alreadyReported)
             {
-                throw new BadRequestException("Bu gönderi için zaten bekleyen bir þikayetiniz var.");
+                throw new BadRequestException("Bu gÃ¶nderi iÃ§in zaten bekleyen bir ÅŸikayetiniz var.");
             }
                 
             Domain.Entities.Report report = new()
@@ -81,7 +81,7 @@ namespace buduns_server.Application.Features.Report.Commands.CreatePostReport
 
             _logger.LogInformation("Post report created. ReportId: {ReportId}, ReporterUserId: {ReporterUserId}, TargetPostId: {TargetPostId}, Reason: {Reason}", report.Id, request.UserId, request.PostId, request.Reason);
 
-            return new CreatePostReportCommandResponse(Succeeded:true, Message:"Þikayetiniz baþarýyla alýndý.");
+            return new CreatePostReportCommandResponse(Succeeded:true, Message:"Åžikayetiniz baÅŸarÄ±yla alÄ±ndÄ±.");
         }
     }
 }

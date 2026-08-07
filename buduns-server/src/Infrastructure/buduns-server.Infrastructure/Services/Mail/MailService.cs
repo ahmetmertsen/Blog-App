@@ -79,7 +79,7 @@ namespace buduns_server.Infrastructure.Services.Mail
             }
         }
 
-        // Þifre Sýfýrlama Maili
+        // Åžifre SÄ±fÄ±rlama Maili
         public async Task SendForgotPasswordMailAsync(string to, string fullName, string verificationCode)
         {
             var utilityResponse = await _unitOfWork.UtilityRepository.GetByNameAsync("FORGOT_PASSWORD");
@@ -90,10 +90,10 @@ namespace buduns_server.Infrastructure.Services.Mail
             description = description.Replace("{reset_link}", verificationCode);
             description = description.Replace("{app_name}", "Buduns");
 
-            await SendMailAsync(to, "Þifre Sýfýrlama Talebi", description);
+            await SendMailAsync(to, "Åžifre SÄ±fÄ±rlama Talebi", description);
         }
 
-        // Mail Doðrulama
+        // Mail DoÄŸrulama
         public async Task SendVerifyMailAsync(string to, string fullName, string verificationCode)
         {
             var utilityResponse = await _unitOfWork.UtilityRepository.GetByNameAsync("MAIL_VERIFY");
@@ -104,10 +104,10 @@ namespace buduns_server.Infrastructure.Services.Mail
             description = description.Replace("{verify_link}", verificationCode);
             description = description.Replace("{app_name}", "Buduns");
 
-            await SendMailAsync(to, "E-Posta Doðrulama", description);
+            await SendMailAsync(to, "E-Posta DoÄŸrulama", description);
         }
 
-        // Mevcut Email Deðiþtirme Onayý
+        // Mevcut Email DeÄŸiÅŸtirme OnayÄ±
         public async Task SendChangeEmailOldMailAsync(string to, string fullName, string newEmail, string verificationCode)
         {
             var utilityResponse = await _unitOfWork.UtilityRepository.GetByNameAsync("CHANGE_EMAIL_OLD");
@@ -119,10 +119,10 @@ namespace buduns_server.Infrastructure.Services.Mail
             description = description.Replace("{confirm_link}", verificationCode);
             description = description.Replace("{app_name}", "Buduns");
 
-            await SendMailAsync(to, "E-Posta Deðiþikliði Onayý", description);
+            await SendMailAsync(to, "E-Posta DeÄŸiÅŸikliÄŸi OnayÄ±", description);
         }
 
-        // Email Deðiþtirme
+        // Email DeÄŸiÅŸtirme
         public async Task SendChangeEmailMailAsync(string to, string fullName, string verificationCode)
         {
             var utilityResponse = await _unitOfWork.UtilityRepository.GetByNameAsync("CHANGE_EMAIL");
@@ -133,7 +133,7 @@ namespace buduns_server.Infrastructure.Services.Mail
             description = description.Replace("{confirm_link}", verificationCode);
             description = description.Replace("{app_name}", "Buduns");
 
-            await SendMailAsync(to, "E-Posta Deðiþikliði Talebi", description);
+            await SendMailAsync(to, "E-Posta DeÄŸiÅŸikliÄŸi Talebi", description);
         }
 
     }

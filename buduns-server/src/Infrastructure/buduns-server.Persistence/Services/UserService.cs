@@ -48,20 +48,20 @@ namespace buduns_server.Persistence.Services
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user != null)
             {
-                throw new RegisterFailedException("Email kayýtlar arasýnda mevcut!");
+                throw new RegisterFailedException("Email kayÄ±tlar arasÄ±nda mevcut!");
             }
             else
             {
                 user = await _userManager.FindByNameAsync(request.UserName);
                 if (user != null)
                 {
-                    throw new RegisterFailedException("Username kayýtlar arasýnda mevcut!");
+                    throw new RegisterFailedException("Username kayÄ±tlar arasÄ±nda mevcut!");
                 }
             }
 
             if (!await _roleManager.RoleExistsAsync(RoleConstants.User))
             {
-                throw new RegisterFailedException("Kayýt tamamlanamadý. User rolü sistemde tanýmlý deðil.");
+                throw new RegisterFailedException("KayÄ±t tamamlanamadÄ±. User rolÃ¼ sistemde tanÄ±mlÄ± deÄŸil.");
             }
 
             user = _mapper.Map<User>(request);
@@ -74,11 +74,11 @@ namespace buduns_server.Persistence.Services
                 {
                     await _userManager.DeleteAsync(user);
 
-                    throw new RegisterFailedException("Kullanýcý rolü atanamadýðý için kayýt tamamlanamadý. User rolünün tanýmlý olduðundan emin olun.");
+                    throw new RegisterFailedException("KullanÄ±cÄ± rolÃ¼ atanamadÄ±ÄŸÄ± iÃ§in kayÄ±t tamamlanamadÄ±. User rolÃ¼nÃ¼n tanÄ±mlÄ± olduÄŸundan emin olun.");
 
                 }
 
-                var message = "Kullanýcý baþarýyla kaydedildi. E-posta adresinizi doðrulamanýz gerekiyor.";
+                var message = "KullanÄ±cÄ± baÅŸarÄ±yla kaydedildi. E-posta adresinizi doÄŸrulamanÄ±z gerekiyor.";
                 try
                 {
                     var verificationCode = await _verificationChallengeService.CreateCodeAsync(user.Id, VerificationPurpose.EmailVerification, user.Email!, cancellationToken);
@@ -89,7 +89,7 @@ namespace buduns_server.Persistence.Services
                 }
                 catch (Exception exception)
                 {
-                    message = "Kullanýcý baþarýyla kaydedildi ancak doðrulama e-postasý gönderilemedi. Tekrar gönderme iþlemini kullanabilirsiniz.";
+                    message = "KullanÄ±cÄ± baÅŸarÄ±yla kaydedildi ancak doÄŸrulama e-postasÄ± gÃ¶nderilemedi. Tekrar gÃ¶nderme iÅŸlemini kullanabilirsiniz.";
                     _logger.LogWarning(
                         exception,
                         "Registration verification mail could not be sent. UserId: {UserId}",
@@ -104,7 +104,7 @@ namespace buduns_server.Persistence.Services
             }
             else
             {
-                throw new RegisterFailedException("Kayýt sýrasýnda hata oluþtu");
+                throw new RegisterFailedException("KayÄ±t sÄ±rasÄ±nda hata oluÅŸtu");
             }
         }
 
@@ -113,19 +113,19 @@ namespace buduns_server.Persistence.Services
             User user = await _userManager.FindByEmailAsync(request.EmailOrUsername) ?? await _userManager.FindByNameAsync(request.EmailOrUsername);
             if (user == null)
             {
-                throw new NotFoundException("Kullanýcý bulunamadý.");
+                throw new NotFoundException("KullanÄ±cÄ± bulunamadÄ±.");
             }
             if (string.IsNullOrWhiteSpace(user.Email))
             {
-                throw new PasswordChangeFailedException("Kullanýcýnýn e-posta adresi bulunamadý.");
+                throw new PasswordChangeFailedException("KullanÄ±cÄ±nÄ±n e-posta adresi bulunamadÄ±.");
             }
             if (string.IsNullOrWhiteSpace(request.VerificationCode))
             {
-                throw new PasswordChangeFailedException("Þifre sýfýrlama kodu geçersiz.");
+                throw new PasswordChangeFailedException("Åžifre sÄ±fÄ±rlama kodu geÃ§ersiz.");
             }
             if (!request.newPassword.Equals(request.newPasswordConfirmed))
             {
-                throw new PasswordChangeFailedException("Þifreler uyuþmuyor.");
+                throw new PasswordChangeFailedException("Åžifreler uyuÅŸmuyor.");
             }
 
             await _verificationChallengeService.ValidateCodeAsync(user.Id, VerificationPurpose.PasswordReset, user.Email, request.VerificationCode, cancellationToken);
@@ -141,12 +141,12 @@ namespace buduns_server.Persistence.Services
                 return new UpdateUserPasswordResponse
                 {
                     Succeeded = true,
-                    Message = "Þifre baþarýlý bir þekilde güncellenmiþtir."
+                    Message = "Åžifre baÅŸarÄ±lÄ± bir ÅŸekilde gÃ¼ncellenmiÅŸtir."
                 };
             }
             else
             {
-                throw new PasswordChangeFailedException("Þifre oluþturulurken hata oluþtu...");
+                throw new PasswordChangeFailedException("Åžifre oluÅŸturulurken hata oluÅŸtu...");
             }
         }
 
@@ -156,25 +156,25 @@ namespace buduns_server.Persistence.Services
             User user = await _userManager.FindByIdAsync(request.UserId.ToString());
             if (user == null)
             {
-                throw new NotFoundException("Kullanýcý bulunamadý.");
+                throw new NotFoundException("KullanÄ±cÄ± bulunamadÄ±.");
             }
             if (user.EmailConfirmed == true)
             {
                 return new UpdateUserMailVerifyResponse
                 {
                     Succeeded = true,
-                    Message = "E-posta adresi zaten doðrulanmýþ."
+                    Message = "E-posta adresi zaten doÄŸrulanmÄ±ÅŸ."
                 };
             }
 
             if (string.IsNullOrWhiteSpace(user.Email))
             {
-                throw new BadRequestException("Kullanýcýnýn e-posta adresi bulunamadý.");
+                throw new BadRequestException("KullanÄ±cÄ±nÄ±n e-posta adresi bulunamadÄ±.");
             }
 
             if (string.IsNullOrWhiteSpace(request.VerificationCode))
             {
-                throw new BadRequestException("Doðrulama kodu geçersiz.");
+                throw new BadRequestException("DoÄŸrulama kodu geÃ§ersiz.");
             }
 
             await _verificationChallengeService.ValidateCodeAsync(user.Id, VerificationPurpose.EmailVerification, user.Email, request.VerificationCode, cancellationToken);
@@ -188,12 +188,12 @@ namespace buduns_server.Persistence.Services
                 return new UpdateUserMailVerifyResponse
                 {
                     Succeeded = true,
-                    Message = "E-posta adresiniz baþarýyla doðrulandý."
+                    Message = "E-posta adresiniz baÅŸarÄ±yla doÄŸrulandÄ±."
                 };
             }
             else
             {
-                throw new MailVerifyFailedException("E-posta doðrulama baþarýsýz. Baðlantý süresi dolmuþ olabilir.");
+                throw new MailVerifyFailedException("E-posta doÄŸrulama baÅŸarÄ±sÄ±z. BaÄŸlantÄ± sÃ¼resi dolmuÅŸ olabilir.");
             }
         }
 
@@ -202,7 +202,7 @@ namespace buduns_server.Persistence.Services
             User user = await _userManager.FindByIdAsync(request.UserId.ToString());
             if (user == null)
             {
-                throw new NotFoundException("Kullanýcý bulunamadý.");
+                throw new NotFoundException("KullanÄ±cÄ± bulunamadÄ±.");
             }
 
             user.FullName = request.FullName;
@@ -215,12 +215,12 @@ namespace buduns_server.Persistence.Services
                 return new UpdateUserProfileResponse
                 {
                     Succeeded = true,
-                    Message = "Profil baþarýyla güncellendi."
+                    Message = "Profil baÅŸarÄ±yla gÃ¼ncellendi."
                 };
             }
             else
             {
-                throw new BadRequestException($"Profil güncellenirken bir hata oluþtu.");
+                throw new BadRequestException($"Profil gÃ¼ncellenirken bir hata oluÅŸtu.");
             }
         }
 
@@ -229,24 +229,24 @@ namespace buduns_server.Persistence.Services
             User user = await _userManager.FindByIdAsync(request.UserId.ToString());
             if (user == null)
             {
-                throw new NotFoundException("Kullanýcý bulunamadý.");
+                throw new NotFoundException("KullanÄ±cÄ± bulunamadÄ±.");
             }
 
             if (string.IsNullOrWhiteSpace(user.Email))
             {
-                throw new BadRequestException("Kullanýcýnýn mevcut e-posta adresi bulunamadý.");
+                throw new BadRequestException("KullanÄ±cÄ±nÄ±n mevcut e-posta adresi bulunamadÄ±.");
             }
 
             if (string.IsNullOrWhiteSpace(request.OldEmailVerificationCode) || string.IsNullOrWhiteSpace(request.NewEmailVerificationCode))
             {
-                throw new BadRequestException("Doðrulama kodlarý geçersiz.");
+                throw new BadRequestException("DoÄŸrulama kodlarÄ± geÃ§ersiz.");
             }
 
             var newEmail = request.NewEmail.Trim().ToLowerInvariant();
             var existingUser = await _userManager.FindByEmailAsync(newEmail);
             if (existingUser != null)
             {
-                throw new ChangeEmailFailedException("Email güncellenirken hata oluþtu...");
+                throw new ChangeEmailFailedException("Email gÃ¼ncellenirken hata oluÅŸtu...");
             }
 
             var oldEmail = user.Email;
@@ -260,17 +260,17 @@ namespace buduns_server.Persistence.Services
                 await _userManager.UpdateSecurityStampAsync(user);
                 await _userManager.UpdateAsync(user);
                 await _authSessionService.RevokeAllSessionsAsync(user.Id, "Email changed", cancellationToken);
-                await _mailService.SendMailAsync(oldEmail, "E-Posta Adresiniz Deðiþtirildi", "Buduns hesabýnýzýn e-posta adresi deðiþtirildi. Bu iþlemi siz yapmadýysanýz hesabýnýzý güvene alýn.");
+                await _mailService.SendMailAsync(oldEmail, "E-Posta Adresiniz DeÄŸiÅŸtirildi", "Buduns hesabÄ±nÄ±zÄ±n e-posta adresi deÄŸiÅŸtirildi. Bu iÅŸlemi siz yapmadÄ±ysanÄ±z hesabÄ±nÄ±zÄ± gÃ¼vene alÄ±n.");
 
                 return new UpdateUserEmailResponse
                 {
                     Succeeded = true,
-                    Message = "Email baþarýlý bir þekilde güncellenmiþtir."
+                    Message = "Email baÅŸarÄ±lÄ± bir ÅŸekilde gÃ¼ncellenmiÅŸtir."
                 };
             }
             else
             {
-                throw new ChangeEmailFailedException("Email güncellenirken hata oluþtu...");
+                throw new ChangeEmailFailedException("Email gÃ¼ncellenirken hata oluÅŸtu...");
             }
         }
 
@@ -324,7 +324,7 @@ namespace buduns_server.Persistence.Services
             var user = await ProjectUsers().FirstOrDefaultAsync(item => item.Id == userId);
             if (user == null)
             {
-                throw new NotFoundException("Kullanýcý bulunamadý.");
+                throw new NotFoundException("KullanÄ±cÄ± bulunamadÄ±.");
             }
 
             return user;
@@ -336,7 +336,7 @@ namespace buduns_server.Persistence.Services
             var userId = await _userManager.Users.AsNoTracking().Where(item => item.NormalizedUserName == normalizedUserName).Select(item => (int?)item.Id).FirstOrDefaultAsync();
             if (userId == null)
             {
-                throw new NotFoundException("Kullanýcý bulunamadý.");
+                throw new NotFoundException("KullanÄ±cÄ± bulunamadÄ±.");
             }
 
             return await ProjectUsers().FirstAsync(item => item.Id == userId.Value);
@@ -358,20 +358,20 @@ namespace buduns_server.Persistence.Services
             var user = await _userManager.FindByIdAsync(targetUserId.ToString());
             if (user == null)
             {
-                throw new NotFoundException("Kullanýcý bulunamadý.");
+                throw new NotFoundException("KullanÄ±cÄ± bulunamadÄ±.");
             }
 
             var requestedRoleNames = (roles ?? Array.Empty<string>()).Where(role => !string.IsNullOrWhiteSpace(role)).Select(role => role.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
             if (requestedRoleNames.Length == 0)
             {
-                throw new BadRequestException("Kullanýcýya en az bir rol atanmalýdýr.");
+                throw new BadRequestException("KullanÄ±cÄ±ya en az bir rol atanmalÄ±dÄ±r.");
             }
 
             var availableRoleNames = await _roleManager.Roles.AsNoTracking().Where(role => role.Name != null).Select(role => role.Name!).ToListAsync(cancellationToken);
             var invalidRoles = requestedRoleNames.Where(role => !availableRoleNames.Contains(role, StringComparer.OrdinalIgnoreCase)).ToArray();
             if (invalidRoles.Length > 0)
             {
-                throw new BadRequestException($"Tanýmlý olmayan roller gönderildi: {string.Join(", ", invalidRoles)}");
+                throw new BadRequestException($"TanÄ±mlÄ± olmayan roller gÃ¶nderildi: {string.Join(", ", invalidRoles)}");
             }
 
             var resolvedRoles = requestedRoleNames.Select(role => availableRoleNames.First(availableRole => string.Equals(availableRole, role, StringComparison.OrdinalIgnoreCase))).ToArray();
@@ -380,7 +380,7 @@ namespace buduns_server.Persistence.Services
 
             if (actorUserId == targetUserId && removesAdminRole)
             {
-                throw new BadRequestException("Kendi Admin rolünüzü kaldýramazsýnýz.");
+                throw new BadRequestException("Kendi Admin rolÃ¼nÃ¼zÃ¼ kaldÄ±ramazsÄ±nÄ±z.");
             }
 
             if (removesAdminRole)
@@ -388,7 +388,7 @@ namespace buduns_server.Persistence.Services
                 var adminUsers = await _userManager.GetUsersInRoleAsync(RoleConstants.Admin);
                 if (adminUsers.Count <= 1)
                 {
-                    throw new BadRequestException("Sistemde en az bir Admin kullanýcýsý bulunmalýdýr.");
+                    throw new BadRequestException("Sistemde en az bir Admin kullanÄ±cÄ±sÄ± bulunmalÄ±dÄ±r.");
                 }
             }
 
@@ -404,7 +404,7 @@ namespace buduns_server.Persistence.Services
                 var addResult = await _userManager.AddToRolesAsync(user, rolesToAdd);
                 if (!addResult.Succeeded)
                 {
-                    throw new BadRequestException($"Roller atanamadý: {GetIdentityErrors(addResult)}");
+                    throw new BadRequestException($"Roller atanamadÄ±: {GetIdentityErrors(addResult)}");
                 }
             }
 
@@ -418,14 +418,14 @@ namespace buduns_server.Persistence.Services
                         await _userManager.RemoveFromRolesAsync(user, rolesToAdd);
                     }
 
-                    throw new BadRequestException($"Mevcut roller kaldýrýlamadý: {GetIdentityErrors(removeResult)}");
+                    throw new BadRequestException($"Mevcut roller kaldÄ±rÄ±lamadÄ±: {GetIdentityErrors(removeResult)}");
                 }
             }
 
             var securityStampResult = await _userManager.UpdateSecurityStampAsync(user);
             if (!securityStampResult.Succeeded)
             {
-                throw new BadRequestException($"Rol deðiþikliði güvenlik bilgisine yansýtýlamadý: {GetIdentityErrors(securityStampResult)}");
+                throw new BadRequestException($"Rol deÄŸiÅŸikliÄŸi gÃ¼venlik bilgisine yansÄ±tÄ±lamadÄ±: {GetIdentityErrors(securityStampResult)}");
             }
 
             await _authSessionService.RevokeAllSessionsAsync(user.Id, "Roles changed", cancellationToken);
@@ -437,7 +437,7 @@ namespace buduns_server.Persistence.Services
             var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null)
             {
-                throw new NotFoundException("Kullanýcý bulunamadý.");
+                throw new NotFoundException("KullanÄ±cÄ± bulunamadÄ±.");
             }
 
             var userRoles = await _userManager.GetRolesAsync(user);

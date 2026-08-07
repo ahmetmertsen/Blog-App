@@ -12,7 +12,7 @@ namespace buduns_server.Application.Features.Users.Queries.GetRolesToUser
         public GetRolesToUserQueryValidator()
         {
             RuleFor(x => x.UserId)
-                .NotEmpty().WithMessage("Kullanýcý bilgisi boþ olamaz");
+                .NotEmpty().WithMessage("KullanÄ±cÄ± bilgisi boÅŸ olamaz");
         }
     }
 }

@@ -28,7 +28,7 @@ namespace buduns_server.Application.Common.Behaviors
                 var user = _httpContextAccessor.HttpContext?.User;
                 if (user?.Identity?.IsAuthenticated != true)
                 {
-                    throw new UnauthorizedAccesException("Kullanýcý doðrulanamadý.");
+                    throw new UnauthorizedAccesException("KullanÄ±cÄ± doÄŸrulanamadÄ±.");
                 }
 
                 var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
@@ -37,7 +37,7 @@ namespace buduns_server.Application.Common.Behaviors
 
                 if (!int.TryParse(userIdClaim, out var userId))
                 {
-                    throw new UnauthorizedAccesException("Geçerli kullanýcý bilgisi bulunamadý.");
+                    throw new UnauthorizedAccesException("GeÃ§erli kullanÄ±cÄ± bilgisi bulunamadÄ±.");
                 }
 
                 if (request is ICurrentUserRequest currentUserRequest)
@@ -50,7 +50,7 @@ namespace buduns_server.Application.Common.Behaviors
                     var sessionIdClaim = user.FindFirst("sid")?.Value ?? user.FindFirst(ClaimTypes.Sid)?.Value;
                     if (!Guid.TryParse(sessionIdClaim, out var sessionId))
                     {
-                        throw new UnauthorizedAccesException("Geçerli oturum bilgisi bulunamadý.");
+                        throw new UnauthorizedAccesException("GeÃ§erli oturum bilgisi bulunamadÄ±.");
                     }
 
                     currentSessionRequest.CurrentSessionId = sessionId;

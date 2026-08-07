@@ -1,0 +1,13 @@
+root = true
+
+# Kaynak dosyalari UTF-8 olmak ZORUNDA. BOM'suz ANSI (Windows-1254) kaydedilen
+# dosyalarda Roslyn, isletim sisteminin kod sayfasina duserek cozum yapar:
+# Windows-TR'de Turkce karakterler dogru okunur, Linux'ta (CI ve Dockerfile)
+# U+FFFD'ye donusur. Yani ayni kaynak, derlendigi makineye gore farkli metin
+# uretir. Bu ayar editorlerin dosyalari yanlislikla ANSI kaydetmesini onler.
+#
+# Satir sonu ayari bilerek konulmadi: depoda su an CRLF/LF karisik ve
+# core.autocrlf=true ile calisiliyor. Zorlamak genis bir gurultulu diff
+# uretir; ayri bir is olarak .gitattributes ile ele alinmali.
+[*]
+charset = utf-8

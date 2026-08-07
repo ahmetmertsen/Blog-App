@@ -27,7 +27,7 @@ namespace buduns_server.Application.Features.Likes.Queries.GetById
             var like = await _unitOfWork.LikeRepository.GetByIdAsync(request.Id);
             if (like == null)
             {
-                throw new NotFoundException("Like bulunamadý!");
+                throw new NotFoundException("Like bulunamadÄ±!");
             }
             var response = _mapper.Map<LikeDto>(like);
             return response;

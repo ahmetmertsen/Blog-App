@@ -27,7 +27,7 @@ namespace buduns_server.Application.Features.Posts.Commands.Delete
             var post = await _unitOfWork.PostRepository.GetByIdWithTagsAsync(request.Id);
             if (post == null)
             {
-                throw new NotFoundException("Post bulunamadý!");
+                throw new NotFoundException("Post bulunamadÄ±!");
             }
             if (post.UserId != request.UserId)
             {
@@ -44,7 +44,7 @@ namespace buduns_server.Application.Features.Posts.Commands.Delete
 
             _logger.LogInformation("Post deleted. PostId: {PostId}, UserId: {UserId}", request.Id, request.UserId);
 
-            return new DeletePostsCommandResponse(true, "Post baþarýyla silinmiþtir.");
+            return new DeletePostsCommandResponse(true, "Post baÅŸarÄ±yla silinmiÅŸtir.");
         }
     }
 }

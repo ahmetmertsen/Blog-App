@@ -87,7 +87,7 @@ namespace buduns_server.Persistence.Services
             Endpoint? endpoint = await _unitOfWork.EndpointRepository.GetRolesToEndpointWithMenu(code, menu);
             if (endpoint == null)
             {
-                throw new NotFoundException("Endpoint bulunamadý.");
+                throw new NotFoundException("Endpoint bulunamadÄ±.");
             }
 
             return endpoint.Roles.Select(r => r.Name).ToList();

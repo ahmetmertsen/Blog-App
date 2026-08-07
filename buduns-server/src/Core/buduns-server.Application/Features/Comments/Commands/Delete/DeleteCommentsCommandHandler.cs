@@ -22,7 +22,7 @@ namespace buduns_server.Application.Features.Comments.Commands.Delete
             var comment = await _unitOfWork.CommentRepository.GetForMutationAsync(request.Id, cancellationToken);
             if (comment == null)
             {
-                throw new NotFoundException("Yorum bulunamadý.");
+                throw new NotFoundException("Yorum bulunamadÄ±.");
             }
 
             if (comment.UserId != request.UserId)
@@ -32,12 +32,12 @@ namespace buduns_server.Application.Features.Comments.Commands.Delete
 
             if (comment.Status == CommentStatus.DeletedByOwner)
             {
-                return new DeleteCommentsCommandResponse(true, "Yorum daha önce silinmiþ.");
+                return new DeleteCommentsCommandResponse(true, "Yorum daha Ã¶nce silinmiÅŸ.");
             }
 
             if (comment.Status != CommentStatus.Published)
             {
-                throw new BadRequestException("Moderasyon iþlemi uygulanmýþ bir yorum silinemez.");
+                throw new BadRequestException("Moderasyon iÅŸlemi uygulanmÄ±ÅŸ bir yorum silinemez.");
             }
 
             comment.Status = CommentStatus.DeletedByOwner;
@@ -47,7 +47,7 @@ namespace buduns_server.Application.Features.Comments.Commands.Delete
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Comment deleted by owner. CommentId: {CommentId}, PostId: {PostId}, UserId: {UserId}", comment.Id, comment.PostId, request.UserId);
-            return new DeleteCommentsCommandResponse(true, "Yorum baþarýyla silindi.");
+            return new DeleteCommentsCommandResponse(true, "Yorum baÅŸarÄ±yla silindi.");
         }
     }
 }

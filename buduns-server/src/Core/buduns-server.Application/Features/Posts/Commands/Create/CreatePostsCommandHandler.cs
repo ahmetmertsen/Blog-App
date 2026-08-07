@@ -38,7 +38,7 @@ namespace buduns_server.Application.Features.Posts.Commands.Create
 
             if (missingTagIds.Any())
             {
-                throw new BadRequestException($"Geçersiz tag id(ler): {string.Join(", ", missingTagIds)}");
+                throw new BadRequestException($"GeÃ§ersiz tag id(ler): {string.Join(", ", missingTagIds)}");
             }
             #endregion
 
@@ -59,7 +59,7 @@ namespace buduns_server.Application.Features.Posts.Commands.Create
 
             _logger.LogInformation("Post created. PostId: {PostId}, UserId: {UserId}, TagCount: {TagCount}", post.Id, request.UserId, tagIds.Count);
 
-            return new CreatePostsCommandResponse(true, "Post baþarýyla eklenmiþtir.");
+            return new CreatePostsCommandResponse(true, "Post baÅŸarÄ±yla eklenmiÅŸtir.");
         }
     }
 }

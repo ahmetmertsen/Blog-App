@@ -23,10 +23,10 @@ namespace buduns_server.Application.Features.Auth.Login
             var token = await _authService.LoginAsync(request.UsernameOrEmail, request.Password, cancellationToken);
             if (token == null)
             {
-                throw new UnauthorizedAccesException("Kullanýcý adý, Email veya þifre hatalý!");
+                throw new UnauthorizedAccesException("KullanÄ±cÄ± adÄ±, Email veya ÅŸifre hatalÄ±!");
             } else
             {
-                return new LoginUserCommandResponse(Succeeded: true, Message: "Giriþ baþarýlý!", Token: token);
+                return new LoginUserCommandResponse(Succeeded: true, Message: "GiriÅŸ baÅŸarÄ±lÄ±!", Token: token);
             }
         }
     }

@@ -19,30 +19,30 @@ namespace buduns_server.Application.Features.Comments.Commands.Update
             var comment = await _unitOfWork.CommentRepository.GetForMutationAsync(request.Id, cancellationToken);
             if (comment == null)
             {
-                throw new NotFoundException("Yorum bulunamadý.");
+                throw new NotFoundException("Yorum bulunamadÄ±.");
             }
 
             if (comment.UserId != request.UserId)
             {
-                throw new ForbiddenException("Bu yorumu güncelleme yetkiniz yok.");
+                throw new ForbiddenException("Bu yorumu gÃ¼ncelleme yetkiniz yok.");
             }
 
             if (comment.Status != CommentStatus.Published || !comment.isActive || comment.isDeleted)
             {
-                throw new BadRequestException("Yayýnlanmamýþ bir yorum güncellenemez.");
+                throw new BadRequestException("YayÄ±nlanmamÄ±ÅŸ bir yorum gÃ¼ncellenemez.");
             }
 
             if (comment.Post.Status != PostStatus.Published || !comment.Post.isPublished || !comment.Post.isActive || comment.Post.isDeleted)
             {
-                throw new BadRequestException("Görünür olmayan bir paylaþýmdaki yorum güncellenemez.");
+                throw new BadRequestException("GÃ¶rÃ¼nÃ¼r olmayan bir paylaÅŸÄ±mdaki yorum gÃ¼ncellenemez.");
             }
 
             comment.Content = request.Content.Trim();
             comment.UpdateAt = DateTime.UtcNow;
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var commentDto = await _unitOfWork.CommentRepository.GetDtoByIdAsync(comment.Id, cancellationToken) ?? throw new NotFoundException("Güncellenen yorum bulunamadý.");
-            return new UpdateCommentsCommandResponse(true, "Yorum baþarýyla güncellendi.", commentDto);
+            var commentDto = await _unitOfWork.CommentRepository.GetDtoByIdAsync(comment.Id, cancellationToken) ?? throw new NotFoundException("GÃ¼ncellenen yorum bulunamadÄ±.");
+            return new UpdateCommentsCommandResponse(true, "Yorum baÅŸarÄ±yla gÃ¼ncellendi.", commentDto);
         }
     }
 }

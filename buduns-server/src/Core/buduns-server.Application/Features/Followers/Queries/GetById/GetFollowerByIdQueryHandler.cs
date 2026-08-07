@@ -27,7 +27,7 @@ namespace buduns_server.Application.Features.Followers.Queries.GetById
             var follower = await _unitOfWork.FollowerRepository.GetByIdAsync(request.Id);
             if (follower == null)
             {
-                throw new NotFoundException("Takipçi bulunamadý!");
+                throw new NotFoundException("TakipÃ§i bulunamadÄ±!");
             }
             var response = _mapper.Map<FollowerDto>(follower);
             return response;

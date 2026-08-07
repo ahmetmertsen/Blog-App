@@ -26,16 +26,16 @@ namespace buduns_server.Infrastructure.Services.Token
         {
             Application.Dtos.Token token = new();
 
-            //Security Key'in simetriðini alýyoruz.
+            //Security Key'in simetriÄŸini alÄ±yoruz.
             SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(_configuration["Token:SecurityKey"]));
-            //Þifrelenmiþ kimliði oluþturuyoruz.
+            //ÅžifrelenmiÅŸ kimliÄŸi oluÅŸturuyoruz.
             SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
-            //Oluþturulacak token ayarlarýný veriyoruz.
+            //OluÅŸturulacak token ayarlarÄ±nÄ± veriyoruz.
             var accessTokenExpirationMinutes = _configuration.GetValue<int?>("Token:AccessTokenExpirationMinutes") ?? 15;
             token.Expiration = DateTime.UtcNow.AddMinutes(accessTokenExpirationMinutes);
             token.SessionId = sessionId;
             token.RequiresEmailVerification = !user.EmailConfirmed;
-            // Claims - Kullanýcý bilgilerini ve rolleri token'a koyuyoruz.
+            // Claims - KullanÄ±cÄ± bilgilerini ve rolleri token'a koyuyoruz.
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
@@ -60,7 +60,7 @@ namespace buduns_server.Infrastructure.Services.Token
                 signingCredentials: signingCredentials
                 );
 
-            //Token oluþturucu sýnýfýndan bir örnek
+            //Token oluÅŸturucu sÄ±nÄ±fÄ±ndan bir Ã¶rnek
             JwtSecurityTokenHandler tokenHandler = new();
             token.AccessToken = tokenHandler.WriteToken(securityToken);
             token.RefreshToken = refreshToken;

@@ -16,7 +16,7 @@ namespace buduns_server.Application.Features.Comments.Queries.GetById
 
         public async Task<CommentDto> Handle(GetCommentByIdQuery request, CancellationToken cancellationToken)
         {
-            return await _unitOfWork.CommentRepository.GetDtoByIdAsync(request.Id, cancellationToken) ?? throw new NotFoundException("Yorum bulunamadý.");
+            return await _unitOfWork.CommentRepository.GetDtoByIdAsync(request.Id, cancellationToken) ?? throw new NotFoundException("Yorum bulunamadÄ±.");
         }
     }
 }

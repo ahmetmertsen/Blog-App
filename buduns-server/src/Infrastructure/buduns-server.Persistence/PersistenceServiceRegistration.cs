@@ -33,7 +33,7 @@ namespace buduns_server.Persistence
                     options.User.RequireUniqueEmail = true;
                 })
                 .AddEntityFrameworkStores<BudunsDbContext>()
-                .AddDefaultTokenProviders(); // Password reset vs. tokenlarý için
+                .AddDefaultTokenProviders(); // Password reset vs. tokenlarÄ± iÃ§in
 
             services.AddScoped<IBookmarkRepository, BookmarkRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();

@@ -12,8 +12,8 @@ namespace buduns_server.Application.Features.Auth.ChangeEmail
         public ChangeEmailCommandValidator() 
         {
             RuleFor(x => x.NewEmail)
-                .NotEmpty().WithMessage("Yeni Email bilgisi boş olamaz.")
-                .EmailAddress().WithMessage("Yeni Email formatı geçersiz.");
+                .NotEmpty().WithMessage("Yeni Email bilgisi boÅŸ olamaz.")
+                .EmailAddress().WithMessage("Yeni Email formatÄ± geÃ§ersiz.");
         }
     }
 }

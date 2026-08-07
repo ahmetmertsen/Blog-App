@@ -18,7 +18,7 @@ namespace buduns_server.Application.Features.Comments.Queries.GetByPostId
         {
             if (!await _unitOfWork.PostRepository.ExistsVisibleAsync(request.PostId, cancellationToken))
             {
-                throw new NotFoundException("Paylaþým bulunamadý.");
+                throw new NotFoundException("PaylaÅŸÄ±m bulunamadÄ±.");
             }
 
             var result = await _unitOfWork.CommentRepository.GetPagedByPostIdAsync(request.PostId, request.Page, request.Size, cancellationToken);

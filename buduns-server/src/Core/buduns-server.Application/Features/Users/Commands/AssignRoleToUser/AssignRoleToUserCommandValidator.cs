@@ -11,10 +11,10 @@ namespace buduns_server.Application.Features.Users.Commands.AssignRoleToUser
     {
         public AssignRoleToUserCommandValidator()
         {
-            RuleFor(x => x.TargetUserId).GreaterThan(0).WithMessage("Kullanıcı Id 0'dan büyük olmalıdır.");
-            RuleFor(x => x.Roles).NotNull().NotEmpty().WithMessage("En az bir rol seçilmelidir.");
-            RuleForEach(x => x.Roles).NotEmpty().MaximumLength(100).WithMessage("Rol adı boş olamaz ve en fazla 100 karakter olabilir.");
-            RuleFor(x => x.Roles).Must(roles => roles == null || roles.Distinct(StringComparer.OrdinalIgnoreCase).Count() == roles.Length).WithMessage("Aynı rol birden fazla kez gönderilemez.");
+            RuleFor(x => x.TargetUserId).GreaterThan(0).WithMessage("KullanÄ±cÄ± Id 0'dan bÃ¼yÃ¼k olmalÄ±dÄ±r.");
+            RuleFor(x => x.Roles).NotNull().NotEmpty().WithMessage("En az bir rol seÃ§ilmelidir.");
+            RuleForEach(x => x.Roles).NotEmpty().MaximumLength(100).WithMessage("Rol adÄ± boÅŸ olamaz ve en fazla 100 karakter olabilir.");
+            RuleFor(x => x.Roles).Must(roles => roles == null || roles.Distinct(StringComparer.OrdinalIgnoreCase).Count() == roles.Length).WithMessage("AynÄ± rol birden fazla kez gÃ¶nderilemez.");
         }
     }
 }

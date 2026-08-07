@@ -27,7 +27,7 @@ namespace buduns_server.Application.Features.Bookmarks.Commands.Create
             var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
             if (post == null)
             {
-                throw new NotFoundException("Kaydedilecek paylaþým bulunamadý.");
+                throw new NotFoundException("Kaydedilecek paylaÅŸÄ±m bulunamadÄ±.");
             }
 
             var bookmark = _mapper.Map<Bookmark>(request);
@@ -36,7 +36,7 @@ namespace buduns_server.Application.Features.Bookmarks.Commands.Create
             bookmark.isActive = true;
 
             var result = await _unitOfWork.BookmarkRepository.CreateIfNotExistsAsync(bookmark, cancellationToken);
-            var message = result.Created ? "Yer iþareti baþarýyla eklendi." : "Paylaþým zaten yer iþaretlerinizde bulunuyor.";
+            var message = result.Created ? "Yer iÅŸareti baÅŸarÄ±yla eklendi." : "PaylaÅŸÄ±m zaten yer iÅŸaretlerinizde bulunuyor.";
 
             return new CreateBookmarksCommandResponse(
                 Succeeded: true,

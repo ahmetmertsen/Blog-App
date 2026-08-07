@@ -6,9 +6,9 @@ namespace buduns_server.Application.Features.Comments.Queries.GetByPostId
     {
         public GetCommentsByPostIdQueryValidator()
         {
-            RuleFor(x => x.PostId).GreaterThan(0).WithMessage("Post Id 0'dan büyük olmalıdır.");
-            RuleFor(x => x.Page).GreaterThanOrEqualTo(1).WithMessage("Sayfa numarası en az 1 olmalıdır.");
-            RuleFor(x => x.Size).InclusiveBetween(1, 100).WithMessage("Sayfa boyutu 1 ile 100 arasında olmalıdır.");
+            RuleFor(x => x.PostId).GreaterThan(0).WithMessage("Post Id 0'dan bÃ¼yÃ¼k olmalÄ±dÄ±r.");
+            RuleFor(x => x.Page).GreaterThanOrEqualTo(1).WithMessage("Sayfa numarasÄ± en az 1 olmalÄ±dÄ±r.");
+            RuleFor(x => x.Size).InclusiveBetween(1, 100).WithMessage("Sayfa boyutu 1 ile 100 arasÄ±nda olmalÄ±dÄ±r.");
         }
     }
 }

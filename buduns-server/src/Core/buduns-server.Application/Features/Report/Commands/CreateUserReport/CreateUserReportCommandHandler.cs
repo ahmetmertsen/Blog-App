@@ -36,32 +36,32 @@ namespace buduns_server.Application.Features.Report.Commands.CreateUserReport
         {   
             if (request.UserId == request.TargetUserId)
             {
-                throw new BadRequestException("Kendinizi þikayet edemezsiniz.");
+                throw new BadRequestException("Kendinizi ÅŸikayet edemezsiniz.");
             }
                 
             User? targetUser = await _userManager.FindByIdAsync(request.TargetUserId.ToString());
             if (targetUser == null)
             {
-                throw new NotFoundException("Þikayet edilen kullanýcý bulunamadý.");
+                throw new NotFoundException("Åžikayet edilen kullanÄ±cÄ± bulunamadÄ±.");
             }
 
             if (targetUser.Status == UserStatus.Banned)
             {
-                throw new BadRequestException("Bu kullanýcý zaten platformdan yasaklanmýþ.");
+                throw new BadRequestException("Bu kullanÄ±cÄ± zaten platformdan yasaklanmÄ±ÅŸ.");
             }
 
             var recentReportCount = await _unitOfWork.ReportRepository.CountRecentReportsByUserAsync(request.UserId, DateTime.UtcNow.AddHours(-24), cancellationToken);
             var dailyReportLimit = Math.Max(1, _reportPolicyOptions.DailyReportLimit);
             if (recentReportCount >= dailyReportLimit)
             {
-                throw new TooManyRequestsException($"24 saat içinde en fazla {dailyReportLimit} þikayet oluþturabilirsiniz.");
+                throw new TooManyRequestsException($"24 saat iÃ§inde en fazla {dailyReportLimit} ÅŸikayet oluÅŸturabilirsiniz.");
             }
                 
 
             bool alreadyReported = await _unitOfWork.ReportRepository.HasPendingUserReportAsync(request.UserId, request.TargetUserId, cancellationToken);
             if (alreadyReported)
             {
-                throw new BadRequestException("Bu kullanýcý için zaten bekleyen bir þikayetiniz var.");
+                throw new BadRequestException("Bu kullanÄ±cÄ± iÃ§in zaten bekleyen bir ÅŸikayetiniz var.");
             }
                 
 
@@ -86,7 +86,7 @@ namespace buduns_server.Application.Features.Report.Commands.CreateUserReport
 
             _logger.LogInformation("User report created. ReportId: {ReportId}, ReporterUserId: {ReporterUserId}, TargetUserId: {TargetUserId}, Reason: {Reason}", report.Id, request.UserId, request.TargetUserId, request.Reason);
 
-            return new CreateUserReportCommandResponse(Succeeded:true, Message:"Þikayetiniz baþarýyla alýndý.");
+            return new CreateUserReportCommandResponse(Succeeded:true, Message:"Åžikayetiniz baÅŸarÄ±yla alÄ±ndÄ±.");
         }
 
     }

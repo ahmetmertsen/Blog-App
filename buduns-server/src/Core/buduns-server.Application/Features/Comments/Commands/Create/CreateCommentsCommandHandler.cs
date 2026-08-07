@@ -25,7 +25,7 @@ namespace buduns_server.Application.Features.Comments.Commands.Create
             var postOwnerId = await _unitOfWork.PostRepository.GetVisibleOwnerIdAsync(request.PostId, cancellationToken);
             if (!postOwnerId.HasValue)
             {
-                throw new NotFoundException("Yorum yapýlacak paylaþým bulunamadý.");
+                throw new NotFoundException("Yorum yapÄ±lacak paylaÅŸÄ±m bulunamadÄ±.");
             }
 
             var content = request.Content.Trim();
@@ -33,13 +33,13 @@ namespace buduns_server.Application.Features.Comments.Commands.Create
             var recentCommentCount = await _unitOfWork.CommentRepository.CountRecentByUserAsync(request.UserId, now.AddMinutes(-1), cancellationToken);
             if (recentCommentCount >= CommentLimitPerMinute)
             {
-                throw new TooManyRequestsException("Bir dakika içinde en fazla 10 yorum oluþturabilirsiniz.");
+                throw new TooManyRequestsException("Bir dakika iÃ§inde en fazla 10 yorum oluÅŸturabilirsiniz.");
             }
 
             var isDuplicate = await _unitOfWork.CommentRepository.HasRecentDuplicateAsync(request.UserId, request.PostId, content, now.AddSeconds(-60), cancellationToken);
             if (isDuplicate)
             {
-                throw new BadRequestException("Ayný yorumu kýsa süre içinde tekrar gönderemezsiniz.");
+                throw new BadRequestException("AynÄ± yorumu kÄ±sa sÃ¼re iÃ§inde tekrar gÃ¶nderemezsiniz.");
             }
 
             var comment = new Comment
@@ -57,8 +57,8 @@ namespace buduns_server.Application.Features.Comments.Commands.Create
             await _notificationService.AddAsync(new NotificationCreateModel { Type = NotificationType.POST_COMMENTED, UserId = postOwnerId.Value, ActorUserId = request.UserId, PostId = request.PostId, Comment = comment }, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            var commentDto = await _unitOfWork.CommentRepository.GetDtoByIdAsync(comment.Id, cancellationToken) ?? throw new NotFoundException("Oluþturulan yorum bulunamadý.");
-            return new CreateCommentsCommandResponse(true, "Yorum baþarýyla eklendi.", commentDto);
+            var commentDto = await _unitOfWork.CommentRepository.GetDtoByIdAsync(comment.Id, cancellationToken) ?? throw new NotFoundException("OluÅŸturulan yorum bulunamadÄ±.");
+            return new CreateCommentsCommandResponse(true, "Yorum baÅŸarÄ±yla eklendi.", commentDto);
         }
     }
 }

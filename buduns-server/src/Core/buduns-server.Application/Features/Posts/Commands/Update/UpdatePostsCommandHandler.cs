@@ -27,13 +27,13 @@ namespace buduns_server.Application.Features.Posts.Commands.Update
             var post = await _unitOfWork.PostRepository.GetByIdWithTagsAsync(request.Id);
             if (post == null)
             {
-                throw new NotFoundException("Post bulunamadý!");
+                throw new NotFoundException("Post bulunamadÄ±!");
             }
             if (post.UserId != request.UserId)
             {
-                throw new UnauthorizedAccesException("Bu postu güncelleme yetkiniz yok.");
+                throw new UnauthorizedAccesException("Bu postu gÃ¼ncelleme yetkiniz yok.");
             }
-            #region Tag Güncelleme
+            #region Tag GÃ¼ncelleme
             var tagIds = request.TagIds?
                 .Distinct()
                 .ToList() ?? new List<int>();
@@ -43,7 +43,7 @@ namespace buduns_server.Application.Features.Posts.Commands.Update
 
             if (missingTagIds.Any())
             {
-                throw new BadRequestException($"Geçersiz tag id(ler): {string.Join(", ", missingTagIds)}");
+                throw new BadRequestException($"GeÃ§ersiz tag id(ler): {string.Join(", ", missingTagIds)}");
             }
 
             post.Tags.Clear();
@@ -56,7 +56,7 @@ namespace buduns_server.Application.Features.Posts.Commands.Update
             _mapper.Map(request, post);
             post.UpdateAt = DateTime.UtcNow;
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return new UpdatePostsCommandResponse(true, "Post baþarýyla güncellenmiþtir");
+            return new UpdatePostsCommandResponse(true, "Post baÅŸarÄ±yla gÃ¼ncellenmiÅŸtir");
         }
     }
 }

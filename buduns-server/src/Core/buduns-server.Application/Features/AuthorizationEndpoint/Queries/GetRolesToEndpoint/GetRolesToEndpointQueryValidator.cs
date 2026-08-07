@@ -12,9 +12,9 @@ namespace buduns_server.Application.Features.AuthorizationEndpoint.Queries.GetRo
         public GetRolesToEndpointQueryValidator() 
         {
             RuleFor(r => r.Code)
-                .NotEmpty().WithMessage("Code alaný boþ olamaz.");
+                .NotEmpty().WithMessage("Code alanÄ± boÅŸ olamaz.");
             RuleFor(r => r.Menu)
-                .NotEmpty().WithMessage("Menu alaný boþ olamaz.");
+                .NotEmpty().WithMessage("Menu alanÄ± boÅŸ olamaz.");
         }
     }
 }
