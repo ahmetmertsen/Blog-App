@@ -8,4 +8,25 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <!--
+    Nullable circiri
+    ================
+    Nullable temizligi faz faz ilerliyor; her kazanim geri kaymasin diye iki
+    seviyede kilitleniyor:
+
+      1) Kod bazinda - bir uyari kodu tum cozumde sifirlandiginda asagidaki
+         listeye eklenir.
+      2) Proje bazinda - bir projede hic nullable uyarisi kalmadiginda o
+         projenin csproj'una <NullableStrict>true</NullableStrict> eklenir.
+
+    Ikisinin WarningsAsErrors'a cevrilmesi Directory.Build.targets icinde
+    yapilir; NullableStrict csproj'da tanimlandigi ve bu dosya csproj govdesinden
+    once degerlendirildigi icin kosul burada calismaz.
+
+    Tum projeler NullableStrict oldugunda 1. madde gereksizlesir ve silinir.
+  -->
+  <PropertyGroup>
+    <ClearedNullableWarnings></ClearedNullableWarnings>
+  </PropertyGroup>
+
 </Project>

@@ -1,0 +1,16 @@
+<Project>
+
+  <!--
+    Nullable circirinin uygulandigi yer. Bu dosya csproj govdesinden SONRA
+    degerlendirildigi icin projelerin tanimladigi NullableStrict burada gorunur.
+    Ayrintili aciklama Directory.Build.props icinde.
+  -->
+  <PropertyGroup Condition="'$(ClearedNullableWarnings)' != ''">
+    <WarningsAsErrors>$(WarningsAsErrors);$(ClearedNullableWarnings)</WarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(NullableStrict)' == 'true'">
+    <WarningsAsErrors>$(WarningsAsErrors);Nullable</WarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

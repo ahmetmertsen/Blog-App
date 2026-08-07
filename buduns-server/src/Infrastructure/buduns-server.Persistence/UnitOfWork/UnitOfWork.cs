@@ -1,6 +1,8 @@
+using buduns_server.Application.Exceptions;
 using buduns_server.Application.Repositories;
 using buduns_server.Application.UnitOfWork;
 using buduns_server.Persistence.Context;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,6 +46,18 @@ namespace buduns_server.Persistence.UnitOfWork
             MenuRepository = menuRepository;
         }
 
-        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken) => await _context.SaveChangesAsync(cancellationToken);
+        // EF Core'a ozgu eszamanlilik istisnasi burada uygulama seviyesine
+        // cevriliyor; boylece Application katmani EF Core'a bagli kalmiyor.
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new ConcurrencyConflictException();
+            }
+        }
     }
 }

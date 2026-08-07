@@ -5,7 +5,6 @@ using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Entities;
 using buduns_server.Domain.Entities.Identity;
 using buduns_server.Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -261,7 +260,7 @@ namespace buduns_server.Application.Features.Report.Commands.ReviewReport
             {
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (ConcurrencyConflictException)
             {
                 throw new BadRequestException("Bu şikayet başka bir moderatör tarafından güncellendi. Güncel durumu yeniden yükleyin.");
             }

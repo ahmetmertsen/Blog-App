@@ -23,11 +23,10 @@
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <PackageReference Include="MediatR" />
     <!--
-      TODO: Application katmani yalnizca DbUpdateConcurrencyException icin
-      EF Core'a bagli (ReviewReportCommandHandler). Bu istisna Persistence
-      icinde uygulama seviyesi bir exception'a cevrilirse bu referans kalkar.
+      Bu katmana EF Core referansi EKLENMEZ. Veri erisimi IUnitOfWork ve
+      IRepository soyutlamalari uzerinden yapilir; EF Core'a ozgu istisnalar
+      Persistence icinde uygulama seviyesine cevrilir.
     -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
   </ItemGroup>
 
