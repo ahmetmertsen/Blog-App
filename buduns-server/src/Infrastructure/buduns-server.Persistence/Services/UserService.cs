@@ -110,7 +110,7 @@ namespace buduns_server.Persistence.Services
 
         public async Task<UpdateUserPasswordResponse> UpdatePasswordAsync(UpdateUserPasswordRequest request, CancellationToken cancellationToken)
         {
-            User user = await _userManager.FindByEmailAsync(request.EmailOrUsername) ?? await _userManager.FindByNameAsync(request.EmailOrUsername);
+            User? user = await _userManager.FindByEmailAsync(request.EmailOrUsername) ?? await _userManager.FindByNameAsync(request.EmailOrUsername);
             if (user == null)
             {
                 throw new NotFoundException("Kullanıcı bulunamadı.");
@@ -153,7 +153,7 @@ namespace buduns_server.Persistence.Services
 
         public async Task<UpdateUserMailVerifyResponse> UpdateUserMailVerify(UpdateUserMailVerifyRequest request, CancellationToken cancellationToken)
         {
-            User user = await _userManager.FindByIdAsync(request.UserId.ToString());
+            User? user = await _userManager.FindByIdAsync(request.UserId.ToString());
             if (user == null)
             {
                 throw new NotFoundException("Kullanıcı bulunamadı.");
@@ -199,7 +199,7 @@ namespace buduns_server.Persistence.Services
 
         public async Task<UpdateUserProfileResponse> UpdateUserProfile(UpdateUserProfileRequest request)
         {
-            User user = await _userManager.FindByIdAsync(request.UserId.ToString());
+            User? user = await _userManager.FindByIdAsync(request.UserId.ToString());
             if (user == null)
             {
                 throw new NotFoundException("Kullanıcı bulunamadı.");
@@ -226,7 +226,7 @@ namespace buduns_server.Persistence.Services
 
         public async Task<UpdateUserEmailResponse> UpdateUserEmailAsync(UpdateUserEmailRequest request, CancellationToken cancellationToken)
         {
-            User user = await _userManager.FindByIdAsync(request.UserId.ToString());
+            User? user = await _userManager.FindByIdAsync(request.UserId.ToString());
             if (user == null)
             {
                 throw new NotFoundException("Kullanıcı bulunamadı.");

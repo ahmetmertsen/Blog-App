@@ -26,7 +26,8 @@
     Tum projeler NullableStrict oldugunda 1. madde gereksizlesir ve silinir.
   -->
   <PropertyGroup>
-    <ClearedNullableWarnings></ClearedNullableWarnings>
+    <!-- Faz 2'de tum cozumde sifirlandi. Geriye yalnizca CS8618 kaldi. -->
+    <ClearedNullableWarnings>CS8600;CS8601;CS8602;CS8604;CS8619</ClearedNullableWarnings>
   </PropertyGroup>
 
 </Project>

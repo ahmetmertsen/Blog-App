@@ -1,6 +1,7 @@
 using buduns_server.Application.Abstractions.Token;
+using buduns_server.Application.Common.Options;
 using buduns_server.Domain.Entities.Identity;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -15,11 +16,11 @@ namespace buduns_server.Infrastructure.Services.Token
 {
     public class TokenHandler : ITokenHandler
     {
-        private readonly IConfiguration _configuration;
+        private readonly JwtTokenOptions _tokenOptions;
 
-        public TokenHandler(IConfiguration configuration)
+        public TokenHandler(IOptions<JwtTokenOptions> tokenOptions)
         {
-            _configuration = configuration;
+            _tokenOptions = tokenOptions.Value;
         }
 
         public Application.Dtos.Token CreateAccessToken(User user, IList<string> roles, Guid sessionId, string refreshToken)
@@ -27,11 +28,11 @@ namespace buduns_server.Infrastructure.Services.Token
             Application.Dtos.Token token = new();
 
             //Security Key'in simetriğini alıyoruz.
-            SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(_configuration["Token:SecurityKey"]));
+            SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(_tokenOptions.SecurityKey));
             //Şifrelenmiş kimliği oluşturuyoruz.
             SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
             //Oluşturulacak token ayarlarını veriyoruz.
-            var accessTokenExpirationMinutes = _configuration.GetValue<int?>("Token:AccessTokenExpirationMinutes") ?? 15;
+            var accessTokenExpirationMinutes = _tokenOptions.AccessTokenExpirationMinutes > 0 ? _tokenOptions.AccessTokenExpirationMinutes : 15;
             token.Expiration = DateTime.UtcNow.AddMinutes(accessTokenExpirationMinutes);
             token.SessionId = sessionId;
             token.RequiresEmailVerification = !user.EmailConfirmed;
@@ -52,8 +53,8 @@ namespace buduns_server.Infrastructure.Services.Token
             }
 
             JwtSecurityToken securityToken = new(
-                audience: _configuration["Token:Audience"],
-                issuer: _configuration["Token:Issuer"],
+                audience: _tokenOptions.Audience,
+                issuer: _tokenOptions.Issuer,
                 claims: claims,
                 expires: token.Expiration,
                 notBefore: DateTime.UtcNow,

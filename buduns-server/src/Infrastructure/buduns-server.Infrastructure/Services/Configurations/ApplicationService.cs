@@ -18,57 +18,49 @@ namespace buduns_server.Infrastructure.Services.Configurations
     {
         public List<Menu> GetAuthorizeDefinitionEndpoints(Type type)
         {
-            Assembly assembly = Assembly.GetAssembly(type);
+            Assembly assembly = Assembly.GetAssembly(type)
+                ?? throw new InvalidOperationException($"'{type.FullName}' turunun assembly'si bulunamadi.");
+
             var controllers = assembly.GetTypes().Where(t => t.IsAssignableTo(typeof(ControllerBase)));
 
             List<Menu> menus = new();
 
-            if (controllers != null)
+            foreach (var controller in controllers)
             {
-                foreach (var controller in controllers)
+                var actions = controller.GetMethods().Where(m => m.IsDefined(typeof(AuthorizeDefinitionAttribute)));
+                foreach (var action in actions)
                 {
-                    var actions = controller.GetMethods().Where(m => m.IsDefined(typeof(AuthorizeDefinitionAttribute)));
-                    if (actions != null)
+                    var attributes = action.GetCustomAttributes(true);
+
+                    // IsDefined ile filtrelendigi icin normalde her zaman bulunur;
+                    // yine de bulunamazsa bu action atlanir.
+                    if (attributes.FirstOrDefault(a => a.GetType() == typeof(AuthorizeDefinitionAttribute)) is not AuthorizeDefinitionAttribute authorizeDefinitonAttribute)
                     {
-                        foreach (var action in actions)
-                        {
-                            var attributes = action.GetCustomAttributes(true);
-                            if (attributes != null)
-                            {
-                                Menu menu = null;
-                                var authorizeDefinitonAttribute = attributes.FirstOrDefault(a => a.GetType() == typeof(AuthorizeDefinitionAttribute)) as AuthorizeDefinitionAttribute;
-                                if (!menus.Any(m => m.Name == authorizeDefinitonAttribute.Menu))
-                                {
-                                    menu = new() { Name = authorizeDefinitonAttribute.Menu };
-                                    menus.Add(menu);
-                                }
-                                else
-                                {
-                                    menu = menus.FirstOrDefault(m => m.Name == authorizeDefinitonAttribute.Menu);
-                                }
-                                Application.Dtos.Configurations.Action action2 = new()
-                                {
-                                    ActionType = Enum.GetName(typeof(ActionType), authorizeDefinitonAttribute.ActionType),
-                                    Definition = authorizeDefinitonAttribute.Definition,
-                                };
-
-                                var httpAttribute = attributes.FirstOrDefault(a => a.GetType().IsAssignableTo(typeof(HttpMethodAttribute))) as HttpMethodAttribute;
-                                if (httpAttribute != null)
-                                {
-                                    action2.HttpType = httpAttribute.HttpMethods.First();
-                                }
-                                else
-                                {
-                                    action2.HttpType = HttpMethods.Get;
-                                }
-
-                                action2.Code = $"{action2.HttpType}.{action2.ActionType}.{action2.Definition.Replace(" ", "")}";
-                                menu.Actions.Add(action2);
-                            }
-                        }
+                        continue;
                     }
+
+                    var menu = menus.FirstOrDefault(m => m.Name == authorizeDefinitonAttribute.Menu);
+                    if (menu == null)
+                    {
+                        menu = new() { Name = authorizeDefinitonAttribute.Menu };
+                        menus.Add(menu);
+                    }
+
+                    var httpAttribute = attributes.FirstOrDefault(a => a.GetType().IsAssignableTo(typeof(HttpMethodAttribute))) as HttpMethodAttribute;
+                    var httpType = httpAttribute?.HttpMethods.First() ?? HttpMethods.Get;
+                    var actionType = Enum.GetName(typeof(ActionType), authorizeDefinitonAttribute.ActionType) ?? string.Empty;
+                    var definition = authorizeDefinitonAttribute.Definition ?? string.Empty;
+
+                    menu.Actions.Add(new Application.Dtos.Configurations.Action
+                    {
+                        ActionType = actionType,
+                        Definition = definition,
+                        HttpType = httpType,
+                        Code = $"{httpType}.{actionType}.{definition.Replace(" ", "")}"
+                    });
                 }
             }
+
             return menus;
         }
     }

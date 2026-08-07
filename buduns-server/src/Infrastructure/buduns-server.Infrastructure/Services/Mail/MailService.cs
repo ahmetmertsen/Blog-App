@@ -27,6 +27,19 @@ namespace buduns_server.Infrastructure.Services.Mail
 
         public Task SendMailAsync(string to, string subject, string content) => SendMailAsync(new[] { to }, subject, content);
 
+        // Sablonun eksik olmasi istemci hatasi degil sunucu yapilandirma hatasi;
+        // bu yuzden NotFoundException degil InvalidOperationException.
+        private async Task<string> GetTemplateAsync(string name)
+        {
+            var utility = await _unitOfWork.UtilityRepository.GetByNameAsync(name);
+            if (utility == null)
+            {
+                throw new InvalidOperationException($"'{name}' mail sablonu veritabaninda bulunamadi.");
+            }
+
+            return utility.Value;
+        }
+
         public async Task SendMailAsync(string[] toes, string subject, string content)
         {
             var username = _configuration["Mail:Username"];
@@ -82,8 +95,7 @@ namespace buduns_server.Infrastructure.Services.Mail
         // Şifre Sıfırlama Maili
         public async Task SendForgotPasswordMailAsync(string to, string fullName, string verificationCode)
         {
-            var utilityResponse = await _unitOfWork.UtilityRepository.GetByNameAsync("FORGOT_PASSWORD");
-            string description = utilityResponse.Value;
+            string description = await GetTemplateAsync("FORGOT_PASSWORD");
             description = description.Replace("{full_name}", $"{fullName}");
             description = description.Replace("{verification_code}", verificationCode);
             description = description.Replace("{reset_code}", verificationCode);
@@ -96,8 +108,7 @@ namespace buduns_server.Infrastructure.Services.Mail
         // Mail Doğrulama
         public async Task SendVerifyMailAsync(string to, string fullName, string verificationCode)
         {
-            var utilityResponse = await _unitOfWork.UtilityRepository.GetByNameAsync("MAIL_VERIFY");
-            string description = utilityResponse.Value;
+            string description = await GetTemplateAsync("MAIL_VERIFY");
             description = description.Replace("{full_name}", $"{fullName}");
             description = description.Replace("{verification_code}", verificationCode);
             description = description.Replace("{verify_code}", verificationCode);
@@ -110,8 +121,7 @@ namespace buduns_server.Infrastructure.Services.Mail
         // Mevcut Email Değiştirme Onayı
         public async Task SendChangeEmailOldMailAsync(string to, string fullName, string newEmail, string verificationCode)
         {
-            var utilityResponse = await _unitOfWork.UtilityRepository.GetByNameAsync("CHANGE_EMAIL_OLD");
-            string description = utilityResponse.Value;
+            string description = await GetTemplateAsync("CHANGE_EMAIL_OLD");
             description = description.Replace("{full_name}", $"{fullName}");
             description = description.Replace("{new_email}", newEmail);
             description = description.Replace("{verification_code}", verificationCode);
@@ -125,8 +135,7 @@ namespace buduns_server.Infrastructure.Services.Mail
         // Email Değiştirme
         public async Task SendChangeEmailMailAsync(string to, string fullName, string verificationCode)
         {
-            var utilityResponse = await _unitOfWork.UtilityRepository.GetByNameAsync("CHANGE_EMAIL");
-            string description = utilityResponse.Value;
+            string description = await GetTemplateAsync("CHANGE_EMAIL");
             description = description.Replace("{full_name}", $"{fullName}");
             description = description.Replace("{verification_code}", verificationCode);
             description = description.Replace("{confirm_code}", verificationCode);

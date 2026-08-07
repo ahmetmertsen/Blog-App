@@ -51,6 +51,10 @@ namespace buduns_server.Persistence.Services
             {
                 var action = _applicationService.GetAuthorizeDefinitionEndpoints(type).FirstOrDefault(m => m.Name == menu)?
                     .Actions.FirstOrDefault(e => e.Code == code);
+                if (action == null)
+                {
+                    throw new NotFoundException($"'{menu}' menusunde '{code}' kodlu endpoint tanimi bulunamadi.");
+                }
 
                 endpoint = new()
                 {
@@ -90,7 +94,8 @@ namespace buduns_server.Persistence.Services
                 throw new NotFoundException("Endpoint bulunamadı.");
             }
 
-            return endpoint.Roles.Select(r => r.Name).ToList();
+            // Role.Name (IdentityRole) nullable; adsiz roller listeye alinmiyor.
+            return endpoint.Roles.Select(r => r.Name).OfType<string>().ToList();
         }
     }
 }

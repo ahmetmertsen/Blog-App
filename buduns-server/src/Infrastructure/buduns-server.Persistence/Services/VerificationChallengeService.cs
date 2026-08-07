@@ -1,10 +1,12 @@
 using buduns_server.Application.Abstractions.Services;
+using buduns_server.Application.Common.Options;
 using buduns_server.Application.Exceptions;
 using buduns_server.Domain.Entities;
 using buduns_server.Domain.Enums;
 using buduns_server.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -14,11 +16,13 @@ namespace buduns_server.Persistence.Services
     {
         private readonly BudunsDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly JwtTokenOptions _tokenOptions;
 
-        public VerificationChallengeService(BudunsDbContext context, IConfiguration configuration)
+        public VerificationChallengeService(BudunsDbContext context, IConfiguration configuration, IOptions<JwtTokenOptions> tokenOptions)
         {
             _context = context;
             _configuration = configuration;
+            _tokenOptions = tokenOptions.Value;
         }
 
         public async Task<string> CreateCodeAsync(int userId, VerificationPurpose purpose, string? targetEmail, CancellationToken cancellationToken)
@@ -138,7 +142,7 @@ namespace buduns_server.Persistence.Services
             var secret = _configuration["VerificationCode:Secret"];
             if (string.IsNullOrWhiteSpace(secret))
             {
-                secret = _configuration["Token:SecurityKey"];
+                secret = _tokenOptions.SecurityKey;
             }
 
             if (string.IsNullOrWhiteSpace(secret))

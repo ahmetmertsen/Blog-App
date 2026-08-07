@@ -1,13 +1,14 @@
 using buduns_server.Application.Abstractions.Services;
 using buduns_server.Application.Abstractions.Token;
 using buduns_server.Application.Dtos;
+using buduns_server.Application.Common.Options;
 using buduns_server.Application.Dtos.Auth;
 using buduns_server.Application.Exceptions;
 using buduns_server.Domain.Entities.Identity;
 using buduns_server.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace buduns_server.Persistence.Services
 {
@@ -19,10 +20,10 @@ namespace buduns_server.Persistence.Services
         private readonly IAuthSessionService _authSessionService;
         private readonly IMailService _mailService;
         private readonly IVerificationChallengeService _verificationChallengeService;
-        private readonly IConfiguration _configuration;
+        private readonly JwtTokenOptions _tokenOptions;
         private readonly ILogger<AuthService> _logger;
 
-        public AuthService(UserManager<User> userManager, SignInManager<User> signInManager, ITokenHandler tokenHandler, IAuthSessionService authSessionService, IMailService mailService, IVerificationChallengeService verificationChallengeService, IConfiguration configuration, ILogger<AuthService> logger)
+        public AuthService(UserManager<User> userManager, SignInManager<User> signInManager, ITokenHandler tokenHandler, IAuthSessionService authSessionService, IMailService mailService, IVerificationChallengeService verificationChallengeService, IOptions<JwtTokenOptions> tokenOptions, ILogger<AuthService> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -30,7 +31,7 @@ namespace buduns_server.Persistence.Services
             _authSessionService = authSessionService;
             _mailService = mailService;
             _verificationChallengeService = verificationChallengeService;
-            _configuration = configuration;
+            _tokenOptions = tokenOptions.Value;
             _logger = logger;
         }
 
@@ -230,6 +231,6 @@ namespace buduns_server.Persistence.Services
         }
 
         private int GetRefreshTokenExpirationDays() =>
-            int.TryParse(_configuration["Token:RefreshTokenExpirationDays"], out var days) && days > 0 ? days : 30;
+            _tokenOptions.RefreshTokenExpirationDays > 0 ? _tokenOptions.RefreshTokenExpirationDays : 30;
     }
 }

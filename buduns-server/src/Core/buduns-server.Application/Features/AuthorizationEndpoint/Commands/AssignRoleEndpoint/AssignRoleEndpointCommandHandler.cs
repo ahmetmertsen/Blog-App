@@ -22,7 +22,11 @@ namespace buduns_server.Application.Features.AuthorizationEndpoint.Commands.Assi
 
         public async Task<AssignRoleEndpointCommandResponse> Handle(AssignRoleEndpointCommand request, CancellationToken cancellationToken)
         {
-            await _authorizationEndpointService.AssignRoleEndpointAsync(request.Roles, request.Menu, request.Code, request.Type);
+            // Type gelen govdeden degil, controller tarafindan atanir (JsonIgnore).
+            // Bos olmasi istemci hatasi degil kod hatasidir.
+            var type = request.Type ?? throw new InvalidOperationException($"{nameof(AssignRoleEndpointCommand)}.{nameof(request.Type)} atanmamis.");
+
+            await _authorizationEndpointService.AssignRoleEndpointAsync(request.Roles, request.Menu, request.Code, type);
 
             _logger.LogInformation(
                 "Roles assigned to endpoint. Menu: {Menu}, PermissionCode: {PermissionCode}, Roles: {Roles}, RoleCount: {RoleCount}",

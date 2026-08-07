@@ -10,6 +10,7 @@ using buduns_server.WebAPI.Middlewares;
 using buduns_server.WebAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -44,7 +45,19 @@ namespace buduns_server.WebAPI
                 builder.Configuration.GetSection("SensitiveEndpointRateLimit"));
             builder.Services.Configure<ReportPolicyOptions>(
                 builder.Configuration.GetSection(ReportPolicyOptions.SectionName));
-            
+
+            // Dogrulama ValidateOnStart ile host acilisinda calisir. Burada
+            // Configuration'dan okuyup dogrulamak yanlis olurdu: test host'unun
+            // (WebApplicationFactory) ekledigi kaynaklar bu noktada henuz
+            // birlestirilmemis oluyor.
+            builder.Services.AddOptions<JwtTokenOptions>()
+                .Bind(builder.Configuration.GetSection(JwtTokenOptions.SectionName))
+                .Validate(options => !string.IsNullOrWhiteSpace(options.SecurityKey), "'Token:SecurityKey' yapilandirmasi zorunlu.")
+                .Validate(options => !string.IsNullOrWhiteSpace(options.Audience), "'Token:Audience' yapilandirmasi zorunlu.")
+                .Validate(options => !string.IsNullOrWhiteSpace(options.Issuer), "'Token:Issuer' yapilandirmasi zorunlu.")
+                .ValidateOnStart();
+
+
             #region CORS
             builder.Services.AddCors();
             builder.Services.AddOptions<CorsOptions>().Configure<IConfiguration>((corsOptions, configuration) =>
@@ -77,7 +90,7 @@ namespace buduns_server.WebAPI
             #endregion
 
             #region Serilog
-            Logger log = new LoggerConfiguration()
+            LoggerConfiguration loggerConfiguration = new LoggerConfiguration()
                 .WriteTo.File(
                     path: "logs/buduns-.txt",
                     rollingInterval: RollingInterval.Day,
@@ -91,7 +104,17 @@ namespace buduns_server.WebAPI
                     rollingInterval: RollingInterval.Day,
                     retainedFileCountLimit: 60,
                     restrictedToMinimumLevel: LogEventLevel.Error)
-                .WriteTo.PostgreSQL(builder.Configuration.GetConnectionString("DefaultConnection"), "logs", needAutoCreateTable:true,
+                .Enrich.FromLogContext()
+                .MinimumLevel.Information()
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning);
+
+            // Veritabani ve Seq sink'leri opsiyonel: yapilandirilmamislarsa
+            // eklenmiyorlar. Eskiden null/bos deger gecilip uygulama acilista
+            // duser ya da sink sessizce hata uretirdi.
+            var logConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            if (!string.IsNullOrWhiteSpace(logConnectionString))
+            {
+                loggerConfiguration.WriteTo.PostgreSQL(logConnectionString, "logs", needAutoCreateTable: true,
                     columnOptions: new Dictionary<string, ColumnWriterBase>
                     {
                         {"message", new RenderedMessageColumnWriter() },
@@ -102,13 +125,16 @@ namespace buduns_server.WebAPI
                         {"log_event", new LogEventSerializedColumnWriter() },
                         {"user_name", new UsernameColumnWriter() }
                     },
-                    restrictedToMinimumLevel: LogEventLevel.Warning
-                )
-                .WriteTo.Seq(builder.Configuration["Seq:ServerURL"])
-                .Enrich.FromLogContext()
-                .MinimumLevel.Information()
-                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-                .CreateLogger();
+                    restrictedToMinimumLevel: LogEventLevel.Warning);
+            }
+
+            var seqServerUrl = builder.Configuration["Seq:ServerURL"];
+            if (!string.IsNullOrWhiteSpace(seqServerUrl))
+            {
+                loggerConfiguration.WriteTo.Seq(seqServerUrl);
+            }
+
+            Logger log = loggerConfiguration.CreateLogger();
 
             Log.Logger = log;
 
@@ -174,9 +200,9 @@ namespace buduns_server.WebAPI
                         ValidateLifetime = true, //Olu�turulan token de�erinin s�resini kontrol edecek olan do�rulamad�r.
                         ValidateIssuerSigningKey = true, //�retilecek token de�erinin uygulamam�za ait bir de�er oldu�unu ifade eden security key verisinin do�rulanmas�d�r.
 
-                        ValidAudience = builder.Configuration["Token:Audience"],
-                        ValidIssuer = builder.Configuration["Token:Issuer"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Token:SecurityKey"])),
+                        // Audience/Issuer/IssuerSigningKey asagida IOptions uzerinden
+                        // atanir; token'i ureten TokenHandler ile ayni kaynagi okumalari
+                        // icin yapilandirmanin burada erken okunmamasi gerekiyor.
                         NameClaimType = ClaimTypes.Name, //Jwt �zerinden gelen Name claimine kar��l�k gelen de�eri User.Identity.Name propertysinden elde edilir.
                         RoleClaimType = ClaimTypes.Role,
                         ClockSkew = TimeSpan.FromMinutes(1)
@@ -237,6 +263,17 @@ namespace buduns_server.WebAPI
                     return Task.CompletedTask;
                 };
             });
+
+            // Token dogrulama degerleri, tum yapilandirma kaynaklari birlestikten
+            // sonra IOptions uzerinden atanir.
+            builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+                .Configure<IOptions<JwtTokenOptions>>((jwtBearerOptions, tokenOptions) =>
+                {
+                    var token = tokenOptions.Value;
+                    jwtBearerOptions.TokenValidationParameters.ValidAudience = token.Audience;
+                    jwtBearerOptions.TokenValidationParameters.ValidIssuer = token.Issuer;
+                    jwtBearerOptions.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(token.SecurityKey));
+                });
             #endregion
 
             var app = builder.Build();
