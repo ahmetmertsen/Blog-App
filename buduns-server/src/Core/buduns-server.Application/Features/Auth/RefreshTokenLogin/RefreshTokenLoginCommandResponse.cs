@@ -9,6 +9,6 @@ namespace buduns_server.Application.Features.Auth.RefreshTokenLogin
 {
     public class RefreshTokenLoginCommandResponse
     {
-        public Token Token { get; set; }
+        public required Token Token { get; set; }
     }
 }

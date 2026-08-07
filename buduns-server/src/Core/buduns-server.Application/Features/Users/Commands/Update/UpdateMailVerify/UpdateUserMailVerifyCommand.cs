@@ -13,6 +13,6 @@ namespace buduns_server.Application.Features.Users.Commands.Update.UpdateMailVer
     {
         [JsonIgnore]
         public int UserId { get; set; }
-        public string VerificationCode { get; set; }
+        public string VerificationCode { get; set; } = string.Empty;
     }
 }

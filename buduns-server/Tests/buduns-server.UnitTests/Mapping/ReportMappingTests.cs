@@ -93,7 +93,7 @@ public class ReportMappingTests
     {
         var report = CreateReport(ReportTargetType.Comment);
         report.TargetCommentId = 8;
-        report.TargetComment = new Comment { Id = 8, UserId = 44, Content = "yorum", User = new User { Id = 44, UserName = "yorumcu" } };
+        report.TargetComment = new Comment { Id = 8, UserId = 44, Content = "yorum", User = new User { Id = 44, UserName = "yorumcu", FullName = "Yorumcu" } };
 
         var dto = report.ToDetailDto();
 
@@ -123,7 +123,7 @@ public class ReportMappingTests
         var report = CreateReport(ReportTargetType.User);
         report.ReporterUser = new User { Id = 10, UserName = "sikayetci", FullName = "Sikayetci", Email = "s@test.com" };
         report.ReviewedByUserId = 30;
-        report.ReviewedByUser = new User { Id = 30, UserName = "moderator" };
+        report.ReviewedByUser = new User { Id = 30, UserName = "moderator", FullName = "Moderator" };
         report.ReviewNote = "not";
         report.ReviewedDate = new DateTime(2026, 4, 2, 9, 0, 0, DateTimeKind.Utc);
 
@@ -151,7 +151,7 @@ public class ReportMappingTests
 
         var actions = new[]
         {
-            new ModerationAction { Id = 2, ActionType = ModerationActionType.BanUser, ModeratorUserId = 30, Note = "kalici", ModeratorUser = new User { Id = 30, UserName = "moderator" } }
+            new ModerationAction { Id = 2, ActionType = ModerationActionType.BanUser, ModeratorUserId = 30, Note = "kalici", ModeratorUser = new User { Id = 30, UserName = "moderator", FullName = "Moderator" } }
         }.ToDtoList();
 
         Assert.Single(actions);

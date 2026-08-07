@@ -9,9 +9,9 @@ namespace buduns_server.Domain.Entities
 {
     public class Tag : BaseEntity
     {
-        public string Name { get; set; }
-        public string NormalizedName { get; set; }
+        public required string Name { get; set; }
+        public required string NormalizedName { get; set; }
 
-        public ICollection<Post> Posts { get; set; }
+        public ICollection<Post> Posts { get; set; } = new List<Post>();
     }
 }

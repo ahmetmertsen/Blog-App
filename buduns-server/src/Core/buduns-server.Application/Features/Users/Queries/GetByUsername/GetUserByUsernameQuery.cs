@@ -10,6 +10,6 @@ namespace buduns_server.Application.Features.Users.Queries.GetByUsername
 {
     public class GetUserByUsernameQuery : IRequest<UserDto>
     {
-        public string UserName { get; set; }
+        public string UserName { get; set; } = string.Empty;
     }
 }

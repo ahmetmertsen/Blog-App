@@ -11,14 +11,14 @@ namespace buduns_server.Domain.Entities
 {
     public class Comment : BaseEntity
     {
-        public string Content { get; set; }
+        public required string Content { get; set; }
         public CommentStatus Status { get; set; } = CommentStatus.Published;
 
         public int UserId { get; set; }
-        public User User { get; set; }
+        public User User { get; set; } = null!;
 
         public int PostId { get; set; }
-        public Post Post { get; set; }
+        public Post Post { get; set; } = null!;
 
         public ICollection<Report> Reports { get; set; } = new List<Report>();
         public ICollection<ModerationAction> ModerationActions { get; set; } = new List<ModerationAction>();

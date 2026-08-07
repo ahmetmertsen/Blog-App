@@ -9,6 +9,6 @@ namespace buduns_server.Application.Features.Auth.ForgotPassword
 {
     public class ForgotPasswordCommand : IRequest<ForgotPasswordCommandResponse>
     {
-        public string EmailOrUsername { get; set; }
+        public string EmailOrUsername { get; set; } = string.Empty;
     }
 }

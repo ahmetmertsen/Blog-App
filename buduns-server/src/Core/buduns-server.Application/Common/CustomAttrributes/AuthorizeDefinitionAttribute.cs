@@ -9,8 +9,8 @@ namespace buduns_server.Application.Common.CustomAttrributes
 {
     public class AuthorizeDefinitionAttribute : Attribute
     {
-        public string Menu { get; set; }
-        public string Definition { get; set; }
+        public required string Menu { get; set; }
+        public required string Definition { get; set; }
         public ActionType ActionType { get; set; }
     }
 }

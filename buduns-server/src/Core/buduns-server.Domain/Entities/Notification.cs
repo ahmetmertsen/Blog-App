@@ -12,10 +12,10 @@ namespace buduns_server.Domain.Entities
     public class Notification : BaseEntity
     {
         public NotificationType Type { get; set; }
-        public string Message { get; set; }
+        public required string Message { get; set; }
 
         public int UserId { get; set; }
-        public User User { get; set; }
+        public User User { get; set; } = null!;
 
         public int? ActorUserId { get; set; }
         public User? ActorUser { get; set; }

@@ -30,7 +30,7 @@ namespace buduns_server.Domain.Entities
         public DateTime? ReviewedDate { get; set; }
         public string? ReviewNote { get; set; }
 
-        public User ReporterUser { get; set; }
+        public User ReporterUser { get; set; } = null!;
         public Post? TargetPost { get; set; }
         public User? TargetUser { get; set; }
         public Comment? TargetComment { get; set; }

@@ -11,7 +11,7 @@ namespace buduns_server.Application.Dtos
     {
         public int Id { get; set; }
         public NotificationType Type { get; set; }
-        public string Message { get; set; }
+        public required string Message { get; set; }
         public int UserId { get; set; }
         public int? ActorUserId { get; set; }
         public string? ActorUserName { get; set; }

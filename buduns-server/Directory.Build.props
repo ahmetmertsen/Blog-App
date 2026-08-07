@@ -9,25 +9,16 @@
   </PropertyGroup>
 
   <!--
-    Nullable circiri
-    ================
-    Nullable temizligi faz faz ilerliyor; her kazanim geri kaymasin diye iki
-    seviyede kilitleniyor:
+    Nullable uyarilari HATA'dir.
+    ===========================
+    Temizlik tamamlandi: cozumde tek bir nullable uyarisi kalmadi. Geri kayisi
+    onlemek icin tum projelerde nullable uyarilari derleme hatasina cevriliyor.
 
-      1) Kod bazinda - bir uyari kodu tum cozumde sifirlandiginda asagidaki
-         listeye eklenir.
-      2) Proje bazinda - bir projede hic nullable uyarisi kalmadiginda o
-         projenin csproj'una <NullableStrict>true</NullableStrict> eklenir.
-
-    Ikisinin WarningsAsErrors'a cevrilmesi Directory.Build.targets icinde
-    yapilir; NullableStrict csproj'da tanimlandigi ve bu dosya csproj govdesinden
-    once degerlendirildigi icin kosul burada calismaz.
-
-    Tum projeler NullableStrict oldugunda 1. madde gereksizlesir ve silinir.
+    Gecis boyunca kullanilan kademeli circir (ClearedNullableWarnings ve
+    proje bazli NullableStrict) artik gereksiz oldugu icin kaldirildi.
   -->
   <PropertyGroup>
-    <!-- Faz 2'de tum cozumde sifirlandi. Geriye yalnizca CS8618 kaldi. -->
-    <ClearedNullableWarnings>CS8600;CS8601;CS8602;CS8604;CS8619</ClearedNullableWarnings>
+    <WarningsAsErrors>$(WarningsAsErrors);Nullable</WarningsAsErrors>
   </PropertyGroup>
 
 </Project>

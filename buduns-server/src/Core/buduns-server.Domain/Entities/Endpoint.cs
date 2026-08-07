@@ -15,12 +15,12 @@ namespace buduns_server.Domain.Entities
             Roles = new HashSet<Role>();
         }
 
-        public string ActionType { get; set; }
-        public string HttpType { get; set; }
-        public string Definition { get; set; }
-        public string Code { get; set; }
+        public required string ActionType { get; set; }
+        public required string HttpType { get; set; }
+        public required string Definition { get; set; }
+        public required string Code { get; set; }
 
-        public Menu Menu { get; set; }
+        public Menu Menu { get; set; } = null!;
         public ICollection<Role> Roles { get; set; }
     }
 }

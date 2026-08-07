@@ -9,7 +9,7 @@ namespace buduns_server.Application.Dtos
     public class CommentDto
     {
         public int Id { get; set; }
-        public string Content { get; set; }
+        public required string Content { get; set; }
         public int UserId { get; set; }
         public string? UserName { get; set; }
         public string? UserImageUrl { get; set; }

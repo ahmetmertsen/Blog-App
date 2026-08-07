@@ -10,6 +10,6 @@ namespace buduns_server.Application.Features.Roles.Queries.GetAllByUsername
 {
     public class GetRolesByUsernameQuery : IRequest<List<RoleDto>>
     {
-        public string UserName { get; set; }
+        public string UserName { get; set; } = string.Empty;
     }
 }

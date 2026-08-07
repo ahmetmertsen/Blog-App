@@ -13,7 +13,7 @@ namespace buduns_server.Application.Features.Comments.Commands.Update
     {
         [JsonIgnore]
         public int Id { get; set; }
-        public string Content { get; set; }
+        public string Content { get; set; } = string.Empty;
 
         [JsonIgnore]
         public int UserId { get; set; }

@@ -8,6 +8,6 @@ namespace buduns_server.Application.Dtos.Auth
 {
     public class ForgotPasswordRequest
     {
-        public string EmailOrUsername { get; set; }
+        public required string EmailOrUsername { get; set; }
     }
 }

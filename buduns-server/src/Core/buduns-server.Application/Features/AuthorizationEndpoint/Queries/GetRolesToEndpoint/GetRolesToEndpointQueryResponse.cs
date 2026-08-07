@@ -8,6 +8,6 @@ namespace buduns_server.Application.Features.AuthorizationEndpoint.Queries.GetRo
 {
     public class GetRolesToEndpointQueryResponse
     {
-        public object Roles { get; set; }
+        public required object Roles { get; set; }
     }
 }

@@ -9,6 +9,6 @@ namespace buduns_server.Application.Dtos.User
     public class UpdateUserEmailResponse
     {
         public bool Succeeded { get; set; }
-        public string Message { get; set; }
+        public required string Message { get; set; }
     }
 }

@@ -8,9 +8,9 @@ namespace buduns_server.Application.Dtos.Configurations
 {
     public class Action
     {
-        public string ActionType { get; set; }
-        public string HttpType { get; set; }
-        public string Definition { get; set; }
-        public string Code { get; set; }
+        public required string ActionType { get; set; }
+        public required string HttpType { get; set; }
+        public required string Definition { get; set; }
+        public required string Code { get; set; }
     }
 }

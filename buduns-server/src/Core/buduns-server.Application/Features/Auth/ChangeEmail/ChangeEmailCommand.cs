@@ -13,6 +13,6 @@ namespace buduns_server.Application.Features.Auth.ChangeEmail
     {
         [JsonIgnore]
         public int UserId { get; set; }
-        public string NewEmail { get; set; }
+        public string NewEmail { get; set; } = string.Empty;
     }
 }

@@ -13,9 +13,9 @@ namespace buduns_server.Application.Features.Users.Commands.Update.UpdateEmail
     {
         [JsonIgnore]
         public int UserId { get; set; }
-        public string OldEmailVerificationCode { get; set; }
-        public string NewEmailVerificationCode { get; set; }
+        public string OldEmailVerificationCode { get; set; } = string.Empty;
+        public string NewEmailVerificationCode { get; set; } = string.Empty;
 
-        public string NewEmail { get; set; }
+        public string NewEmail { get; set; } = string.Empty;
     }
 }

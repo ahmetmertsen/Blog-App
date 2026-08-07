@@ -9,6 +9,6 @@ namespace buduns_server.Application.Dtos.Auth
     public class ChangeEmailRequest
     {
         public int UserId { get; set; }
-        public string NewEmail { get; set; }
+        public required string NewEmail { get; set; }
     }
 }

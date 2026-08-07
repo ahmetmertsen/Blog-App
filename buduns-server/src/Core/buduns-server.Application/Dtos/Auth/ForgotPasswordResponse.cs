@@ -9,6 +9,6 @@ namespace buduns_server.Application.Dtos.Auth
     public class ForgotPasswordResponse
     {
         public bool Succeeded { get; set; }
-        public string Message { get; set; }
+        public required string Message { get; set; }
     }
 }

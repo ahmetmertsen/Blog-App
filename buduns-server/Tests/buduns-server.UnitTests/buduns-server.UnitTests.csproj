@@ -4,7 +4,6 @@
     <RootNamespace>buduns_server.UnitTests</RootNamespace>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <NullableStrict>true</NullableStrict>
   </PropertyGroup>
 
   <ItemGroup>

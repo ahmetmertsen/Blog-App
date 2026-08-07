@@ -9,8 +9,8 @@ namespace buduns_server.Domain.Entities
 {
     public class Menu : BaseEntity
     {
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
-        public ICollection<Endpoint> Endpoints { get; set; }
+        public ICollection<Endpoint> Endpoints { get; set; } = new List<Endpoint>();
     }
 }

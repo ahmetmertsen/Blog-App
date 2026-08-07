@@ -9,7 +9,7 @@ namespace buduns_server.Application.Features.AuthorizationEndpoint.Queries.GetRo
 {
     public class GetRolesToEndpointQuery : IRequest<GetRolesToEndpointQueryResponse>
     {
-        public string Code { get; set; }
-        public string Menu { get; set; }
+        public string Code { get; set; } = string.Empty;
+        public string Menu { get; set; } = string.Empty;
     }
 }

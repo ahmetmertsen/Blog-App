@@ -9,6 +9,6 @@ namespace buduns_server.Application.Dtos.User
     public class UpdateUserMailVerifyRequest
     {
         public int UserId { get; set; }
-        public string VerificationCode { get; set; }
+        public required string VerificationCode { get; set; }
     }
 }

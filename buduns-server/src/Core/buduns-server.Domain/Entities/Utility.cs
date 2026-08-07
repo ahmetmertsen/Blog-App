@@ -9,7 +9,7 @@ namespace buduns_server.Domain.Entities
 {
     public class Utility : BaseEntity
     {
-        public string Name { get; set; }
-        public string Value { get; set; }
+        public required string Name { get; set; }
+        public required string Value { get; set; }
     }
 }
