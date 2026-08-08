@@ -137,6 +137,12 @@ namespace buduns_server.Persistence.Context
                 entity.HasIndex(like => new { like.UserId, like.PostId })
                     .IsUnique()
                     .HasDatabaseName("UX_Likes_UserId_PostId");
+
+                // daily-top50 begenileri paylasim basina ve tarih araliginda
+                // sayiyor. Yalnizca PostId'li indeks tarih filtresini heap'e
+                // birakiyordu; CreatedAt'in ikinci kolon olmasi filtreyi
+                // indekse tasiyor. Comments'teki indeksin ayni sekli.
+                entity.HasIndex(like => new { like.PostId, like.CreatedAt });
             });
 
             modelBuilder.Entity<Comment>(entity =>

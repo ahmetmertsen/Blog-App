@@ -3,6 +3,11 @@ name: buduns
 services:
   postgres:
     image: postgres:16-alpine
+    # jit=off: OLTP yukunde JIT derlemesi neredeyse hic karsiligini vermiyor.
+    # daily-top50 olcumunde 1652 ms'nin 1437 ms'si JIT derlemesiydi; kapatinca
+    # 324 ms'ye dustu. Yonetilen bir Postgres kullanilirsa ayni ayar sunucu
+    # tarafinda ya da baglanti dizesine "Options=-c jit=off" eklenerek yapilir.
+    command: ["postgres", "-c", "jit=off"]
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
