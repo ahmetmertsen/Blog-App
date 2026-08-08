@@ -77,33 +77,123 @@ namespace buduns_server.Persistence.Repositories
 
         public Task<int?> GetVisibleOwnerIdAsync(int id, CancellationToken cancellationToken = default) => VisiblePosts().Where(post => post.Id == id).Select(post => (int?)post.UserId).FirstOrDefaultAsync(cancellationToken);
 
+        private const double DailyLikeWeight = 0.4;
+        private const double DailyCommentWeight = 0.6;
+
+        /// <summary>
+        /// Iki asamada calisir. Once gunun begeni/yorum olaylarindan yola cikip
+        /// kazanan paylasimlar bulunur; ardindan yalnizca o paylasimlar icin
+        /// toplam sayimlar cekilir.
+        ///
+        /// Paylasimdan baslayip her paylasim icin sayim yapmak, hicbir aktivite
+        /// almamis paylasimlar da dahil tum tabloyu dolasmak demekti. Gunun
+        /// olay sayisi paylasim sayisindan bagimsiz ve cok daha kucuk oldugu
+        /// icin yon tersine cevrildi.
+        /// </summary>
         public async Task<List<TopPostDto>> GetDailyTopPostsAsync(DateTime startDateUtc, DateTime endDateUtc, int limit, CancellationToken cancellationToken = default)
         {
             var safeLimit = Math.Clamp(limit, 1, 100);
 
-            return await VisiblePosts().AsNoTracking().Select(post => new
+            var ranked = await GetDailyRankedPostsAsync(startDateUtc, endDateUtc, safeLimit, cancellationToken);
+            if (ranked.Count == 0)
             {
-                Post = post,
-                DailyLikeCount = post.Likes.Count(like => like.UserId != post.UserId && like.User.Status != UserStatus.Banned && like.CreatedAt >= startDateUtc && like.CreatedAt < endDateUtc && like.isActive && !like.isDeleted),
-                DailyCommentCount = post.Comments.Count(comment => comment.User.Status != UserStatus.Banned && comment.CreatedAt >= startDateUtc && comment.CreatedAt < endDateUtc && comment.Status == CommentStatus.Published && comment.isActive && !comment.isDeleted),
+                return new List<TopPostDto>();
+            }
+
+            var postIds = ranked.Select(item => item.PostId).ToList();
+            var totals = await VisiblePosts().AsNoTracking().Where(post => postIds.Contains(post.Id)).Select(post => new
+            {
+                post.Id,
+                post.Content,
+                post.UserId,
+                UserName = post.User.UserName ?? string.Empty,
+                UserFullName = post.User.FullName,
+                UserImageUrl = post.User.ImageUrl,
                 LikeCount = post.Likes.Count(like => like.User.Status != UserStatus.Banned && like.isActive && !like.isDeleted),
                 CommentCount = post.Comments.Count(comment => comment.User.Status != UserStatus.Banned && comment.Status == CommentStatus.Published && comment.isActive && !comment.isDeleted),
                 BookmarkCount = post.Bookmarks.Count(bookmark => bookmark.isActive && !bookmark.isDeleted)
-            }).Where(item => item.DailyLikeCount > 0 || item.DailyCommentCount > 0).OrderByDescending(item => (item.DailyLikeCount * 0.4) + (item.DailyCommentCount * 0.6)).ThenByDescending(item => item.DailyCommentCount).ThenByDescending(item => item.DailyLikeCount).ThenByDescending(item => item.Post.CreatedAt).Take(safeLimit).Select(item => new TopPostDto
-            {
-                PostId = item.Post.Id,
-                Content = item.Post.Content,
-                UserId = item.Post.UserId,
-                UserName = item.Post.User.UserName ?? string.Empty,
-                UserFullName = item.Post.User.FullName,
-                UserImageUrl = item.Post.User.ImageUrl,
-                DailyLikeCount = item.DailyLikeCount,
-                DailyCommentCount = item.DailyCommentCount,
-                LikeCount = item.LikeCount,
-                CommentCount = item.CommentCount,
-                BookmarkCount = item.BookmarkCount,
-                Score = (item.DailyLikeCount * 0.4) + (item.DailyCommentCount * 0.6)
             }).ToListAsync(cancellationToken);
+
+            var totalsByPostId = totals.ToDictionary(item => item.Id);
+
+            var result = new List<TopPostDto>(ranked.Count);
+            foreach (var item in ranked)
+            {
+                // Siralama birinci asamadan gelir; sozluk yalnizca toplamlari tasir.
+                if (!totalsByPostId.TryGetValue(item.PostId, out var total))
+                {
+                    continue;
+                }
+
+                result.Add(new TopPostDto
+                {
+                    PostId = total.Id,
+                    Content = total.Content,
+                    UserId = total.UserId,
+                    UserName = total.UserName,
+                    UserFullName = total.UserFullName,
+                    UserImageUrl = total.UserImageUrl,
+                    DailyLikeCount = item.DailyLikeCount,
+                    DailyCommentCount = item.DailyCommentCount,
+                    LikeCount = total.LikeCount,
+                    CommentCount = total.CommentCount,
+                    BookmarkCount = total.BookmarkCount,
+                    Score = (item.DailyLikeCount * DailyLikeWeight) + (item.DailyCommentCount * DailyCommentWeight)
+                });
+            }
+
+            return result;
+        }
+
+        private async Task<List<DailyRankedPost>> GetDailyRankedPostsAsync(DateTime startDateUtc, DateTime endDateUtc, int limit, CancellationToken cancellationToken)
+        {
+            // Kendi begenisi eskiden de gunluk sayima girmiyordu; yorumlarda
+            // boyle bir istisna yok. Davranis birebir korunuyor.
+            var likeEvents = _context.Likes.Where(like =>
+                    like.CreatedAt >= startDateUtc && like.CreatedAt < endDateUtc &&
+                    like.isActive && !like.isDeleted &&
+                    like.UserId != like.Post.UserId &&
+                    like.User.Status != UserStatus.Banned &&
+                    // VisiblePosts() ile ayni kosullar; ifade agacinda metot
+                    // cagrisi cevrilemedigi icin satir ici yazilmak zorunda.
+                    like.Post.Status == PostStatus.Published && like.Post.isPublished && like.Post.isActive && !like.Post.isDeleted &&
+                    like.Post.User.Status != UserStatus.Banned)
+                .Select(like => new { like.PostId, PostCreatedAt = like.Post.CreatedAt, LikeCount = 1, CommentCount = 0 });
+
+            var commentEvents = _context.Comments.Where(comment =>
+                    comment.CreatedAt >= startDateUtc && comment.CreatedAt < endDateUtc &&
+                    comment.Status == CommentStatus.Published &&
+                    comment.isActive && !comment.isDeleted &&
+                    comment.User.Status != UserStatus.Banned &&
+                    comment.Post.Status == PostStatus.Published && comment.Post.isPublished && comment.Post.isActive && !comment.Post.isDeleted &&
+                    comment.Post.User.Status != UserStatus.Banned)
+                .Select(comment => new { comment.PostId, PostCreatedAt = comment.Post.CreatedAt, LikeCount = 0, CommentCount = 1 });
+
+            return await likeEvents.Concat(commentEvents)
+                // PostId benzersiz oldugu icin PostCreatedAt'i gruba tasimak
+                // ek satir uretmez; esitlik bozmada kullanilabilmesini saglar.
+                .GroupBy(activity => new { activity.PostId, activity.PostCreatedAt })
+                .Select(group => new DailyRankedPost
+                {
+                    PostId = group.Key.PostId,
+                    PostCreatedAt = group.Key.PostCreatedAt,
+                    DailyLikeCount = group.Sum(activity => activity.LikeCount),
+                    DailyCommentCount = group.Sum(activity => activity.CommentCount)
+                })
+                .OrderByDescending(item => (item.DailyLikeCount * DailyLikeWeight) + (item.DailyCommentCount * DailyCommentWeight))
+                .ThenByDescending(item => item.DailyCommentCount)
+                .ThenByDescending(item => item.DailyLikeCount)
+                .ThenByDescending(item => item.PostCreatedAt)
+                .Take(limit)
+                .ToListAsync(cancellationToken);
+        }
+
+        private sealed class DailyRankedPost
+        {
+            public int PostId { get; set; }
+            public DateTime PostCreatedAt { get; set; }
+            public int DailyLikeCount { get; set; }
+            public int DailyCommentCount { get; set; }
         }
 
         private IQueryable<PostDto> ProjectToPostDto(IQueryable<Post> query, int? viewerUserId)

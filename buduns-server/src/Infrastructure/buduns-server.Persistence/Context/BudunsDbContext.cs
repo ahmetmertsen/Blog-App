@@ -138,11 +138,13 @@ namespace buduns_server.Persistence.Context
                     .IsUnique()
                     .HasDatabaseName("UX_Likes_UserId_PostId");
 
-                // daily-top50 begenileri paylasim basina ve tarih araliginda
-                // sayiyor. Yalnizca PostId'li indeks tarih filtresini heap'e
-                // birakiyordu; CreatedAt'in ikinci kolon olmasi filtreyi
-                // indekse tasiyor. Comments'teki indeksin ayni sekli.
+                // Paylasim basina sayim yolu (daily-top50'nin ikinci asamasi ve
+                // toplam begeni sayimlari) icin.
                 entity.HasIndex(like => new { like.PostId, like.CreatedAt });
+
+                // daily-top50'nin birinci asamasi gunun begenilerini tarih
+                // araligiyla tarar; oradaki giris kolonu CreatedAt.
+                entity.HasIndex(like => like.CreatedAt);
             });
 
             modelBuilder.Entity<Comment>(entity =>
@@ -156,6 +158,10 @@ namespace buduns_server.Persistence.Context
 
                 entity.HasIndex(comment => new { comment.PostId, comment.Status, comment.CreatedAt });
                 entity.HasIndex(comment => new { comment.UserId, comment.Status, comment.CreatedAt });
+
+                // Likes.CreatedAt ile ayni gerekce: gunun yorumlarini tarih
+                // araligiyla tarayan daily-top50 birinci asamasi icin.
+                entity.HasIndex(comment => comment.CreatedAt);
             });
 
             modelBuilder.Entity<Follower>(entity =>
