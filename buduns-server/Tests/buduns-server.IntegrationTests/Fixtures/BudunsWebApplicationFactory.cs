@@ -31,6 +31,18 @@ public sealed class BudunsWebApplicationFactory : WebApplicationFactory<WebAPI.P
     /// </summary>
     public const string AllowedCorsOrigin = "https://allowed.integration.test";
 
+    /// <summary>
+    /// Limit testi disindaki testlerin hassas uc limitlerine takilmamasi icin
+    /// kullanilan yuksek esik.
+    /// </summary>
+    private const string HighPermitLimit = "100000";
+
+    /// <summary>
+    /// Rate limit davranisinin gercekten dogrulandigi tek yol. Baska hicbir
+    /// test bu yola istek atmamalidir; sayac surec boyunca paylasiliyor.
+    /// </summary>
+    public const string ForgotPasswordRateLimitedPath = "/api/Auth/forgotPassword";
+
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:16-alpine").WithDatabase("buduns_integration_tests").WithUsername("postgres").WithPassword("postgres").Build();
     private readonly RedisContainer _redis = new RedisBuilder("redis:7-alpine").Build();
     private Respawner? _respawner;
@@ -53,7 +65,20 @@ public sealed class BudunsWebApplicationFactory : WebApplicationFactory<WebAPI.P
             ["Token:AccessTokenExpirationMinutes"] = "15",
             ["Token:RefreshTokenExpirationDays"] = "30",
             ["Seq:ServerURL"] = "http://127.0.0.1:5341",
-            ["Cors:AllowedOrigins:0"] = AllowedCorsOrigin
+            ["Cors:AllowedOrigins:0"] = AllowedCorsOrigin,
+            // Hassas uc limitleri surec boyunca statik bir sayacta tutuluyor ve
+            // Respawn ile sifirlanmiyor. Auth akislarini test edebilmek icin
+            // limitler yukseltiliyor; ForgotPasswordRateLimitedPath bilerek
+            // disarida birakildi, HttpPipelineTests limitin gercekten
+            // isledigini orada dogruluyor.
+            ["SensitiveEndpointRateLimit:Policies:/api/Auth/login:PermitLimit"] = HighPermitLimit,
+            ["SensitiveEndpointRateLimit:Policies:/api/Auth/mailVerify:PermitLimit"] = HighPermitLimit,
+            ["SensitiveEndpointRateLimit:Policies:/api/Auth/emailChange:PermitLimit"] = HighPermitLimit,
+            ["SensitiveEndpointRateLimit:Policies:/api/Auth/refreshTokenLogin:PermitLimit"] = HighPermitLimit,
+            ["SensitiveEndpointRateLimit:Policies:/api/User/register:PermitLimit"] = HighPermitLimit,
+            ["SensitiveEndpointRateLimit:Policies:/api/User/updatePassword:PermitLimit"] = HighPermitLimit,
+            ["SensitiveEndpointRateLimit:Policies:/api/User/updateMailVerify:PermitLimit"] = HighPermitLimit,
+            ["SensitiveEndpointRateLimit:Policies:/api/User/updateUserEmail:PermitLimit"] = HighPermitLimit
         }));
         builder.ConfigureTestServices(services =>
         {
@@ -104,6 +129,12 @@ public sealed class BudunsWebApplicationFactory : WebApplicationFactory<WebAPI.P
     public HttpClient CreateHttpsClient() => CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost"), AllowAutoRedirect = false });
 
     /// <summary>
+    /// Gonderilen dogrulama kodlarini okumak icin kullanilan sahte mail servisi.
+    /// Singleton kaydedildigi icin testler arasi ResetStateAsync ile temizlenir.
+    /// </summary>
+    public TestMailService MailService => (TestMailService)Services.GetRequiredService<IMailService>();
+
+    /// <summary>
     /// Veritabanini ve onbellegi bosaltir. Onbellek singleton oldugu icin
     /// testler arasi yasar; temizlenmezse bir testin yazdigi liste digerine
     /// sizar.
@@ -119,6 +150,7 @@ public sealed class BudunsWebApplicationFactory : WebApplicationFactory<WebAPI.P
         await connection.OpenAsync();
         await _respawner.ResetAsync(connection);
         await ClearCacheAsync();
+        MailService.Clear();
         await ExecuteScopeAsync(DatabaseSeeder.SeedSystemRolesAsync);
     }
 
