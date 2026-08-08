@@ -1,39 +1,55 @@
+using buduns_server.Application.Abstractions.Services;
+using buduns_server.Application.Common.Consts;
+using buduns_server.Application.Common.Options;
 using buduns_server.Application.Dtos;
 using buduns_server.Application.UnitOfWork;
 using MediatR;
+using Microsoft.Extensions.Options;
 
 namespace buduns_server.Application.Features.Posts.Queries.GetDailyTopPosts
 {
     public class GetDailyTopPostsQueryHandler : IRequestHandler<GetDailyTopPostsQuery, List<TopPostDto>>
     {
         private const int TopPostLimit = 50;
-        private readonly IUnitOfWork _unitOfWork;
+        private static readonly TimeZoneInfo TurkeyTimeZone = ResolveTurkeyTimeZone();
 
-        public GetDailyTopPostsQueryHandler(IUnitOfWork unitOfWork)
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
+        private readonly CacheOptions _cacheOptions;
+
+        public GetDailyTopPostsQueryHandler(IUnitOfWork unitOfWork, ICacheService cacheService, IOptions<CacheOptions> cacheOptions)
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
+            _cacheOptions = cacheOptions.Value;
         }
 
-        public async Task<List<TopPostDto>> Handle(GetDailyTopPostsQuery request, CancellationToken cancellationToken)
+        public Task<List<TopPostDto>> Handle(GetDailyTopPostsQuery request, CancellationToken cancellationToken)
         {
-            var turkeyTimeZone = GetTurkeyTimeZone();
-            var nowInTurkey = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, turkeyTimeZone);
+            var nowInTurkey = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TurkeyTimeZone);
             var todayStartInTurkey = nowInTurkey.Date;
             var tomorrowStartInTurkey = todayStartInTurkey.AddDays(1);
-            var startDateUtc = TimeZoneInfo.ConvertTimeToUtc(todayStartInTurkey, turkeyTimeZone);
-            var endDateUtc = TimeZoneInfo.ConvertTimeToUtc(tomorrowStartInTurkey, turkeyTimeZone);
+            var startDateUtc = TimeZoneInfo.ConvertTimeToUtc(todayStartInTurkey, TurkeyTimeZone);
+            var endDateUtc = TimeZoneInfo.ConvertTimeToUtc(tomorrowStartInTurkey, TurkeyTimeZone);
 
-            var topPosts = await _unitOfWork.PostRepository.GetDailyTopPostsAsync(startDateUtc, endDateUtc, TopPostLimit, cancellationToken);
+            return _cacheService.GetOrSetAsync(
+                CacheKeys.DailyTopPosts(todayStartInTurkey, TopPostLimit),
+                TimeSpan.FromSeconds(_cacheOptions.DailyTopPostsTtlSeconds),
+                async token =>
+                {
+                    var topPosts = await _unitOfWork.PostRepository.GetDailyTopPostsAsync(startDateUtc, endDateUtc, TopPostLimit, token);
 
-            for (int i = 0; i < topPosts.Count; i++)
-            {
-                topPosts[i].Rank = i + 1;
-            }
+                    for (int i = 0; i < topPosts.Count; i++)
+                    {
+                        topPosts[i].Rank = i + 1;
+                    }
 
-            return topPosts;
+                    return topPosts;
+                },
+                cancellationToken);
         }
 
-        private static TimeZoneInfo GetTurkeyTimeZone()
+        private static TimeZoneInfo ResolveTurkeyTimeZone()
         {
             try
             {

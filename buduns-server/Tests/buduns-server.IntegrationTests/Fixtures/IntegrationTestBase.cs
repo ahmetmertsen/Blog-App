@@ -12,7 +12,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
 
     protected BudunsWebApplicationFactory Factory { get; }
 
-    public Task InitializeAsync() => Factory.ResetDatabaseAsync();
+    public Task InitializeAsync() => Factory.ResetStateAsync();
 
     public Task DisposeAsync() => Task.CompletedTask;
 }
