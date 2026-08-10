@@ -142,15 +142,11 @@ public sealed class EndpointPermissionTests : IntegrationTestBase
     }
 
     /// <summary>
-    /// Bilinen acik hata: AuthorizationEndpointService.AssignRoleEndpointAsync
-    /// icinde `foreach (var role in endpoint.Roles) endpoint.Roles.Remove(role)`
-    /// var. Endpoint'in zaten rolu varsa koleksiyon yineleme sirasinda
-    /// degistigi icin InvalidOperationException atar; yani bir endpoint'in
-    /// rolleri bir kez atandiktan sonra degistirilemez.
-    /// docs/teknik-borc/README.md "Devam eden isler" bolumunde kayitli.
-    /// Hata duzeltildiginde Skip kaldirilmalidir.
+    /// Atama, mevcut rol kumesinin uzerine eklemez; onu degistirir. Faz 8'e
+    /// kadar bu yol `InvalidOperationException` atiyordu (rol koleksiyonu
+    /// yineleme sirasinda degistiriliyordu).
     /// </summary>
-    [Fact(Skip = "Bilinen hata: AuthorizationEndpointService rol koleksiyonunu yineleme sirasinda degistiriyor.")]
+    [Fact]
     public async Task Reassigning_roles_to_an_endpoint_should_replace_the_previous_role_set()
     {
         var admin = await CreateUserAsync("reassign-endpoint-admin", RoleConstants.Admin);

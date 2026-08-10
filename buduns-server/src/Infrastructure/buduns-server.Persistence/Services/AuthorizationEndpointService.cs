@@ -69,10 +69,8 @@ namespace buduns_server.Persistence.Services
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
 
-            foreach (var role in endpoint.Roles)
-            {
-                endpoint.Roles.Remove(role);
-            }
+            // Atama, mevcut rol kumesini degistirir; uzerine eklemez.
+            endpoint.Roles.Clear();
 
             var appRoles = await _roleManager.Roles.Where(r => roles.Contains(r.Name)).ToListAsync();
 

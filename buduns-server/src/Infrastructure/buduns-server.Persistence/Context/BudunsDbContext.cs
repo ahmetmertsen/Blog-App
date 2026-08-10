@@ -208,6 +208,42 @@ namespace buduns_server.Persistence.Context
             });
 
 
+            modelBuilder.Entity<Menu>(entity =>
+            {
+                entity.Property(menu => menu.Name)
+                    .HasMaxLength(100)
+                    .IsRequired();
+
+                entity.HasIndex(menu => menu.Name)
+                    .IsUnique()
+                    .HasDatabaseName("UX_Menus_Name");
+            });
+
+            modelBuilder.Entity<Endpoint>(entity =>
+            {
+                entity.Property(endpoint => endpoint.Code)
+                    .HasMaxLength(200)
+                    .IsRequired();
+
+                entity.Property(endpoint => endpoint.Definition)
+                    .HasMaxLength(200)
+                    .IsRequired();
+
+                entity.Property(endpoint => endpoint.ActionType)
+                    .HasMaxLength(20)
+                    .IsRequired();
+
+                entity.Property(endpoint => endpoint.HttpType)
+                    .HasMaxLength(10)
+                    .IsRequired();
+
+                // Yetki kodu istek aninda menuden bagimsiz aranir; ayni kodun
+                // iki kaydi olursa hangi rol kumesinin gecerli oldugu belirsizlesir.
+                entity.HasIndex(endpoint => endpoint.Code)
+                    .IsUnique()
+                    .HasDatabaseName("UX_Endpoints_Code");
+            });
+
             modelBuilder.Entity<Report>(entity =>
             {
                 // PostgreSQL sistem sutunu xmin, iyimser eszamanlilik tokeni olarak

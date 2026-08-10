@@ -1,4 +1,5 @@
 using buduns_server.Application.Abstractions.Services;
+using buduns_server.Application.Common.Consts;
 using buduns_server.Application.Common.CustomAttrributes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -38,7 +39,7 @@ namespace buduns_server.WebAPI.Filters
                 return;
             }
 
-            if (context.HttpContext.User.IsInRole("Admin"))
+            if (context.HttpContext.User.IsInRole(RoleConstants.Admin))
             {
                 await next();
                 return;

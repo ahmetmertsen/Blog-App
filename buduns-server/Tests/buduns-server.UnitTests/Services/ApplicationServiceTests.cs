@@ -84,6 +84,22 @@ public class ApplicationServiceTests
     }
 
     [Fact]
+    public void GetAuthorizeDefinitionEndpoints_CodesShouldBeUniqueAcrossAllMenus()
+    {
+        // Yetki kontrolu istek aninda kodu menuden bagimsiz ariyor ve
+        // Endpoints.Code uzerinde benzersiz indeks var. Iki menude ayni kod
+        // uretilirse seeder indekse takilir, uygulama acilmaz.
+        var duplicateCodes = Menus
+            .SelectMany(menu => menu.Actions)
+            .GroupBy(action => action.Code)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .ToArray();
+
+        Assert.True(duplicateCodes.Length == 0, $"Menuler arasinda tekrar eden yetki kodu var: {string.Join(", ", duplicateCodes)}");
+    }
+
+    [Fact]
     public void GetAuthorizeDefinitionEndpoints_ShouldSkipActionsWithoutAuthorizeDefinition()
     {
         // AuthController.Login gibi anonim uclar hicbir menuye girmemeli.
