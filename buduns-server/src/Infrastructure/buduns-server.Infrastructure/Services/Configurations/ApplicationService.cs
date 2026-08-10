@@ -1,4 +1,5 @@
 using buduns_server.Application.Abstractions.Services.Configurations;
+using buduns_server.Application.Common.Consts;
 using buduns_server.Application.Common.CustomAttrributes;
 using buduns_server.Application.Dtos.Configurations;
 using buduns_server.Domain.Enums;
@@ -56,7 +57,9 @@ namespace buduns_server.Infrastructure.Services.Configurations
                         ActionType = actionType,
                         Definition = definition,
                         HttpType = httpType,
-                        Code = $"{httpType}.{actionType}.{definition.Replace(" ", "")}"
+                        Code = $"{httpType}.{actionType}.{definition.Replace(" ", "")}",
+                        AccessLevel = authorizeDefinitonAttribute.AccessLevel,
+                        DefaultRoles = RoleConstants.GetDefaultRoles(authorizeDefinitonAttribute.AccessLevel)
                     });
                 }
             }

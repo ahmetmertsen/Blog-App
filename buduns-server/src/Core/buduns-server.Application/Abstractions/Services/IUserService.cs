@@ -16,6 +16,5 @@ namespace buduns_server.Application.Abstractions.Services
         Task<UserDto> GetUserByUserName(string userName);
         Task AssignRoleToUserAsync(int actorUserId, int targetUserId, string[] roles, CancellationToken cancellationToken);
         Task<string[]> GetRolesToUserAsync(int userId);
-        Task<bool> HasRolePermissionToEndpointAsync(int userId, string code);
     }
 }

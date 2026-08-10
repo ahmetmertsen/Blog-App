@@ -47,7 +47,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Updating, Definition = "Update User Mail Verify")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Updating, Definition = "Update User Mail Verify", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPost]
         [Route("updateMailVerify")]
         public async Task<ActionResult<ApiResponse<UpdateUserMailVerifyCommandResponse>>> UpdateUserMailVerify([FromBody] UpdateUserMailVerifyCommand request)
@@ -57,7 +57,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Updating, Definition = "Update User Profile")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Updating, Definition = "Update User Profile", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPost]
         [Route("updateUserProfile")]
         public async Task<ActionResult<ApiResponse<UpdateUserProfileCommandResponse>>> UpdateUserProfile([FromBody] UpdateUserProfileCommand request)
@@ -67,7 +67,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Updating, Definition = "Update User Email")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Updating, Definition = "Update User Email", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPost]
         [Route("updateUserEmail")]
         public async Task<ActionResult<ApiResponse<UpdateUserEmailCommandResponse>>> UpdateUserEmail([FromBody] UpdateUserEmailCommand request)

@@ -22,7 +22,6 @@ public sealed class PostCrudTests : IntegrationTestBase
     public async Task Create_post_should_publish_it_and_attach_tags()
     {
         var author = await CreateUserAsync("post-author");
-        await GrantEndpointPermissionsAsync();
         var tag = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateTagAsync(services, "dotnet"));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
 
@@ -41,7 +40,6 @@ public sealed class PostCrudTests : IntegrationTestBase
     public async Task Create_post_with_unknown_tag_should_return_bad_request()
     {
         var author = await CreateUserAsync("bad-tag-author");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
 
         var response = await authentication.Client.PostAsJsonAsync("/api/Post/create", new CreatePostsCommand { Content = "icerik", TagIds = new List<int> { 999999 } });
@@ -55,7 +53,6 @@ public sealed class PostCrudTests : IntegrationTestBase
     {
         var author = await CreateUserAsync("ownership-author");
         var victim = await CreateUserAsync("ownership-victim");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
 
         // UserId [JsonIgnore]; govdeden gelen deger CurrentUserBehavior tarafindan eziliyor.
@@ -71,7 +68,6 @@ public sealed class PostCrudTests : IntegrationTestBase
     public async Task Update_post_should_replace_content_and_tags_for_the_owner()
     {
         var author = await CreateUserAsync("update-author");
-        await GrantEndpointPermissionsAsync();
         var oldTag = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateTagAsync(services, "eski"));
         var newTag = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateTagAsync(services, "yeni"));
         var post = await Factory.ExecuteScopeAsync(async services =>
@@ -99,7 +95,6 @@ public sealed class PostCrudTests : IntegrationTestBase
     {
         var author = await CreateUserAsync("victim-author");
         var attacker = await CreateUserAsync("attacker-user");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id, "orijinal"));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(attacker.Id);
 
@@ -115,7 +110,6 @@ public sealed class PostCrudTests : IntegrationTestBase
     public async Task Delete_post_should_soft_delete_it_and_hide_it_from_listings()
     {
         var author = await CreateUserAsync("delete-author");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
 
@@ -141,7 +135,6 @@ public sealed class PostCrudTests : IntegrationTestBase
     {
         var author = await CreateUserAsync("delete-victim");
         var attacker = await CreateUserAsync("delete-attacker");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(attacker.Id);
 
@@ -158,7 +151,6 @@ public sealed class PostCrudTests : IntegrationTestBase
     {
         var author = await CreateUserAsync("flag-author");
         var viewer = await CreateUserAsync("flag-viewer");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id));
         using var viewerAuthentication = await Factory.CreateAuthenticatedClientAsync(viewer.Id);
         (await viewerAuthentication.Client.PostAsync($"/api/Like/{post.Id}", null)).EnsureSuccessStatusCode();
@@ -262,7 +254,6 @@ public sealed class PostCrudTests : IntegrationTestBase
     {
         var author = await CreateUserAsync("my-posts-author");
         var other = await CreateUserAsync("other-author");
-        await GrantEndpointPermissionsAsync();
         var mine = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id, "benim"));
         await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, other.Id, "baskasinin"));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
@@ -278,7 +269,6 @@ public sealed class PostCrudTests : IntegrationTestBase
         var reader = await CreateUserAsync("feed-reader");
         var followed = await CreateUserAsync("feed-followed");
         var stranger = await CreateUserAsync("feed-stranger");
-        await GrantEndpointPermissionsAsync();
         var followedPost = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, followed.Id, "takip edilen"));
         await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, stranger.Id, "yabanci"));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(reader.Id);
@@ -323,12 +313,14 @@ public sealed class PostCrudTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task Post_write_endpoints_should_reject_users_without_endpoint_permission()
+    public async Task Post_write_endpoints_should_reject_users_whose_permission_was_revoked()
     {
         var author = await CreateUserAsync("permissionless-author");
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
 
-        // Endpoint yetkisi seed edilmedi: RolePermissionFilter 403 dondurmeli.
+        // Ucun rolleri bosaltildi: RolePermissionFilter 403 dondurmeli.
+        await Factory.ExecuteScopeAsync(services => PermissionSeeder.SetEndpointRolesAsync(services, "POST.Writing.CreatePost"));
+
         var response = await authentication.Client.PostAsJsonAsync("/api/Post/create", new CreatePostsCommand { Content = "icerik" });
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);

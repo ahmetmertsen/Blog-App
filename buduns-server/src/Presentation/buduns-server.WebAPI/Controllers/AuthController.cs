@@ -51,7 +51,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Auth, ActionType = ActionType.Writing, Definition = "Send Mail Verify")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Auth, ActionType = ActionType.Writing, Definition = "Send Mail Verify", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPost]
         [Route("mailVerify")]
         public async Task<ActionResult<ApiResponse<MailVerifyCommandResponse>>> MailVerify()
@@ -61,7 +61,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Auth, ActionType = ActionType.Updating, Definition = "Change Email")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Auth, ActionType = ActionType.Updating, Definition = "Change Email", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPost]
         [Route("emailChange")]
         public async Task<ActionResult<ApiResponse<ChangeEmailCommandResponse>>> EmailChange([FromBody] ChangeEmailCommand request)

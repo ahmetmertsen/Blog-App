@@ -22,7 +22,6 @@ public sealed class UserProfileTests : IntegrationTestBase
     {
         var user = await CreateUserAsync("profile-user");
         var other = await CreateUserAsync("profile-other");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(user.Id);
 
         var response = await authentication.Client.PostAsJsonAsync("/api/User/updateUserProfile", new UpdateUserProfileCommand
@@ -48,7 +47,6 @@ public sealed class UserProfileTests : IntegrationTestBase
     public async Task Update_profile_should_clear_optional_fields_when_omitted()
     {
         var user = await CreateUserAsync("clear-profile-user");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(user.Id);
         (await authentication.Client.PostAsJsonAsync("/api/User/updateUserProfile", new UpdateUserProfileCommand { FullName = "Ad", Bio = "bio", ImageUrl = "http://img" })).EnsureSuccessStatusCode();
 
@@ -64,7 +62,6 @@ public sealed class UserProfileTests : IntegrationTestBase
     public async Task Update_profile_validation_errors_should_follow_the_global_contract()
     {
         var user = await CreateUserAsync("invalid-profile-user");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(user.Id);
 
         var response = await authentication.Client.PostAsJsonAsync("/api/User/updateUserProfile", new UpdateUserProfileCommand
@@ -154,7 +151,6 @@ public sealed class UserProfileTests : IntegrationTestBase
     public async Task Admin_user_listing_should_be_closed_to_non_admins()
     {
         var user = await CreateUserAsync("listing-regular-user");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(user.Id);
 
         (await authentication.Client.GetAsync("/api/User/getAllUsers?page=1&size=20")).StatusCode.Should().Be(HttpStatusCode.Forbidden);

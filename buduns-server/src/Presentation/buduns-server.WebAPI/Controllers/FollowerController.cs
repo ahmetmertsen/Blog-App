@@ -24,7 +24,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Followers, ActionType = ActionType.Writing, Definition = "Follow User")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Followers, ActionType = ActionType.Writing, Definition = "Follow User", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPost("{userId:int}")]
         public async Task<ActionResult<ApiResponse<CreateFollowersCommandResponse>>> Create(int userId)
         {
@@ -32,7 +32,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Followers, ActionType = ActionType.Deleting, Definition = "Unfollow User")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Followers, ActionType = ActionType.Deleting, Definition = "Unfollow User", AccessLevel = EndpointAccessLevel.Member)]
         [HttpDelete("{userId:int}")]
         public async Task<ActionResult<ApiResponse<DeleteFollowersCommandResponse>>> Delete(int userId)
         {
@@ -52,7 +52,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Followers, ActionType = ActionType.Reading, Definition = "Get Follow Status")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Followers, ActionType = ActionType.Reading, Definition = "Get Follow Status", AccessLevel = EndpointAccessLevel.Member)]
         [HttpGet("status/{userId:int}")]
         public async Task<ActionResult<ApiResponse<GetFollowerStatusQueryResponse>>> GetStatus(int userId)
         {

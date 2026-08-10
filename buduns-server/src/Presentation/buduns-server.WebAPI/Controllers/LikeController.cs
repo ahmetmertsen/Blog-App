@@ -25,7 +25,7 @@ namespace buduns_server.WebAPI.Controllers
             _mediatR = mediatR;
         }
 
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Likes, ActionType = ActionType.Writing, Definition = "Create Like")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Likes, ActionType = ActionType.Writing, Definition = "Create Like", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPost("{postId:int}")]
         public async Task<ActionResult<ApiResponse<CreateLikesCommandResponse>>> Create(int postId)
         {
@@ -33,7 +33,7 @@ namespace buduns_server.WebAPI.Controllers
             return Success(response);
         }
 
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Likes, ActionType = ActionType.Deleting, Definition = "Delete Like")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Likes, ActionType = ActionType.Deleting, Definition = "Delete Like", AccessLevel = EndpointAccessLevel.Member)]
         [HttpDelete("{postId:int}")]
         public async Task<ActionResult<ApiResponse<DeleteLikesCommandResponse>>> Delete(int postId)
         {
@@ -41,7 +41,7 @@ namespace buduns_server.WebAPI.Controllers
             return Success(response);
         }
 
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Likes, ActionType = ActionType.Reading, Definition = "Get Like Status")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Likes, ActionType = ActionType.Reading, Definition = "Get Like Status", AccessLevel = EndpointAccessLevel.Member)]
         [HttpGet("status/{postId:int}")]
         public async Task<ActionResult<ApiResponse<GetLikeStatusQueryResponse>>> GetStatus(int postId)
         {
@@ -49,7 +49,7 @@ namespace buduns_server.WebAPI.Controllers
             return Success(response);
         }
 
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Likes, ActionType = ActionType.Reading, Definition = "Get Likes By Post Id")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Likes, ActionType = ActionType.Reading, Definition = "Get Likes By Post Id", AccessLevel = EndpointAccessLevel.Member)]
         [HttpGet("post/{postId:int}")]
         public async Task<ActionResult<ApiResponse<PagedResponse<LikeDto>>>> GetByPostId(int postId, [FromQuery] int page = 1, [FromQuery] int size = 20)
         {
@@ -57,7 +57,7 @@ namespace buduns_server.WebAPI.Controllers
             return Success(response);
         }
 
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Likes, ActionType = ActionType.Reading, Definition = "Get My Liked Posts")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Likes, ActionType = ActionType.Reading, Definition = "Get My Liked Posts", AccessLevel = EndpointAccessLevel.Member)]
         [HttpGet("me")]
         public async Task<ActionResult<ApiResponse<PagedResponse<LikedPostDto>>>> GetMyLikedPosts([FromQuery] int page = 1, [FromQuery] int size = 20)
         {

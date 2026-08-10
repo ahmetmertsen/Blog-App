@@ -19,14 +19,6 @@ public abstract class IntegrationTestBase : IAsyncLifetime
 
     public Task DisposeAsync() => Task.CompletedTask;
 
-    /// <summary>
-    /// Admin olmayan rollerin [AuthorizeDefinition] tasiyan uclara erisebilmesi
-    /// icin endpoint yetkilerini acar. Respawn her testte tablolari bosalttigi
-    /// icin ihtiyac duyan her test bunu kendisi cagirmalidir.
-    /// </summary>
-    protected Task GrantEndpointPermissionsAsync(params string[] roleNames) =>
-        Factory.ExecuteScopeAsync(services => PermissionSeeder.GrantAllEndpointsAsync(services, roleNames.Length == 0 ? new[] { RoleConstants.User, RoleConstants.Moderator } : roleNames));
-
     protected Task<User> CreateUserAsync(string userName, params string[] roles) =>
         Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateUserAsync(services, userName, userName.Replace('-', ' '), roles.Length == 0 ? new[] { RoleConstants.User } : roles));
 }

@@ -25,7 +25,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Tags, ActionType = ActionType.Writing, Definition = "Create Tag")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Tags, ActionType = ActionType.Writing, Definition = "Create Tag", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPost]
         [Route("create")]
         public async Task<ActionResult<ApiResponse<CreateTagsCommandResponse>>> Create([FromBody] CreateTagsCommand request)
@@ -35,7 +35,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Tags, ActionType = ActionType.Updating, Definition = "Update Tag")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Tags, ActionType = ActionType.Updating, Definition = "Update Tag", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPut]
         [Route("update")]
         public async Task<ActionResult<ApiResponse<UpdateTagsCommandResponse>>> Update([FromBody] UpdateTagsCommand request)
@@ -45,7 +45,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Tags, ActionType = ActionType.Deleting, Definition = "Delete Tag")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Tags, ActionType = ActionType.Deleting, Definition = "Delete Tag", AccessLevel = EndpointAccessLevel.Member)]
         [HttpDelete]
         [Route("delete")]
         public async Task<ActionResult<ApiResponse<DeleteTagsCommandResponse>>> Delete([FromBody] DeleteTagsCommand request)

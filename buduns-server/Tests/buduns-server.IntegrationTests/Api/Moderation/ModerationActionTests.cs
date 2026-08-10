@@ -128,7 +128,6 @@ public sealed class ModerationActionTests : IntegrationTestBase
         var target = await CreateUserAsync("wrong-action-target");
         var reporter = await CreateUserAsync("wrong-action-reporter");
         var moderator = await CreateUserAsync("wrong-action-moderator", RoleConstants.Moderator);
-        await GrantEndpointPermissionsAsync();
         using (var reporterAuthentication = await Factory.CreateAuthenticatedClientAsync(reporter.Id))
         {
             (await reporterAuthentication.Client.PostAsJsonAsync("/api/Report/createUserReport", new CreateUserReportCommand { TargetUserId = target.Id, Reason = ReportReason.Harassment })).EnsureSuccessStatusCode();
@@ -154,7 +153,6 @@ public sealed class ModerationActionTests : IntegrationTestBase
         var target = await CreateUserAsync("suspend-target");
         var reporter = await CreateUserAsync("suspend-reporter");
         var moderator = await CreateUserAsync("suspend-moderator", RoleConstants.Moderator);
-        await GrantEndpointPermissionsAsync();
         using var targetAuthentication = await Factory.CreateAuthenticatedClientAsync(target.Id);
         using (var reporterAuthentication = await Factory.CreateAuthenticatedClientAsync(reporter.Id))
         {
@@ -192,7 +190,6 @@ public sealed class ModerationActionTests : IntegrationTestBase
         var target = await CreateUserAsync("ban-target");
         var reporter = await CreateUserAsync("ban-reporter");
         var moderator = await CreateUserAsync("ban-moderator", RoleConstants.Moderator);
-        await GrantEndpointPermissionsAsync();
         using (var reporterAuthentication = await Factory.CreateAuthenticatedClientAsync(reporter.Id))
         {
             (await reporterAuthentication.Client.PostAsJsonAsync("/api/Report/createUserReport", new CreateUserReportCommand { TargetUserId = target.Id, Reason = ReportReason.Threat })).EnsureSuccessStatusCode();
@@ -226,7 +223,6 @@ public sealed class ModerationActionTests : IntegrationTestBase
         var target = await CreateUserAsync("warn-target");
         var reporter = await CreateUserAsync("warn-reporter");
         var moderator = await CreateUserAsync("warn-moderator", RoleConstants.Moderator);
-        await GrantEndpointPermissionsAsync();
         using (var reporterAuthentication = await Factory.CreateAuthenticatedClientAsync(reporter.Id))
         {
             (await reporterAuthentication.Client.PostAsJsonAsync("/api/Report/createUserReport", new CreateUserReportCommand { TargetUserId = target.Id, Reason = ReportReason.Spam })).EnsureSuccessStatusCode();
@@ -259,7 +255,6 @@ public sealed class ModerationActionTests : IntegrationTestBase
         var author = await CreateUserAsync("comment-mod-author");
         var reporter = await CreateUserAsync("comment-mod-reporter");
         var moderator = await CreateUserAsync("comment-mod-moderator", RoleConstants.Moderator);
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id));
         var comment = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateCommentAsync(services, post.Id, author.Id, "kotu yorum"));
         using (var reporterAuthentication = await Factory.CreateAuthenticatedClientAsync(reporter.Id))
@@ -313,7 +308,6 @@ public sealed class ModerationActionTests : IntegrationTestBase
     {
         var moderator = await CreateUserAsync("self-moderation-moderator", RoleConstants.Moderator);
         var reporter = await CreateUserAsync("self-moderation-reporter");
-        await GrantEndpointPermissionsAsync();
         using (var reporterAuthentication = await Factory.CreateAuthenticatedClientAsync(reporter.Id))
         {
             (await reporterAuthentication.Client.PostAsJsonAsync("/api/Report/createUserReport", new CreateUserReportCommand { TargetUserId = moderator.Id, Reason = ReportReason.Spam })).EnsureSuccessStatusCode();
@@ -354,7 +348,6 @@ public sealed class ModerationActionTests : IntegrationTestBase
     public async Task Review_of_a_missing_report_should_return_not_found()
     {
         var moderator = await CreateUserAsync("missing-report-moderator", RoleConstants.Moderator);
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(moderator.Id);
 
         var response = await authentication.Client.PostAsJsonAsync("/api/Report/review", new ReviewReportCommand
@@ -375,7 +368,6 @@ public sealed class ModerationActionTests : IntegrationTestBase
         var author = await CreateUserAsync($"{prefix}-author");
         var reporter = await CreateUserAsync($"{prefix}-reporter");
         var moderator = await CreateUserAsync($"{prefix}-moderator", RoleConstants.Moderator);
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id, $"{prefix} icerigi"));
 
         using (var reporterAuthentication = await Factory.CreateAuthenticatedClientAsync(reporter.Id))

@@ -26,7 +26,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
 
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Notification, ActionType = ActionType.Deleting, Definition = "Delete Notification")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Notification, ActionType = ActionType.Deleting, Definition = "Delete Notification", AccessLevel = EndpointAccessLevel.Member)]
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ApiResponse<DeleteNotificationCommandResponse>>> Delete(int id)
         {
@@ -34,7 +34,7 @@ namespace buduns_server.WebAPI.Controllers
             return Success(response);
         }
 
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Notification, ActionType = ActionType.Reading, Definition = "Get My Notifications")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Notification, ActionType = ActionType.Reading, Definition = "Get My Notifications", AccessLevel = EndpointAccessLevel.Member)]
         [HttpGet]
         public async Task<ActionResult<ApiResponse<PagedResponse<NotificationDto>>>> GetMyNotifications([FromQuery] int page = 1, [FromQuery] int size = 20, [FromQuery] bool onlyUnread = false)
         {
@@ -42,7 +42,7 @@ namespace buduns_server.WebAPI.Controllers
             return Success(response);
         }
 
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Notification, ActionType = ActionType.Reading, Definition = "Get Unread Notification Count")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Notification, ActionType = ActionType.Reading, Definition = "Get Unread Notification Count", AccessLevel = EndpointAccessLevel.Member)]
         [HttpGet("unread-count")]
         public async Task<ActionResult<ApiResponse<GetUnreadNotificationCountQueryResponse>>> GetUnreadCount()
         {
@@ -50,7 +50,7 @@ namespace buduns_server.WebAPI.Controllers
             return Success(response);
         }
 
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Notification, ActionType = ActionType.Updating, Definition = "Mark Notification As Read")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Notification, ActionType = ActionType.Updating, Definition = "Mark Notification As Read", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPatch("{id:int}/read")]
         public async Task<ActionResult<ApiResponse<MarkNotificationAsReadCommandResponse>>> MarkAsRead(int id)
         {
@@ -58,7 +58,7 @@ namespace buduns_server.WebAPI.Controllers
             return Success(response);
         }
 
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Notification, ActionType = ActionType.Updating, Definition = "Mark All Notifications As Read")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Notification, ActionType = ActionType.Updating, Definition = "Mark All Notifications As Read", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPatch("read-all")]
         public async Task<ActionResult<ApiResponse<MarkAllNotificationsAsReadCommandResponse>>> MarkAllAsRead()
         {

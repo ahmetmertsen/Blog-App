@@ -14,12 +14,12 @@ namespace buduns_server.WebAPI.Filters
 {
     public class RolePermissionFilter : IAsyncActionFilter
     {
-        private readonly IUserService _userService;
+        private readonly IEndpointPermissionService _endpointPermissionService;
         private readonly ILogger<RolePermissionFilter> _logger;
 
-        public RolePermissionFilter(IUserService userService, ILogger<RolePermissionFilter> logger)
+        public RolePermissionFilter(IEndpointPermissionService endpointPermissionService, ILogger<RolePermissionFilter> logger)
         {
-            _userService = userService;
+            _endpointPermissionService = endpointPermissionService;
             _logger = logger;
         }
 
@@ -70,9 +70,15 @@ namespace buduns_server.WebAPI.Filters
                 return;
             }
 
-            var hasRole = await _userService.HasRolePermissionToEndpointAsync(userId, code);
+            // Endpoint kaydi yoksa karar kodda bildirilen seviyeye duser.
+            // Acilistaki seeder kaydi zaten olusturuyor; bu, seeder'in
+            // calismadigi ya da kaydin elle silindigi durumda ucun sessizce
+            // olmemesi icin.
+            var defaultRoles = RoleConstants.GetDefaultRoles(attribute.AccessLevel);
 
-            if (!hasRole)
+            var hasAccess = await _endpointPermissionService.HasAccessAsync(userId, code, defaultRoles, context.HttpContext.RequestAborted);
+
+            if (!hasAccess)
             {
                 _logger.LogWarning(
                     "Permission denied. UserId: {UserId}, Path: {Path}, Controller: {Controller}, Action: {Action}, PermissionCode: {PermissionCode}, Menu: {Menu}, Definition: {Definition}",

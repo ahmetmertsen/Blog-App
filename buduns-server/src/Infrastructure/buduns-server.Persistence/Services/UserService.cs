@@ -436,33 +436,6 @@ namespace buduns_server.Persistence.Services
             return userRoles.ToArray();
         }
 
-        public async Task<bool> HasRolePermissionToEndpointAsync(int userId, string code)
-        {
-            var user = await _userManager.FindByIdAsync(userId.ToString());
-            if (user == null)
-            {
-                return false;
-            }
-
-            var userRoles = await _userManager.GetRolesAsync(user);
-            if (!userRoles.Any())
-            {
-                return false;
-            }
-
-            Endpoint? endpoint = await _unitOfWork.EndpointRepository.GetRolesToEndpoint(code);
-            if (endpoint == null)
-            {
-                return false;
-            }
-
-            var endpointRoles = endpoint.Roles
-                .Select(role => role.Name)
-                .Where(roleName => !string.IsNullOrWhiteSpace(roleName));
-
-            return userRoles.Intersect(endpointRoles).Any();
-        }
-
         private static string GetIdentityErrors(IdentityResult result) => string.Join(", ", result.Errors.Select(error => error.Description));
 
     }

@@ -287,6 +287,8 @@ namespace buduns_server.WebAPI
 
             SeedRoles(app);
 
+            SeedEndpoints(app);
+
             SeedBootstrapAdmin(app);
 
             app.UseSerilogRequestLogging(options =>
@@ -350,6 +352,45 @@ namespace buduns_server.WebAPI
             catch (Exception exception)
             {
                 Log.Fatal(exception, "Sistem rolleri olusturulamadi, uygulama baslatilmiyor.");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Yetki katalogu kodla esitlenir. Rollerle ayni gerekce ile fail-fast:
+        /// katalog yazilamadiysa yonetim ekrani da denetim de calismaz, ama
+        /// sunucu saglikli gorunur. Kodda karsiligi kalmayan kayitlar silinmez,
+        /// yalnizca uyari olarak loglanir; silmek insan karari.
+        /// </summary>
+        private static void SeedEndpoints(WebApplication app)
+        {
+            using var scope = app.Services.CreateScope();
+            var seeder = scope.ServiceProvider.GetRequiredService<IEndpointSeeder>();
+
+            try
+            {
+                var result = seeder.SeedAsync(typeof(Program), CancellationToken.None).GetAwaiter().GetResult();
+
+                if (result.HasChanges)
+                {
+                    Log.Information(
+                        "Yetki katalogu esitlendi. CreatedMenus: {CreatedMenus}, CreatedEndpoints: {CreatedEndpoints}, UpdatedEndpoints: {UpdatedEndpoints}",
+                        result.CreatedMenuCount,
+                        result.CreatedEndpointCount,
+                        result.UpdatedEndpointCount);
+                }
+
+                if (result.OrphanCodes.Count > 0)
+                {
+                    Log.Warning(
+                        "Veritabaninda kodda karsiligi olmayan yetki kaydi var. Bir uc kaldirilmis ya da tanimi degisip kodu kaymis olabilir. OrphanCount: {OrphanCount}, OrphanCodes: {OrphanCodes}",
+                        result.OrphanCodes.Count,
+                        string.Join(", ", result.OrphanCodes));
+                }
+            }
+            catch (Exception exception)
+            {
+                Log.Fatal(exception, "Yetki katalogu esitlenemedi, uygulama baslatilmiyor.");
                 throw;
             }
         }

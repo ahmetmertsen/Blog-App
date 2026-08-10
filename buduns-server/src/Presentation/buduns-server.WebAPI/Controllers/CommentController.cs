@@ -26,7 +26,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Comments, ActionType = ActionType.Writing, Definition = "Create Comment")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Comments, ActionType = ActionType.Writing, Definition = "Create Comment", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPost]
         public async Task<ActionResult<ApiResponse<CreateCommentsCommandResponse>>> Create([FromBody] CreateCommentsCommand request)
         {
@@ -34,7 +34,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Comments, ActionType = ActionType.Updating, Definition = "Update Comment")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Comments, ActionType = ActionType.Updating, Definition = "Update Comment", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPut("{id:int}")]
         public async Task<ActionResult<ApiResponse<UpdateCommentsCommandResponse>>> Update(int id, [FromBody] UpdateCommentsCommand request)
         {
@@ -43,7 +43,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Comments, ActionType = ActionType.Deleting, Definition = "Delete Comment")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Comments, ActionType = ActionType.Deleting, Definition = "Delete Comment", AccessLevel = EndpointAccessLevel.Member)]
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ApiResponse<DeleteCommentsCommandResponse>>> Delete(int id)
         {

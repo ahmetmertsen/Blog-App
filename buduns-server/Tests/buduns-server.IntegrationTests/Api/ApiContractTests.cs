@@ -47,6 +47,7 @@ public sealed class ApiContractTests : IntegrationTestBase
     public async Task Protected_endpoint_without_permission_should_return_forbidden_envelope()
     {
         var user = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateUserAsync(services, "regular-user", "Regular User", RoleConstants.User));
+        await Factory.ExecuteScopeAsync(services => PermissionSeeder.SetEndpointRolesAsync(services, "POST.Writing.CreateLike"));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(user.Id);
 
         var response = await authentication.Client.PostAsync("/api/Like/1", null);

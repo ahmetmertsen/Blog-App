@@ -30,7 +30,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("like-post-owner");
         var liker = await CreateUserAsync("liker-user");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(liker.Id);
 
@@ -56,7 +55,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("like-notify-owner");
         var liker = await CreateUserAsync("like-notify-liker");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(liker.Id);
 
@@ -74,7 +72,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     public async Task Liking_your_own_post_should_not_create_a_notification()
     {
         var owner = await CreateUserAsync("self-liker");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(owner.Id);
 
@@ -89,7 +86,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("deleted-post-owner");
         var liker = await CreateUserAsync("deleted-post-liker");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         await Factory.ExecuteScopeAsync(async services =>
         {
@@ -111,7 +107,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("liked-list-owner");
         var liker = await CreateUserAsync("liked-list-liker");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id, "begenilen icerik"));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(liker.Id);
         (await authentication.Client.PostAsync($"/api/Like/{post.Id}", null)).EnsureSuccessStatusCode();
@@ -127,7 +122,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("like-listing-owner");
         var liker = await CreateUserAsync("like-listing-liker");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(liker.Id);
         (await authentication.Client.PostAsync($"/api/Like/{post.Id}", null)).EnsureSuccessStatusCode();
@@ -142,7 +136,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("bookmark-post-owner");
         var reader = await CreateUserAsync("bookmark-reader");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(reader.Id);
 
@@ -168,7 +161,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("silent-bookmark-owner");
         var reader = await CreateUserAsync("silent-bookmark-reader");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(reader.Id);
 
@@ -182,7 +174,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     public async Task Bookmark_of_a_missing_post_should_return_not_found()
     {
         var reader = await CreateUserAsync("missing-bookmark-reader");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(reader.Id);
 
         var response = await authentication.Client.PostAsJsonAsync("/api/Bookmark", new CreateBookmarksCommand { PostId = 999999 });
@@ -195,7 +186,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("noop-bookmark-owner");
         var reader = await CreateUserAsync("noop-bookmark-reader");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(reader.Id);
 
@@ -209,7 +199,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     {
         var follower = await CreateUserAsync("follow-source");
         var target = await CreateUserAsync("follow-target-user");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(follower.Id);
 
         var created = await authentication.Client.PostAsync($"/api/Follower/{target.Id}", null);
@@ -232,7 +221,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     {
         var follower = await CreateUserAsync("notify-follower");
         var target = await CreateUserAsync("notify-followed");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(follower.Id);
 
         (await authentication.Client.PostAsync($"/api/Follower/{target.Id}", null)).EnsureSuccessStatusCode();
@@ -247,7 +235,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     public async Task Self_follow_should_be_rejected()
     {
         var user = await CreateUserAsync("self-follower");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(user.Id);
 
         var response = await authentication.Client.PostAsync($"/api/Follower/{user.Id}", null);
@@ -261,7 +248,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
         var follower = await CreateUserAsync("banned-follow-source");
         var banned = await CreateUserAsync("banned-follow-target");
         await Factory.ExecuteScopeAsync(services => DatabaseSeeder.SetUserStatusAsync(services, banned.Id, UserStatus.Banned));
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(follower.Id);
 
         var response = await authentication.Client.PostAsync($"/api/Follower/{banned.Id}", null);
@@ -273,7 +259,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     public async Task Following_a_missing_user_should_return_not_found()
     {
         var follower = await CreateUserAsync("missing-follow-source");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(follower.Id);
 
         var response = await authentication.Client.PostAsync("/api/Follower/999999", null);
@@ -286,7 +271,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     {
         var follower = await CreateUserAsync("listing-follower");
         var target = await CreateUserAsync("listing-followed");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(follower.Id);
         (await authentication.Client.PostAsync($"/api/Follower/{target.Id}", null)).EnsureSuccessStatusCode();
         using var client = Factory.CreateHttpsClient();
@@ -314,7 +298,6 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
     {
         var follower = await CreateUserAsync("count-follower");
         var target = await CreateUserAsync("count-followed");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(follower.Id);
         (await authentication.Client.PostAsync($"/api/Follower/{target.Id}", null)).EnsureSuccessStatusCode();
         using var client = Factory.CreateHttpsClient();

@@ -30,7 +30,6 @@ public sealed class AuthFlowTests : IntegrationTestBase
     [Fact]
     public async Task Register_then_verify_email_then_login_should_produce_usable_token()
     {
-        await GrantEndpointPermissionsAsync();
         using var client = Factory.CreateHttpsClient();
 
         var registerResponse = await client.PostAsJsonAsync("/api/User/register", new RegisterUserCommand("flow-user", "Flow User", "flow-user@integration.test", "Integration123!"));
@@ -81,7 +80,6 @@ public sealed class AuthFlowTests : IntegrationTestBase
     {
         var user = await CreateUserAsync("unverified-user");
         await Factory.ExecuteScopeAsync(services => DatabaseSeeder.SetEmailConfirmedAsync(services, user.Id, false));
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, user.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(user.Id);
 
@@ -243,7 +241,6 @@ public sealed class AuthFlowTests : IntegrationTestBase
     public async Task Email_change_should_require_both_codes_and_revoke_sessions()
     {
         var user = await CreateUserAsync("change-email-user");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(user.Id);
 
         var requestResponse = await authentication.Client.PostAsJsonAsync("/api/Auth/emailChange", new ChangeEmailCommand { NewEmail = "yeni-adres@integration.test" });
@@ -283,7 +280,6 @@ public sealed class AuthFlowTests : IntegrationTestBase
     {
         await CreateUserAsync("taken-email-user");
         var user = await CreateUserAsync("changer-user");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(user.Id);
 
         var response = await authentication.Client.PostAsJsonAsync("/api/Auth/emailChange", new ChangeEmailCommand { NewEmail = "taken-email-user@integration.test" });
@@ -298,7 +294,6 @@ public sealed class AuthFlowTests : IntegrationTestBase
     {
         var user = await CreateUserAsync("resend-user");
         await Factory.ExecuteScopeAsync(services => DatabaseSeeder.SetEmailConfirmedAsync(services, user.Id, false));
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(user.Id);
 
         var first = await authentication.Client.PostAsync("/api/Auth/mailVerify", null);
@@ -314,7 +309,6 @@ public sealed class AuthFlowTests : IntegrationTestBase
     public async Task Mail_verify_for_already_confirmed_user_should_not_send_a_code()
     {
         var user = await CreateUserAsync("already-verified-user");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(user.Id);
 
         var response = await authentication.Client.PostAsync("/api/Auth/mailVerify", null);

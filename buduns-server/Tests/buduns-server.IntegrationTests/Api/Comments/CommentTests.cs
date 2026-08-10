@@ -22,7 +22,6 @@ public sealed class CommentTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("comment-post-owner");
         var commenter = await CreateUserAsync("commenter-user");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(commenter.Id);
 
@@ -45,7 +44,6 @@ public sealed class CommentTests : IntegrationTestBase
     public async Task Commenting_on_your_own_post_should_not_create_a_notification()
     {
         var owner = await CreateUserAsync("self-commenter");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(owner.Id);
 
@@ -60,7 +58,6 @@ public sealed class CommentTests : IntegrationTestBase
     public async Task Create_comment_on_missing_post_should_return_not_found()
     {
         var commenter = await CreateUserAsync("missing-post-commenter");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(commenter.Id);
 
         var response = await authentication.Client.PostAsJsonAsync("/api/Comment", new CreateCommentsCommand { PostId = 999999, Content = "yorum" });
@@ -73,7 +70,6 @@ public sealed class CommentTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("duplicate-owner");
         var commenter = await CreateUserAsync("duplicate-commenter");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(commenter.Id);
         var command = new CreateCommentsCommand { PostId = post.Id, Content = "ayni yorum" };
@@ -90,7 +86,6 @@ public sealed class CommentTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("flood-owner");
         var commenter = await CreateUserAsync("flood-commenter");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(commenter.Id);
 
@@ -110,7 +105,6 @@ public sealed class CommentTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("comment-owner");
         var attacker = await CreateUserAsync("comment-attacker");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         var comment = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateCommentAsync(services, post.Id, owner.Id, "orijinal"));
         using var ownerAuthentication = await Factory.CreateAuthenticatedClientAsync(owner.Id);
@@ -131,7 +125,6 @@ public sealed class CommentTests : IntegrationTestBase
     public async Task Delete_comment_should_soft_delete_and_hide_it_from_listings()
     {
         var owner = await CreateUserAsync("delete-comment-owner");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         var comment = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateCommentAsync(services, post.Id, owner.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(owner.Id);
@@ -153,7 +146,6 @@ public sealed class CommentTests : IntegrationTestBase
     public async Task Delete_comment_twice_should_stay_successful()
     {
         var owner = await CreateUserAsync("idempotent-delete-owner");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         var comment = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateCommentAsync(services, post.Id, owner.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(owner.Id);
@@ -167,7 +159,6 @@ public sealed class CommentTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("comment-delete-victim");
         var attacker = await CreateUserAsync("comment-delete-attacker");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, owner.Id));
         var comment = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateCommentAsync(services, post.Id, owner.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(attacker.Id);
@@ -243,7 +234,6 @@ public sealed class CommentTests : IntegrationTestBase
     public async Task Comment_validation_errors_should_follow_the_global_contract()
     {
         var commenter = await CreateUserAsync("validation-commenter");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(commenter.Id);
 
         var response = await authentication.Client.PostAsJsonAsync("/api/Comment", new CreateCommentsCommand { PostId = 0, Content = string.Empty });

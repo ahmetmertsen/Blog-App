@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Security.Claims;
 using buduns_server.Application.Abstractions.Services;
+using buduns_server.Application.Common.Consts;
 using buduns_server.Application.Common.CustomAttrributes;
 using buduns_server.Domain.Enums;
 using buduns_server.WebAPI.Filters;
@@ -21,8 +22,8 @@ public class RolePermissionFilterTests
     [Fact]
     public async Task Filter_ActionWithoutAuthorizeDefinition_ShouldContinue()
     {
-        var userService = Substitute.For<IUserService>();
-        var filter = CreateFilter(userService);
+        var permissionService = Substitute.For<IEndpointPermissionService>();
+        var filter = CreateFilter(permissionService);
         var context = CreateContext(nameof(TestController.PublicAction), CreatePrincipal(1));
         var nextCalled = false;
 
@@ -35,22 +36,22 @@ public class RolePermissionFilterTests
     [Fact]
     public async Task Filter_AdminUser_ShouldBypassPermissionService()
     {
-        var userService = Substitute.For<IUserService>();
-        var filter = CreateFilter(userService);
-        var context = CreateContext(nameof(TestController.ProtectedAction), CreatePrincipal(1, "Admin"));
+        var permissionService = Substitute.For<IEndpointPermissionService>();
+        var filter = CreateFilter(permissionService);
+        var context = CreateContext(nameof(TestController.ProtectedAction), CreatePrincipal(1, RoleConstants.Admin));
         var nextCalled = false;
 
         await filter.OnActionExecutionAsync(context, CreateNext(context, () => nextCalled = true));
 
         Assert.True(nextCalled);
-        await userService.DidNotReceiveWithAnyArgs().HasRolePermissionToEndpointAsync(default, default!);
+        await permissionService.DidNotReceiveWithAnyArgs().HasAccessAsync(default, default!, default!);
     }
 
     [Fact]
     public async Task Filter_InvalidUserIdentifier_ShouldReturn401()
     {
-        var userService = Substitute.For<IUserService>();
-        var filter = CreateFilter(userService);
+        var permissionService = Substitute.For<IEndpointPermissionService>();
+        var filter = CreateFilter(permissionService);
         var context = CreateContext(nameof(TestController.ProtectedAction), CreatePrincipal(null));
 
         await filter.OnActionExecutionAsync(context, CreateNext(context));
@@ -61,9 +62,9 @@ public class RolePermissionFilterTests
     [Fact]
     public async Task Filter_UserWithoutPermission_ShouldReturn403()
     {
-        var userService = Substitute.For<IUserService>();
-        userService.HasRolePermissionToEndpointAsync(7, "POST.Writing.CreatePost").Returns(false);
-        var filter = CreateFilter(userService);
+        var permissionService = Substitute.For<IEndpointPermissionService>();
+        permissionService.HasAccessAsync(7, "POST.Writing.CreatePost", Arg.Any<IReadOnlyList<string>>()).ReturnsForAnyArgs(false);
+        var filter = CreateFilter(permissionService);
         var context = CreateContext(nameof(TestController.ProtectedAction), CreatePrincipal(7));
 
         await filter.OnActionExecutionAsync(context, CreateNext(context));
@@ -74,20 +75,59 @@ public class RolePermissionFilterTests
     [Fact]
     public async Task Filter_UserWithPermission_ShouldContinueAndUseExpectedPermissionCode()
     {
-        var userService = Substitute.For<IUserService>();
-        userService.HasRolePermissionToEndpointAsync(7, "POST.Writing.CreatePost").Returns(true);
-        var filter = CreateFilter(userService);
+        var permissionService = Substitute.For<IEndpointPermissionService>();
+        permissionService.HasAccessAsync(default, default!, default!).ReturnsForAnyArgs(true);
+        var filter = CreateFilter(permissionService);
         var context = CreateContext(nameof(TestController.ProtectedAction), CreatePrincipal(7));
         var nextCalled = false;
 
         await filter.OnActionExecutionAsync(context, CreateNext(context, () => nextCalled = true));
 
         Assert.True(nextCalled);
-        await userService.Received(1).HasRolePermissionToEndpointAsync(7, "POST.Writing.CreatePost");
+        await permissionService.Received(1).HasAccessAsync(7, "POST.Writing.CreatePost", Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>());
     }
 
-    private static RolePermissionFilter CreateFilter(IUserService userService) =>
-        new(userService, NullLogger<RolePermissionFilter>.Instance);
+    /// <summary>
+    /// Endpoint kaydi bulunamadiginda karari verecek olan liste bu; filtre
+    /// bunu attribute'taki seviyeden turetip servise gecirmezse, kaydi silinen
+    /// bir uc sessizce herkese kapanir.
+    /// </summary>
+    [Fact]
+    public async Task Filter_ShouldPassDefaultRolesOfDeclaredAccessLevel()
+    {
+        var permissionService = Substitute.For<IEndpointPermissionService>();
+        permissionService.HasAccessAsync(default, default!, default!).ReturnsForAnyArgs(true);
+        var filter = CreateFilter(permissionService);
+        var context = CreateContext(nameof(TestController.ProtectedAction), CreatePrincipal(7));
+
+        await filter.OnActionExecutionAsync(context, CreateNext(context));
+
+        await permissionService.Received(1).HasAccessAsync(
+            7,
+            "POST.Writing.CreatePost",
+            Arg.Is<IReadOnlyList<string>>(roles => roles.SequenceEqual(new[] { RoleConstants.User, RoleConstants.Moderator })),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Filter_ActionWithoutAccessLevel_ShouldPassNoDefaultRoles()
+    {
+        var permissionService = Substitute.For<IEndpointPermissionService>();
+        permissionService.HasAccessAsync(default, default!, default!).ReturnsForAnyArgs(true);
+        var filter = CreateFilter(permissionService);
+        var context = CreateContext(nameof(TestController.AdminOnlyAction), CreatePrincipal(7));
+
+        await filter.OnActionExecutionAsync(context, CreateNext(context));
+
+        await permissionService.Received(1).HasAccessAsync(
+            7,
+            "POST.Writing.AssignRoleEndpoint",
+            Arg.Is<IReadOnlyList<string>>(roles => roles.Count == 0),
+            Arg.Any<CancellationToken>());
+    }
+
+    private static RolePermissionFilter CreateFilter(IEndpointPermissionService permissionService) =>
+        new(permissionService, NullLogger<RolePermissionFilter>.Instance);
 
     private static ActionExecutingContext CreateContext(string methodName, ClaimsPrincipal user)
     {
@@ -130,8 +170,14 @@ public class RolePermissionFilterTests
         }
 
         [HttpPost]
-        [AuthorizeDefinition(Menu = "Posts", ActionType = ActionType.Writing, Definition = "Create Post")]
+        [AuthorizeDefinition(Menu = "Posts", ActionType = ActionType.Writing, Definition = "Create Post", AccessLevel = EndpointAccessLevel.Member)]
         public void ProtectedAction()
+        {
+        }
+
+        [HttpPost]
+        [AuthorizeDefinition(Menu = "Authorization Endpoints", ActionType = ActionType.Writing, Definition = "Assign Role Endpoint")]
+        public void AdminOnlyAction()
         {
         }
     }

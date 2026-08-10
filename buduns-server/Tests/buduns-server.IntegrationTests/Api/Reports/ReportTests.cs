@@ -29,7 +29,6 @@ public sealed class ReportTests : IntegrationTestBase
     {
         var author = await CreateUserAsync("report-post-author");
         var reporter = await CreateUserAsync("report-post-reporter");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id, "sikayet edilen icerik"));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(reporter.Id);
 
@@ -50,7 +49,6 @@ public sealed class ReportTests : IntegrationTestBase
     public async Task Reporting_your_own_content_should_be_rejected()
     {
         var author = await CreateUserAsync("self-report-author");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id));
         var comment = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateCommentAsync(services, post.Id, author.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
@@ -65,7 +63,6 @@ public sealed class ReportTests : IntegrationTestBase
     {
         var author = await CreateUserAsync("duplicate-report-author");
         var reporter = await CreateUserAsync("duplicate-report-reporter");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(reporter.Id);
         var command = new CreatePostReportCommand { PostId = post.Id, Reason = ReportReason.Spam };
@@ -84,7 +81,6 @@ public sealed class ReportTests : IntegrationTestBase
     {
         var author = await CreateUserAsync("deleted-report-author");
         var reporter = await CreateUserAsync("deleted-report-reporter");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id));
         await Factory.ExecuteScopeAsync(async services =>
         {
@@ -106,7 +102,6 @@ public sealed class ReportTests : IntegrationTestBase
     public async Task Daily_report_limit_should_be_enforced()
     {
         var reporter = await CreateUserAsync("limit-reporter");
-        await GrantEndpointPermissionsAsync();
         var authors = new List<int>();
         for (var index = 0; index < 11; index++)
         {
@@ -137,7 +132,6 @@ public sealed class ReportTests : IntegrationTestBase
         var firstReporter = await CreateUserAsync("grouped-reporter-one");
         var secondReporter = await CreateUserAsync("grouped-reporter-two");
         var moderator = await CreateUserAsync("grouped-moderator", RoleConstants.Moderator);
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id));
 
         using (var firstAuthentication = await Factory.CreateAuthenticatedClientAsync(firstReporter.Id))
@@ -167,7 +161,6 @@ public sealed class ReportTests : IntegrationTestBase
         var author = await CreateUserAsync("detail-report-author");
         var reporter = await CreateUserAsync("detail-reporter");
         var moderator = await CreateUserAsync("detail-moderator", RoleConstants.Moderator);
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id, "detay icerigi"));
         using (var reporterAuthentication = await Factory.CreateAuthenticatedClientAsync(reporter.Id))
         {
@@ -192,7 +185,6 @@ public sealed class ReportTests : IntegrationTestBase
     public async Task Report_endpoints_for_moderators_should_be_closed_to_regular_users()
     {
         var user = await CreateUserAsync("report-regular-user");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(user.Id);
 
         (await authentication.Client.GetAsync("/api/Report?page=1&size=20")).StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -215,7 +207,6 @@ public sealed class ReportTests : IntegrationTestBase
         var author = await CreateUserAsync("filter-report-author");
         var reporter = await CreateUserAsync("filter-report-reporter");
         var moderator = await CreateUserAsync("filter-report-moderator", RoleConstants.Moderator);
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id));
         using (var reporterAuthentication = await Factory.CreateAuthenticatedClientAsync(reporter.Id))
         {
@@ -238,7 +229,6 @@ public sealed class ReportTests : IntegrationTestBase
     public async Task Report_listing_with_invalid_date_range_should_return_validation_error()
     {
         var moderator = await CreateUserAsync("date-range-moderator", RoleConstants.Moderator);
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(moderator.Id);
 
         var response = await authentication.Client.GetAsync("/api/Report?page=1&size=20&fromDate=2026-02-01&toDate=2026-01-01");
@@ -253,7 +243,6 @@ public sealed class ReportTests : IntegrationTestBase
     {
         var author = await CreateUserAsync("comment-report-author");
         var reporter = await CreateUserAsync("comment-report-reporter");
-        await GrantEndpointPermissionsAsync();
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id));
         var comment = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateCommentAsync(services, post.Id, author.Id, "sikayet edilen yorum"));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(reporter.Id);
@@ -274,7 +263,6 @@ public sealed class ReportTests : IntegrationTestBase
         var target = await CreateUserAsync("banned-report-target");
         var reporter = await CreateUserAsync("banned-report-reporter");
         await Factory.ExecuteScopeAsync(services => DatabaseSeeder.SetUserStatusAsync(services, target.Id, UserStatus.Banned));
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(reporter.Id);
 
         var response = await authentication.Client.PostAsJsonAsync("/api/Report/createUserReport", new CreateUserReportCommand { TargetUserId = target.Id, Reason = ReportReason.Spam });

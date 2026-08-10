@@ -30,7 +30,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Posts, ActionType = ActionType.Writing, Definition = "Create Post")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Posts, ActionType = ActionType.Writing, Definition = "Create Post", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPost]
         [Route("create")]
         public async Task<ActionResult<ApiResponse<CreatePostsCommandResponse>>> Create([FromBody] CreatePostsCommand request)
@@ -40,7 +40,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Posts, ActionType = ActionType.Updating, Definition = "Update Post")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Posts, ActionType = ActionType.Updating, Definition = "Update Post", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPut]
         [Route("update")]
         public async Task<ActionResult<ApiResponse<UpdatePostsCommandResponse>>> Update([FromBody] UpdatePostsCommand request)
@@ -50,7 +50,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Posts, ActionType = ActionType.Deleting, Definition = "Delete Post")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Posts, ActionType = ActionType.Deleting, Definition = "Delete Post", AccessLevel = EndpointAccessLevel.Member)]
         [HttpDelete]
         [Route("delete")]
         public async Task<ActionResult<ApiResponse<DeletePostsCommandResponse>>> Delete([FromBody] DeletePostsCommand request)
@@ -84,7 +84,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Posts, ActionType = ActionType.Reading, Definition = "Get My Posts")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Posts, ActionType = ActionType.Reading, Definition = "Get My Posts", AccessLevel = EndpointAccessLevel.Member)]
         [HttpGet]
         [Route("me")]
         public async Task<ActionResult<ApiResponse<PagedResponse<PostDto>>>> GetMyPosts([FromQuery] int page = 1, [FromQuery] int size = 20)
@@ -102,7 +102,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Posts, ActionType = ActionType.Reading, Definition = "Get Following Posts")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Posts, ActionType = ActionType.Reading, Definition = "Get Following Posts", AccessLevel = EndpointAccessLevel.Member)]
         [HttpGet]
         [Route("following")]
         public async Task<ActionResult<ApiResponse<PagedResponse<PostDto>>>> GetFollowingPosts([FromQuery] int page = 1, [FromQuery] int size = 20)

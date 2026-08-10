@@ -99,7 +99,7 @@ public sealed class RoleCrudTests : IntegrationTestBase
         (await authentication.Client.PostAsJsonAsync("/api/Role/create", new CreateRoleCommand { Name = "Editor" })).EnsureSuccessStatusCode();
         var roles = await authentication.Client.GetDataAsync<List<RoleDto>>("/api/Role/getAll");
         var editor = roles!.Single(role => role.Name == "Editor");
-        await Factory.ExecuteScopeAsync(services => PermissionSeeder.GrantEndpointAsync(services, AuthorizeDefinitionConstants.Posts, "POST.Writing.CreatePost", "Editor"));
+        await Factory.ExecuteScopeAsync(services => PermissionSeeder.SetEndpointRolesAsync(services, "POST.Writing.CreatePost", "Editor"));
 
         var response = await authentication.Client.DeleteAsync($"/api/Role/delete/{editor.Id}");
 
@@ -121,7 +121,6 @@ public sealed class RoleCrudTests : IntegrationTestBase
     public async Task Role_endpoints_should_be_closed_to_non_admin_users()
     {
         var moderator = await CreateUserAsync("role-moderator", RoleConstants.Moderator);
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(moderator.Id);
 
         (await authentication.Client.GetAsync("/api/Role/getAll")).StatusCode.Should().Be(HttpStatusCode.Forbidden);

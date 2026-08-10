@@ -26,7 +26,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Reports, ActionType = ActionType.Writing, Definition = "Create Post Report")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Reports, ActionType = ActionType.Writing, Definition = "Create Post Report", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPost("createPostReport")]
         public async Task<ActionResult<ApiResponse<CreatePostReportCommandResponse>>> CreatePostReport([FromBody] CreatePostReportCommand request)
         {
@@ -35,7 +35,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Reports, ActionType = ActionType.Writing, Definition = "Create Comment Report")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Reports, ActionType = ActionType.Writing, Definition = "Create Comment Report", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPost("createCommentReport")]
         public async Task<ActionResult<ApiResponse<CreateCommentReportCommandResponse>>> CreateCommentReport([FromBody] CreateCommentReportCommand request)
         {
@@ -44,7 +44,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Reports, ActionType = ActionType.Writing, Definition = "Create User Report")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Reports, ActionType = ActionType.Writing, Definition = "Create User Report", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPost("createUserReport")]
         public async Task<ActionResult<ApiResponse<CreateUserReportCommandResponse>>> CreateUserReport([FromBody] CreateUserReportCommand request)
         {
@@ -53,7 +53,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize(Roles = "Admin,Moderator")]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Reports, ActionType = ActionType.Reading, Definition = "Get Reports")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Reports, ActionType = ActionType.Reading, Definition = "Get Reports", AccessLevel = EndpointAccessLevel.Moderator)]
         [HttpGet]
         public async Task<ActionResult<ApiResponse<PagedResponse<ReportListDto>>>> GetReports([FromQuery] GetReportsQuery request)
         {
@@ -62,7 +62,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize(Roles = "Admin,Moderator")]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Reports, ActionType = ActionType.Reading, Definition = "Get Report By Id")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Reports, ActionType = ActionType.Reading, Definition = "Get Report By Id", AccessLevel = EndpointAccessLevel.Moderator)]
         [HttpGet]
         [Route("getById/{reportId}")]
         public async Task<ActionResult<ApiResponse<ReportDetailDto>>> GetReportById(int reportId)
@@ -72,7 +72,7 @@ namespace buduns_server.WebAPI.Controllers
         }
 
         [Authorize(Roles = "Admin,Moderator")]
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Reports, ActionType = ActionType.Updating, Definition = "Review Report")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Reports, ActionType = ActionType.Updating, Definition = "Review Report", AccessLevel = EndpointAccessLevel.Moderator)]
         [HttpPost("review")]
         public async Task<ActionResult<ApiResponse<ReviewReportCommandResponse>>> ReviewReport([FromBody] ReviewReportCommand request)
         {

@@ -169,9 +169,12 @@ public sealed class BudunsWebApplicationFactory : WebApplicationFactory<WebAPI.P
         await ClearCacheAsync();
         MailService.Clear();
 
-        // Respawn rolleri de siliyor; uygulamanin acilista kullandigi seeder'in
-        // ta kendisi yeniden calistiriliyor, testlere ozel bir kopya yok.
+        // Respawn rolleri ve yetki katalogunu da siliyor; uygulamanin acilista
+        // kullandigi seeder'larin ta kendisi yeniden calistiriliyor, testlere
+        // ozel bir kopya yok. Sira onemli: varsayilan roller yazilabilmesi icin
+        // roller endpoint'lerden once var olmali.
         await ExecuteScopeAsync(services => services.GetRequiredService<IRoleSeeder>().SeedAsync(CancellationToken.None));
+        await ExecuteScopeAsync(services => services.GetRequiredService<IEndpointSeeder>().SeedAsync(typeof(WebAPI.Program), CancellationToken.None));
     }
 
     public async Task ClearCacheAsync()

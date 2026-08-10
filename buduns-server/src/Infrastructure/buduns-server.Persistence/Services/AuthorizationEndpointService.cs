@@ -19,12 +19,18 @@ namespace buduns_server.Persistence.Services
         private readonly IApplicationService _applicationService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly RoleManager<Role> _roleManager;
+        private readonly IEndpointPermissionService _endpointPermissionService;
 
-        public AuthorizationEndpointService(IApplicationService applicationService, IUnitOfWork unitOfWork, RoleManager<Role> roleManager)
+        public AuthorizationEndpointService(
+            IApplicationService applicationService,
+            IUnitOfWork unitOfWork,
+            RoleManager<Role> roleManager,
+            IEndpointPermissionService endpointPermissionService)
         {
             _applicationService = applicationService;
             _unitOfWork = unitOfWork;
             _roleManager = roleManager;
+            _endpointPermissionService = endpointPermissionService;
         }
 
         public async Task AssignRoleEndpointAsync(string[] roles, string menu, string code, Type type)
@@ -81,6 +87,8 @@ namespace buduns_server.Persistence.Services
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+            // Yeni rol kumesi bir sonraki istekte gecerli olmali; TTL beklenmez.
+            await _endpointPermissionService.InvalidateAsync(code, cancellationToken);
         }
 
         public async Task<List<string>> GetRolesToEndpoint(string code, string menu)

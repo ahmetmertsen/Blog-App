@@ -24,7 +24,7 @@ namespace buduns_server.WebAPI.Controllers
             _mediatR = mediatR;
         }
 
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Bookmarks, ActionType = ActionType.Writing, Definition = "Create Bookmark")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Bookmarks, ActionType = ActionType.Writing, Definition = "Create Bookmark", AccessLevel = EndpointAccessLevel.Member)]
         [HttpPost]
         public async Task<ActionResult<ApiResponse<CreateBookmarksCommandResponse>>> Create([FromBody] CreateBookmarksCommand request)
         {
@@ -32,7 +32,7 @@ namespace buduns_server.WebAPI.Controllers
             return Success(response);
         }
 
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Bookmarks, ActionType = ActionType.Deleting, Definition = "Delete Bookmark")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Bookmarks, ActionType = ActionType.Deleting, Definition = "Delete Bookmark", AccessLevel = EndpointAccessLevel.Member)]
         [HttpDelete("{postId:int}")]
         public async Task<ActionResult<ApiResponse<DeleteBookmarksCommandResponse>>> Delete(int postId)
         {
@@ -40,7 +40,7 @@ namespace buduns_server.WebAPI.Controllers
             return Success(response);
         }
 
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Bookmarks, ActionType = ActionType.Reading, Definition = "Get Bookmarks")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Bookmarks, ActionType = ActionType.Reading, Definition = "Get Bookmarks", AccessLevel = EndpointAccessLevel.Member)]
         [HttpGet]
         public async Task<ActionResult<ApiResponse<PagedResponse<BookmarkDto>>>> GetBookmarks([FromQuery] GetBookmarksQuery request)
         {
@@ -48,7 +48,7 @@ namespace buduns_server.WebAPI.Controllers
             return Success(response);
         }
 
-        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Bookmarks, ActionType = ActionType.Reading, Definition = "Get Bookmark Status")]
+        [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Bookmarks, ActionType = ActionType.Reading, Definition = "Get Bookmark Status", AccessLevel = EndpointAccessLevel.Member)]
         [HttpGet("status/{postId:int}")]
         public async Task<ActionResult<ApiResponse<GetBookmarkStatusQueryResponse>>> GetStatus(int postId)
         {

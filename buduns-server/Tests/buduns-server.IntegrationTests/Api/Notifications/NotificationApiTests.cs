@@ -26,7 +26,6 @@ public sealed class NotificationApiTests : IntegrationTestBase
     public async Task Notification_listing_should_support_unread_filter_and_paging()
     {
         var owner = await CreateUserAsync("notification-owner");
-        await GrantEndpointPermissionsAsync();
         await SeedNotificationsAsync(owner.Id, unread: 2, read: 1);
         using var authentication = await Factory.CreateAuthenticatedClientAsync(owner.Id);
 
@@ -46,7 +45,6 @@ public sealed class NotificationApiTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("notification-isolated-owner");
         var stranger = await CreateUserAsync("notification-stranger");
-        await GrantEndpointPermissionsAsync();
         await SeedNotificationsAsync(owner.Id, unread: 1, read: 0);
         await SeedNotificationsAsync(stranger.Id, unread: 3, read: 0);
         using var authentication = await Factory.CreateAuthenticatedClientAsync(owner.Id);
@@ -62,7 +60,6 @@ public sealed class NotificationApiTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("unread-count-owner");
         var stranger = await CreateUserAsync("unread-count-stranger");
-        await GrantEndpointPermissionsAsync();
         await SeedNotificationsAsync(owner.Id, unread: 2, read: 3);
         await SeedNotificationsAsync(stranger.Id, unread: 5, read: 0);
         using var authentication = await Factory.CreateAuthenticatedClientAsync(owner.Id);
@@ -76,7 +73,6 @@ public sealed class NotificationApiTests : IntegrationTestBase
     public async Task Mark_as_read_should_stamp_read_date_and_lower_the_unread_count()
     {
         var owner = await CreateUserAsync("mark-read-owner");
-        await GrantEndpointPermissionsAsync();
         var notifications = await SeedNotificationsAsync(owner.Id, unread: 2, read: 0);
         using var authentication = await Factory.CreateAuthenticatedClientAsync(owner.Id);
 
@@ -97,7 +93,6 @@ public sealed class NotificationApiTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("read-victim");
         var attacker = await CreateUserAsync("read-attacker");
-        await GrantEndpointPermissionsAsync();
         var notifications = await SeedNotificationsAsync(owner.Id, unread: 1, read: 0);
         using var authentication = await Factory.CreateAuthenticatedClientAsync(attacker.Id);
 
@@ -114,7 +109,6 @@ public sealed class NotificationApiTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("mark-all-owner");
         var stranger = await CreateUserAsync("mark-all-stranger");
-        await GrantEndpointPermissionsAsync();
         await SeedNotificationsAsync(owner.Id, unread: 3, read: 1);
         await SeedNotificationsAsync(stranger.Id, unread: 2, read: 0);
         using var authentication = await Factory.CreateAuthenticatedClientAsync(owner.Id);
@@ -137,7 +131,6 @@ public sealed class NotificationApiTests : IntegrationTestBase
     public async Task Delete_notification_should_soft_delete_and_hide_it_from_listings()
     {
         var owner = await CreateUserAsync("notification-deleter");
-        await GrantEndpointPermissionsAsync();
         var notifications = await SeedNotificationsAsync(owner.Id, unread: 2, read: 0);
         using var authentication = await Factory.CreateAuthenticatedClientAsync(owner.Id);
 
@@ -157,7 +150,6 @@ public sealed class NotificationApiTests : IntegrationTestBase
     {
         var owner = await CreateUserAsync("delete-notification-victim");
         var attacker = await CreateUserAsync("delete-notification-attacker");
-        await GrantEndpointPermissionsAsync();
         var notifications = await SeedNotificationsAsync(owner.Id, unread: 1, read: 0);
         using var authentication = await Factory.CreateAuthenticatedClientAsync(attacker.Id);
 

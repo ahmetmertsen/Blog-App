@@ -26,7 +26,6 @@ public sealed class TagTests : IntegrationTestBase
     public async Task Create_tag_should_normalize_display_name_and_key()
     {
         var author = await CreateUserAsync("tag-creator");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
 
         var response = await authentication.Client.PostAsJsonAsync("/api/Tag/create", new CreateTagsCommand("  dotnet   core  "));
@@ -42,7 +41,6 @@ public sealed class TagTests : IntegrationTestBase
     public async Task Create_tag_that_differs_only_by_case_or_spacing_should_be_rejected()
     {
         var author = await CreateUserAsync("tag-duplicate-creator");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
         (await authentication.Client.PostAsJsonAsync("/api/Tag/create", new CreateTagsCommand("dotnet"))).EnsureSuccessStatusCode();
 
@@ -59,7 +57,6 @@ public sealed class TagTests : IntegrationTestBase
     public async Task Update_tag_should_rename_it_and_keep_uniqueness()
     {
         var author = await CreateUserAsync("tag-updater");
-        await GrantEndpointPermissionsAsync();
         var tag = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateTagAsync(services, "eski"));
         var other = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateTagAsync(services, "mevcut"));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
@@ -80,7 +77,6 @@ public sealed class TagTests : IntegrationTestBase
     public async Task Update_tag_with_its_own_name_should_be_allowed()
     {
         var author = await CreateUserAsync("tag-self-updater");
-        await GrantEndpointPermissionsAsync();
         var tag = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateTagAsync(services, "dotnet"));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
 
@@ -93,7 +89,6 @@ public sealed class TagTests : IntegrationTestBase
     public async Task Delete_tag_should_soft_delete_it_and_remove_it_from_listings()
     {
         var author = await CreateUserAsync("tag-deleter");
-        await GrantEndpointPermissionsAsync();
         var tag = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateTagAsync(services, "silinecek"));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
 
@@ -118,7 +113,6 @@ public sealed class TagTests : IntegrationTestBase
     public async Task Delete_missing_tag_should_return_not_found()
     {
         var author = await CreateUserAsync("tag-missing-deleter");
-        await GrantEndpointPermissionsAsync();
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
 
         var response = await authentication.Client.SendAsync(new HttpRequestMessage(HttpMethod.Delete, "/api/Tag/delete")
@@ -175,10 +169,12 @@ public sealed class TagTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task Tag_write_endpoints_should_reject_users_without_permission()
+    public async Task Tag_write_endpoints_should_reject_users_whose_permission_was_revoked()
     {
         var author = await CreateUserAsync("tag-permissionless");
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
+
+        await Factory.ExecuteScopeAsync(services => PermissionSeeder.SetEndpointRolesAsync(services, "POST.Writing.CreateTag"));
 
         var response = await authentication.Client.PostAsJsonAsync("/api/Tag/create", new CreateTagsCommand("etiket"));
 
