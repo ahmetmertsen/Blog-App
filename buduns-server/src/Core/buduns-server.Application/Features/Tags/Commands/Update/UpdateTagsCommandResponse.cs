@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Tags.Commands.Update
 {
-    public record UpdateTagsCommandResponse(bool Succeeded, string Message)
+    public record UpdateTagsCommandResponse(string Message)
     {
     }
 }

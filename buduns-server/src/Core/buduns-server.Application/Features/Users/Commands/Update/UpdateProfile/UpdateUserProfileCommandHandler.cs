@@ -30,7 +30,7 @@ namespace buduns_server.Application.Features.Users.Commands.Update.UpdateProfile
             };
             UpdateUserProfileResponse response =  await _userService.UpdateUserProfile(request);
 
-            return new UpdateUserProfileCommandResponse(Succeeded: response.Succeeded, Message: response.Message);
+            return new UpdateUserProfileCommandResponse(Message: response.Message);
         }
     }
 }

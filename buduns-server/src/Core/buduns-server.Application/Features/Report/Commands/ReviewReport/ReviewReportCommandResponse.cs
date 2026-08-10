@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Report.Commands.ReviewReport
 {
-    public record ReviewReportCommandResponse(bool Succeeded, string Message)
+    public record ReviewReportCommandResponse(string Message)
     {
     }
 }

@@ -34,10 +34,10 @@ public sealed class AuthFlowTests : IntegrationTestBase
         using var client = Factory.CreateHttpsClient();
 
         var registerResponse = await client.PostAsJsonAsync("/api/User/register", new RegisterUserCommand("flow-user", "Flow User", "flow-user@integration.test", "Integration123!"));
-        var registerBody = await registerResponse.Content.ReadFromJsonAsync<RegisterUserCommandResponse>();
+        var registerBody = await registerResponse.ReadDataAsync<RegisterUserCommandResponse>();
 
         registerResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        registerBody!.Succeeded.Should().BeTrue();
+        registerBody.Message.Should().NotBeNullOrWhiteSpace();
 
         // Kayit "User" rolunu otomatik atamali ve e-posta dogrulanmamis olmali.
         var created = await Factory.ExecuteScopeAsync(async services =>
@@ -46,7 +46,7 @@ public sealed class AuthFlowTests : IntegrationTestBase
         created.EmailVerificationSentAt.Should().NotBeNull();
 
         var loginResponse = await client.PostAsJsonAsync("/api/Auth/login", new LoginUserCommand("flow-user", "Integration123!"));
-        var loginBody = await loginResponse.Content.ReadFromJsonAsync<LoginUserCommandResponse>();
+        var loginBody = await loginResponse.ReadDataAsync<LoginUserCommandResponse>();
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         // Dogrulanmamis hesap giris yapabilir ama token bunu bildirmelidir.
         loginBody!.Token.RequiresEmailVerification.Should().BeTrue();
@@ -72,7 +72,7 @@ public sealed class AuthFlowTests : IntegrationTestBase
         var duplicateUserName = await client.PostAsJsonAsync("/api/User/register", new RegisterUserCommand("dup-user", "Dup User", "baska@integration.test", "Integration123!"));
 
         duplicateEmail.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        (await duplicateEmail.Content.ReadFromJsonAsync<ApiResponse>())!.Error!.Code.Should().Be("REGISTER_FAILED");
+        (await duplicateEmail.ReadErrorAsync()).Code.Should().Be("REGISTER_FAILED");
         duplicateUserName.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -90,7 +90,7 @@ public sealed class AuthFlowTests : IntegrationTestBase
         var allowed = await authentication.Client.GetAsync("/api/Auth/sessions");
 
         blocked.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-        (await blocked.Content.ReadFromJsonAsync<ApiResponse>())!.Error!.Code.Should().Be("EMAIL_VERIFICATION_REQUIRED");
+        (await blocked.ReadErrorAsync()).Code.Should().Be("EMAIL_VERIFICATION_REQUIRED");
         allowed.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
@@ -106,8 +106,8 @@ public sealed class AuthFlowTests : IntegrationTestBase
         wrongPassword.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         unknownUser.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         // Iki durumda da ayni mesaj donmeli: kullanici varligi sizdirilmamali.
-        (await wrongPassword.Content.ReadFromJsonAsync<ApiResponse>())!.Error!.Message
-            .Should().Be((await unknownUser.Content.ReadFromJsonAsync<ApiResponse>())!.Error!.Message);
+        (await wrongPassword.ReadErrorAsync()).Message
+            .Should().Be((await unknownUser.ReadErrorAsync()).Message);
     }
 
     [Fact]
@@ -131,7 +131,7 @@ public sealed class AuthFlowTests : IntegrationTestBase
         var response = await client.PostAsJsonAsync("/api/Auth/login", new LoginUserCommand("banned-login-user", DatabaseSeeder.DefaultPassword));
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-        (await response.Content.ReadFromJsonAsync<ApiResponse>())!.Error!.Message.Should().Contain("yasaklan");
+        (await response.ReadErrorAsync()).Message.Should().Contain("yasaklan");
     }
 
     [Fact]
@@ -331,7 +331,7 @@ public sealed class AuthFlowTests : IntegrationTestBase
         var response = await Factory.ExecuteScopeAsync(services => services.GetRequiredService<Application.Abstractions.Services.IAuthService>()
             .ForgotPasswordResetAsync(new Application.Dtos.Auth.ForgotPasswordRequest { EmailOrUsername = "olmayan-kullanici" }, CancellationToken.None));
 
-        response.Succeeded.Should().BeTrue();
+        response.Message.Should().NotBeNullOrWhiteSpace();
         Factory.MailService.SentMails.Should().BeEmpty();
     }
 

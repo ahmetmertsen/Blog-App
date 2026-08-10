@@ -30,9 +30,9 @@ public sealed class NotificationApiTests : IntegrationTestBase
         await SeedNotificationsAsync(owner.Id, unread: 2, read: 1);
         using var authentication = await Factory.CreateAuthenticatedClientAsync(owner.Id);
 
-        var all = await authentication.Client.GetFromJsonAsync<PagedResponse<NotificationDto>>("/api/Notification?page=1&size=20");
-        var unread = await authentication.Client.GetFromJsonAsync<PagedResponse<NotificationDto>>("/api/Notification?page=1&size=20&onlyUnread=true");
-        var paged = await authentication.Client.GetFromJsonAsync<PagedResponse<NotificationDto>>("/api/Notification?page=1&size=1");
+        var all = await authentication.Client.GetDataAsync<PagedResponse<NotificationDto>>("/api/Notification?page=1&size=20");
+        var unread = await authentication.Client.GetDataAsync<PagedResponse<NotificationDto>>("/api/Notification?page=1&size=20&onlyUnread=true");
+        var paged = await authentication.Client.GetDataAsync<PagedResponse<NotificationDto>>("/api/Notification?page=1&size=1");
 
         all!.TotalCount.Should().Be(3);
         unread!.TotalCount.Should().Be(2);
@@ -51,7 +51,7 @@ public sealed class NotificationApiTests : IntegrationTestBase
         await SeedNotificationsAsync(stranger.Id, unread: 3, read: 0);
         using var authentication = await Factory.CreateAuthenticatedClientAsync(owner.Id);
 
-        var response = await authentication.Client.GetFromJsonAsync<PagedResponse<NotificationDto>>("/api/Notification?page=1&size=20");
+        var response = await authentication.Client.GetDataAsync<PagedResponse<NotificationDto>>("/api/Notification?page=1&size=20");
 
         response!.TotalCount.Should().Be(1);
         response.Items.Should().OnlyContain(item => item.UserId == owner.Id);
@@ -67,7 +67,7 @@ public sealed class NotificationApiTests : IntegrationTestBase
         await SeedNotificationsAsync(stranger.Id, unread: 5, read: 0);
         using var authentication = await Factory.CreateAuthenticatedClientAsync(owner.Id);
 
-        var response = await authentication.Client.GetFromJsonAsync<GetUnreadNotificationCountQueryResponse>("/api/Notification/unread-count");
+        var response = await authentication.Client.GetDataAsync<GetUnreadNotificationCountQueryResponse>("/api/Notification/unread-count");
 
         response!.UnreadCount.Should().Be(2);
     }
@@ -88,7 +88,7 @@ public sealed class NotificationApiTests : IntegrationTestBase
         stored.IsRead.Should().BeTrue();
         stored.ReadAt.Should().NotBeNull();
 
-        var unreadCount = await authentication.Client.GetFromJsonAsync<GetUnreadNotificationCountQueryResponse>("/api/Notification/unread-count");
+        var unreadCount = await authentication.Client.GetDataAsync<GetUnreadNotificationCountQueryResponse>("/api/Notification/unread-count");
         unreadCount!.UnreadCount.Should().Be(1);
     }
 
@@ -120,9 +120,9 @@ public sealed class NotificationApiTests : IntegrationTestBase
         using var authentication = await Factory.CreateAuthenticatedClientAsync(owner.Id);
 
         var first = await authentication.Client.PatchAsync("/api/Notification/read-all", null);
-        var firstBody = await first.Content.ReadFromJsonAsync<MarkAllNotificationsAsReadCommandResponse>();
+        var firstBody = await first.ReadDataAsync<MarkAllNotificationsAsReadCommandResponse>();
         var second = await authentication.Client.PatchAsync("/api/Notification/read-all", null);
-        var secondBody = await second.Content.ReadFromJsonAsync<MarkAllNotificationsAsReadCommandResponse>();
+        var secondBody = await second.ReadDataAsync<MarkAllNotificationsAsReadCommandResponse>();
 
         firstBody!.UpdatedCount.Should().Be(3);
         secondBody!.UpdatedCount.Should().Be(0);
@@ -148,7 +148,7 @@ public sealed class NotificationApiTests : IntegrationTestBase
             await services.GetRequiredService<BudunsDbContext>().Notifications.AsNoTracking().SingleAsync(item => item.Id == notifications[0].Id));
         stored.isDeleted.Should().BeTrue();
 
-        var listing = await authentication.Client.GetFromJsonAsync<PagedResponse<NotificationDto>>("/api/Notification?page=1&size=20");
+        var listing = await authentication.Client.GetDataAsync<PagedResponse<NotificationDto>>("/api/Notification?page=1&size=20");
         listing!.TotalCount.Should().Be(1);
     }
 

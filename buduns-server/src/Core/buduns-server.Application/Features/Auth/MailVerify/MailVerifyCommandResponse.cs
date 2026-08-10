@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Auth.MailVerify
 {
-    public record MailVerifyCommandResponse(bool Succeeded, string Message)
+    public record MailVerifyCommandResponse(string Message)
     {
     }
 }

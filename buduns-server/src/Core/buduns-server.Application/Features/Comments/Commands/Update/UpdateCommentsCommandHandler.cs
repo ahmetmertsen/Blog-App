@@ -42,7 +42,7 @@ namespace buduns_server.Application.Features.Comments.Commands.Update
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             var commentDto = await _unitOfWork.CommentRepository.GetDtoByIdAsync(comment.Id, cancellationToken) ?? throw new NotFoundException("Güncellenen yorum bulunamadı.");
-            return new UpdateCommentsCommandResponse(true, "Yorum başarıyla güncellendi.", commentDto);
+            return new UpdateCommentsCommandResponse("Yorum başarıyla güncellendi.", commentDto);
         }
     }
 }

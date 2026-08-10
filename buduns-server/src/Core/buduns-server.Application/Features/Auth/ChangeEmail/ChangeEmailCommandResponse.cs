@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Auth.ChangeEmail
 {
-    public record ChangeEmailCommandResponse(bool Succeeded, string Message)
+    public record ChangeEmailCommandResponse(string Message)
     {
     }
 }

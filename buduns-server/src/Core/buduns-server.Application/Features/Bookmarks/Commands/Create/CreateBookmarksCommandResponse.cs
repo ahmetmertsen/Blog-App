@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Bookmarks.Commands.Create
 {
-    public record CreateBookmarksCommandResponse(bool Succeeded, string Message, int BookmarkId, bool AlreadyBookmarked)
+    public record CreateBookmarksCommandResponse(string Message, int BookmarkId, bool AlreadyBookmarked)
     {
     }
 }

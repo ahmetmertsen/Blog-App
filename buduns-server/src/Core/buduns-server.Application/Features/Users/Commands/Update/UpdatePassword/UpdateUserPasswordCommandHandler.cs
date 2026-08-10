@@ -32,7 +32,6 @@ namespace buduns_server.Application.Features.Users.Commands.Update.UpdatePasswor
 
             UpdateUserPasswordCommandResponse commandResponse = new()
             {
-                Succeeded = response.Succeeded,
                 Message = response.Message
             };
             return commandResponse;

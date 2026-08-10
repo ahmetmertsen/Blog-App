@@ -29,7 +29,6 @@ public class UserHandlerTests
         var response = await handler.Handle(command, CancellationToken.None);
 
         await userService.Received(1).AssignRoleToUserAsync(3, 8, roles, CancellationToken.None);
-        Assert.True(response.Succeeded);
     }
 
     [Fact]

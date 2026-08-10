@@ -31,16 +31,16 @@ public sealed class RoleCrudTests : IntegrationTestBase
 
         (await authentication.Client.PostAsJsonAsync("/api/Role/create", new CreateRoleCommand { Name = "  Editor  " })).StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var roles = await authentication.Client.GetFromJsonAsync<List<RoleDto>>("/api/Role/getAll");
+        var roles = await authentication.Client.GetDataAsync<List<RoleDto>>("/api/Role/getAll");
         var editor = roles!.Single(role => role.Name == "Editor");
 
-        var byId = await authentication.Client.GetFromJsonAsync<RoleDto>($"/api/Role/getById/{editor.Id}");
+        var byId = await authentication.Client.GetDataAsync<RoleDto>($"/api/Role/getById/{editor.Id}");
         byId!.Name.Should().Be("Editor");
 
         (await authentication.Client.PutAsJsonAsync("/api/Role/update", new UpdateRoleCommand { Id = editor.Id, Name = "Reviewer" })).StatusCode.Should().Be(HttpStatusCode.OK);
         (await authentication.Client.DeleteAsync($"/api/Role/delete/{editor.Id}")).StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var remaining = await authentication.Client.GetFromJsonAsync<List<RoleDto>>("/api/Role/getAll");
+        var remaining = await authentication.Client.GetDataAsync<List<RoleDto>>("/api/Role/getAll");
         remaining!.Should().OnlyContain(role => role.Name != "Reviewer");
     }
 
@@ -81,7 +81,7 @@ public sealed class RoleCrudTests : IntegrationTestBase
         var target = await CreateUserAsync("assigned-role-target");
         using var authentication = await Factory.CreateAuthenticatedClientAsync(admin.Id);
         (await authentication.Client.PostAsJsonAsync("/api/Role/create", new CreateRoleCommand { Name = "Editor" })).EnsureSuccessStatusCode();
-        var roles = await authentication.Client.GetFromJsonAsync<List<RoleDto>>("/api/Role/getAll");
+        var roles = await authentication.Client.GetDataAsync<List<RoleDto>>("/api/Role/getAll");
         var editor = roles!.Single(role => role.Name == "Editor");
 
         (await authentication.Client.PostAsJsonAsync("/api/User/assignRoleToUser", new AssignRoleToUserCommand { TargetUserId = target.Id, Roles = new[] { "Editor" } })).EnsureSuccessStatusCode();
@@ -97,7 +97,7 @@ public sealed class RoleCrudTests : IntegrationTestBase
         var admin = await CreateUserAsync("endpoint-role-admin", RoleConstants.Admin);
         using var authentication = await Factory.CreateAuthenticatedClientAsync(admin.Id);
         (await authentication.Client.PostAsJsonAsync("/api/Role/create", new CreateRoleCommand { Name = "Editor" })).EnsureSuccessStatusCode();
-        var roles = await authentication.Client.GetFromJsonAsync<List<RoleDto>>("/api/Role/getAll");
+        var roles = await authentication.Client.GetDataAsync<List<RoleDto>>("/api/Role/getAll");
         var editor = roles!.Single(role => role.Name == "Editor");
         await Factory.ExecuteScopeAsync(services => PermissionSeeder.GrantEndpointAsync(services, AuthorizeDefinitionConstants.Posts, "POST.Writing.CreatePost", "Editor"));
 
@@ -144,7 +144,7 @@ public sealed class RoleCrudTests : IntegrationTestBase
         var target = await CreateUserAsync("roles-query-target");
         using var authentication = await Factory.CreateAuthenticatedClientAsync(admin.Id);
 
-        var response = await authentication.Client.GetFromJsonAsync<GetRolesToUserQueryResponse>($"/api/User/getRolesToUser/{target.Id}");
+        var response = await authentication.Client.GetDataAsync<GetRolesToUserQueryResponse>($"/api/User/getRolesToUser/{target.Id}");
 
         response!.UserId.Should().Be(target.Id);
         response.Roles.Should().BeEquivalentTo(new[] { RoleConstants.User });

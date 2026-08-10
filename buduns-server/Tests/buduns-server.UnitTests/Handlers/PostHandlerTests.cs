@@ -33,7 +33,6 @@ public class PostHandlerTests
 
         var response = await handler.Handle(new CreatePostsCommand { UserId = 9, Content = "merhaba" }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         Assert.NotNull(persisted);
         Assert.Equal(9, persisted!.UserId);
         Assert.Equal("merhaba", persisted.Content);
@@ -89,7 +88,6 @@ public class PostHandlerTests
 
         var response = await handler.Handle(new UpdatePostsCommand { Id = 5, UserId = 9, Content = "yeni", TagIds = new List<int> { 2 } }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         Assert.Equal("yeni", post.Content);
         Assert.Equal(new[] { newTag }, post.Tags);
         Assert.True(post.isPublished);
@@ -161,7 +159,6 @@ public class PostHandlerTests
 
         var response = await handler.Handle(new DeletePostsCommand { Id = 5, UserId = 9 }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         Assert.Equal(PostStatus.DeletedByOwner, post.Status);
         Assert.False(post.isPublished);
         Assert.False(post.isActive);

@@ -25,7 +25,7 @@ public sealed class SessionTests : IntegrationTestBase
         using var first = await Factory.CreateAuthenticatedClientAsync(user.Id);
         using var second = await Factory.CreateAuthenticatedClientAsync(user.Id);
 
-        var response = await first.Client.GetFromJsonAsync<GetAuthSessionsQueryResponse>("/api/Auth/sessions");
+        var response = await first.Client.GetDataAsync<GetAuthSessionsQueryResponse>("/api/Auth/sessions");
 
         response!.Sessions.Should().HaveCount(2);
         response.Sessions.Count(session => session.IsCurrent).Should().Be(1);
@@ -106,7 +106,7 @@ public sealed class SessionTests : IntegrationTestBase
         using var other = await Factory.CreateAuthenticatedClientAsync(user.Id);
 
         await current.Client.DeleteAsync($"/api/Auth/sessions/{other.SessionId}");
-        var response = await current.Client.GetFromJsonAsync<GetAuthSessionsQueryResponse>("/api/Auth/sessions");
+        var response = await current.Client.GetDataAsync<GetAuthSessionsQueryResponse>("/api/Auth/sessions");
 
         response!.Sessions.Should().ContainSingle().Which.Id.Should().Be(current.SessionId);
 
@@ -135,7 +135,7 @@ public sealed class SessionTests : IntegrationTestBase
         using var client = Factory.CreateHttpsClient();
 
         var refreshResponse = await client.PostAsJsonAsync("/api/Auth/refreshTokenLogin", new Application.Features.Auth.RefreshTokenLogin.RefreshTokenLoginCommand { RefreshToken = authentication.RefreshToken });
-        var refreshed = await refreshResponse.Content.ReadFromJsonAsync<Application.Features.Auth.RefreshTokenLogin.RefreshTokenLoginCommandResponse>();
+        var refreshed = await refreshResponse.ReadDataAsync<Application.Features.Auth.RefreshTokenLogin.RefreshTokenLoginCommandResponse>();
 
         refreshResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         refreshed!.Token.SessionId.Should().NotBe(authentication.SessionId);

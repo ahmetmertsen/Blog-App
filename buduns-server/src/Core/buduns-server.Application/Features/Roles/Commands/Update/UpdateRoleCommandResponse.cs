@@ -8,7 +8,6 @@ namespace buduns_server.Application.Features.Roles.Commands.Update
 {
     public class UpdateRoleCommandResponse
     {
-        public bool Succeeded { get; set; }
         public string Message { get; set; } = null!;
     }
 }

@@ -43,7 +43,6 @@ public class InteractionHandlerTests
 
         var response = await handler.Handle(new CreateLikesCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         Assert.False(response.AlreadyLiked);
         Assert.Equal(15, response.LikeId);
         await notificationService.Received(1).BuildAsync(Arg.Is<NotificationCreateModel>(model =>
@@ -60,7 +59,6 @@ public class InteractionHandlerTests
 
         var response = await handler.Handle(new CreateLikesCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         Assert.True(response.AlreadyLiked);
     }
 
@@ -85,7 +83,6 @@ public class InteractionHandlerTests
 
         var response = await handler.Handle(new DeleteLikesCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
     }
 
     [Fact]
@@ -170,7 +167,6 @@ public class InteractionHandlerTests
 
         var response = await handler.Handle(new CreateBookmarksCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         Assert.False(response.AlreadyBookmarked);
         Assert.Equal(22, response.BookmarkId);
     }
@@ -226,7 +222,6 @@ public class InteractionHandlerTests
 
         var response = await handler.Handle(new DeleteBookmarksCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
     }
 
     [Fact]
@@ -300,7 +295,6 @@ public class InteractionHandlerTests
 
         var response = await handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         Assert.False(response.AlreadyFollowing);
         Assert.Equal(33, response.FollowId);
         await notificationService.Received(1).BuildAsync(Arg.Is<NotificationCreateModel>(model =>
@@ -331,7 +325,6 @@ public class InteractionHandlerTests
 
         var response = await handler.Handle(new DeleteFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
     }
 
     [Fact]

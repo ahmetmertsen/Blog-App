@@ -1,9 +1,8 @@
-using buduns_server.WebAPI.Configurations.RateLimiting;
+using buduns_server.WebAPI.Http;
 using buduns_server.WebAPI.Models;
+using buduns_server.WebAPI.Configurations.RateLimiting;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Text.Json;
 
 namespace buduns_server.WebAPI.Middlewares
 {
@@ -80,26 +79,13 @@ namespace buduns_server.WebAPI.Middlewares
                 clientIp,
                 retryAfterSeconds);
 
-            var traceId = Activity.Current?.Id ?? context.TraceIdentifier;
-            var response = new ApiResponse
-            {
-                IsSuccess = false,
-                Error = new ErrorResponse
-                {
-                    Code = "RATE_LIMIT_EXCEEDED",
-                    Message = "Çok fazla istek gönderildi. Lütfen daha sonra tekrar deneyin.",
-                    HttpStatus = StatusCodes.Status429TooManyRequests,
-                    TraceId = traceId
-                }
-            };
-
-            context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-            context.Response.ContentType = "application/json";
             context.Response.Headers.RetryAfter = retryAfterSeconds.ToString();
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            }));
+
+            await ApiErrorWriter.WriteAsync(
+                context,
+                StatusCodes.Status429TooManyRequests,
+                ApiErrorCodes.RateLimitExceeded,
+                "Çok fazla istek gönderildi. Lütfen daha sonra tekrar deneyin.");
         }
 
         private static void CleanupExpiredCounters(DateTimeOffset now)

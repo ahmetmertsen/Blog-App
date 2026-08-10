@@ -69,7 +69,7 @@ namespace buduns_server.Application.Features.Report.Commands.CreateCommentReport
             await _unitOfWork.ReportRepository.AddAsync(report);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Comment report created. ReportId: {ReportId}, ReporterUserId: {ReporterUserId}, TargetCommentId: {TargetCommentId}, Reason: {Reason}", report.Id, request.UserId, request.CommentId, request.Reason);
-            return new CreateCommentReportCommandResponse(true, "Şikayetiniz başarıyla alındı.");
+            return new CreateCommentReportCommandResponse("Şikayetiniz başarıyla alındı.");
         }
     }
 }

@@ -30,7 +30,6 @@ namespace buduns_server.Application.Features.Users.Commands.Update.UpdateMailVer
 
             UpdateUserMailVerifyCommandResponse commandResponse = new()
             {
-                Succeeded = response.Succeeded,
                 Message = response.Message
             };
             return commandResponse;

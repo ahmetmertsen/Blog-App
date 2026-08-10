@@ -47,7 +47,7 @@ public sealed class PostCrudTests : IntegrationTestBase
         var response = await authentication.Client.PostAsJsonAsync("/api/Post/create", new CreatePostsCommand { Content = "icerik", TagIds = new List<int> { 999999 } });
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        (await response.Content.ReadFromJsonAsync<ApiResponse>())!.Error!.Message.Should().Contain("999999");
+        (await response.ReadErrorAsync()).Message.Should().Contain("999999");
     }
 
     [Fact]
@@ -132,7 +132,7 @@ public sealed class PostCrudTests : IntegrationTestBase
 
         using var reader = Factory.CreateHttpsClient();
         (await reader.GetAsync($"/api/Post/getById/{post.Id}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
-        var listing = await reader.GetFromJsonAsync<PagedResponse<PostDto>>("/api/Post/getAll?page=1&size=20");
+        var listing = await reader.GetDataAsync<PagedResponse<PostDto>>("/api/Post/getAll?page=1&size=20");
         listing!.Items.Should().NotContain(item => item.Id == post.Id);
     }
 
@@ -164,8 +164,8 @@ public sealed class PostCrudTests : IntegrationTestBase
         (await viewerAuthentication.Client.PostAsync($"/api/Like/{post.Id}", null)).EnsureSuccessStatusCode();
 
         using var anonymous = Factory.CreateHttpsClient();
-        var anonymousPost = await anonymous.GetFromJsonAsync<PostDto>($"/api/Post/getById/{post.Id}");
-        var viewerPost = await viewerAuthentication.Client.GetFromJsonAsync<PostDto>($"/api/Post/getById/{post.Id}");
+        var anonymousPost = await anonymous.GetDataAsync<PostDto>($"/api/Post/getById/{post.Id}");
+        var viewerPost = await viewerAuthentication.Client.GetDataAsync<PostDto>($"/api/Post/getById/{post.Id}");
 
         anonymousPost!.IsLiked.Should().BeFalse();
         anonymousPost.IsOwner.Should().BeFalse();
@@ -181,7 +181,7 @@ public sealed class PostCrudTests : IntegrationTestBase
         var post = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
 
-        var dto = await authentication.Client.GetFromJsonAsync<PostDto>($"/api/Post/getById/{post.Id}");
+        var dto = await authentication.Client.GetDataAsync<PostDto>($"/api/Post/getById/{post.Id}");
 
         dto!.IsOwner.Should().BeTrue();
     }
@@ -203,9 +203,9 @@ public sealed class PostCrudTests : IntegrationTestBase
         await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id, "alakasiz paylasim"));
         using var client = Factory.CreateHttpsClient();
 
-        var searchResult = await client.GetFromJsonAsync<PagedResponse<PostDto>>("/api/Post/getAll?page=1&size=20&search=aranan");
-        var tagResult = await client.GetFromJsonAsync<PagedResponse<PostDto>>($"/api/Post/getAll?page=1&size=20&tagId={tag.Id}");
-        var pagedResult = await client.GetFromJsonAsync<PagedResponse<PostDto>>("/api/Post/getAll?page=1&size=1");
+        var searchResult = await client.GetDataAsync<PagedResponse<PostDto>>("/api/Post/getAll?page=1&size=20&search=aranan");
+        var tagResult = await client.GetDataAsync<PagedResponse<PostDto>>($"/api/Post/getAll?page=1&size=20&tagId={tag.Id}");
+        var pagedResult = await client.GetDataAsync<PagedResponse<PostDto>>("/api/Post/getAll?page=1&size=1");
 
         searchResult!.Items.Should().ContainSingle().Which.Id.Should().Be(tagged.Id);
         tagResult!.Items.Should().ContainSingle().Which.Id.Should().Be(tagged.Id);
@@ -222,8 +222,8 @@ public sealed class PostCrudTests : IntegrationTestBase
         var response = await client.GetAsync("/api/Post/getAll?page=0&size=500");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse>();
-        body!.Error!.ValidationErrors.Should().ContainKey("Page").And.ContainKey("Size");
+        var error = await response.ReadErrorAsync();
+        error.ValidationErrors.Should().ContainKey("Page").And.ContainKey("Size");
     }
 
     [Fact]
@@ -235,8 +235,8 @@ public sealed class PostCrudTests : IntegrationTestBase
         var newer = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id, "yeni"));
         using var client = Factory.CreateHttpsClient();
 
-        var recent = await client.GetFromJsonAsync<PagedResponse<PostDto>>("/api/Post/getAll?page=1&size=20&sortBy=recent");
-        var oldest = await client.GetFromJsonAsync<PagedResponse<PostDto>>("/api/Post/getAll?page=1&size=20&sortBy=oldest");
+        var recent = await client.GetDataAsync<PagedResponse<PostDto>>("/api/Post/getAll?page=1&size=20&sortBy=recent");
+        var oldest = await client.GetDataAsync<PagedResponse<PostDto>>("/api/Post/getAll?page=1&size=20&sortBy=oldest");
 
         recent!.Items.First().Id.Should().Be(newer.Id);
         oldest!.Items.First().Id.Should().Be(older.Id);
@@ -252,7 +252,7 @@ public sealed class PostCrudTests : IntegrationTestBase
         await Factory.ExecuteScopeAsync(services => DatabaseSeeder.SetUserStatusAsync(services, banned.Id, UserStatus.Banned));
         using var client = Factory.CreateHttpsClient();
 
-        var listing = await client.GetFromJsonAsync<PagedResponse<PostDto>>("/api/Post/getAll?page=1&size=20");
+        var listing = await client.GetDataAsync<PagedResponse<PostDto>>("/api/Post/getAll?page=1&size=20");
 
         listing!.Items.Select(item => item.Id).Should().Contain(visiblePost.Id).And.NotContain(hiddenPost.Id);
     }
@@ -267,7 +267,7 @@ public sealed class PostCrudTests : IntegrationTestBase
         await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, other.Id, "baskasinin"));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(author.Id);
 
-        var response = await authentication.Client.GetFromJsonAsync<PagedResponse<PostDto>>("/api/Post/me?page=1&size=20");
+        var response = await authentication.Client.GetDataAsync<PagedResponse<PostDto>>("/api/Post/me?page=1&size=20");
 
         response!.Items.Should().ContainSingle().Which.Id.Should().Be(mine.Id);
     }
@@ -284,7 +284,7 @@ public sealed class PostCrudTests : IntegrationTestBase
         using var authentication = await Factory.CreateAuthenticatedClientAsync(reader.Id);
         (await authentication.Client.PostAsync($"/api/Follower/{followed.Id}", null)).EnsureSuccessStatusCode();
 
-        var response = await authentication.Client.GetFromJsonAsync<PagedResponse<PostDto>>("/api/Post/following?page=1&size=20");
+        var response = await authentication.Client.GetDataAsync<PagedResponse<PostDto>>("/api/Post/following?page=1&size=20");
 
         response!.Items.Should().ContainSingle().Which.Id.Should().Be(followedPost.Id);
     }
@@ -306,7 +306,7 @@ public sealed class PostCrudTests : IntegrationTestBase
         await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreatePostAsync(services, author.Id, "etiketsiz"));
         using var client = Factory.CreateHttpsClient();
 
-        var response = await client.GetFromJsonAsync<PagedResponse<PostDto>>($"/api/Post/tag/{tag.Id}?page=1&size=20");
+        var response = await client.GetDataAsync<PagedResponse<PostDto>>($"/api/Post/tag/{tag.Id}?page=1&size=20");
 
         response!.Items.Should().ContainSingle().Which.Id.Should().Be(tagged.Id);
     }

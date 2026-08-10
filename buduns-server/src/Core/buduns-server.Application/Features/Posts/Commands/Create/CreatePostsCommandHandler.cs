@@ -57,7 +57,7 @@ namespace buduns_server.Application.Features.Posts.Commands.Create
 
             _logger.LogInformation("Post created. PostId: {PostId}, UserId: {UserId}, TagCount: {TagCount}", post.Id, request.UserId, tagIds.Count);
 
-            return new CreatePostsCommandResponse(true, "Post başarıyla eklenmiştir.");
+            return new CreatePostsCommandResponse("Post başarıyla eklenmiştir.");
         }
     }
 }

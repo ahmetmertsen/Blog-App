@@ -28,7 +28,6 @@ public class TagAndNotificationHandlerTests
 
         var response = await handler.Handle(new CreateTagsCommand("  dotnet   core  "), CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         Assert.Equal("dotnet core", persisted!.Name);
         Assert.Equal("DOTNET CORE", persisted.NormalizedName);
         Assert.True(persisted.isActive);
@@ -59,7 +58,6 @@ public class TagAndNotificationHandlerTests
 
         var response = await handler.Handle(new UpdateTagsCommand(4, " yeni "), CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         Assert.Equal("yeni", tag.Name);
         Assert.Equal("YENI", tag.NormalizedName);
         await unitOfWork.TagRepository.Received(1).ExistsByNormalizedNameAsync("YENI", 4, Arg.Any<CancellationToken>());
@@ -99,7 +97,6 @@ public class TagAndNotificationHandlerTests
 
         var response = await handler.Handle(new DeleteTagsCommand(4), CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         Assert.False(tag.isActive);
         Assert.True(tag.isDeleted);
         await unitOfWork.Received(1).SaveChangesAsync(CancellationToken.None);
@@ -148,7 +145,6 @@ public class TagAndNotificationHandlerTests
 
         var response = await handler.Handle(new MarkNotificationAsReadCommand { Id = 5, UserId = 9 }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         await unitOfWork.Received(1).SaveChangesAsync(CancellationToken.None);
     }
 
@@ -173,7 +169,6 @@ public class TagAndNotificationHandlerTests
 
         var response = await handler.Handle(new MarkAllNotificationsAsReadCommand { UserId = 9 }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         Assert.Equal(4, response.UpdatedCount);
         await unitOfWork.Received(1).SaveChangesAsync(CancellationToken.None);
     }
@@ -200,7 +195,6 @@ public class TagAndNotificationHandlerTests
 
         var response = await handler.Handle(new DeleteNotificationCommand { Id = 5, UserId = 9 }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         await unitOfWork.Received(1).SaveChangesAsync(CancellationToken.None);
     }
 

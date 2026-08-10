@@ -19,7 +19,6 @@ public class RoleHandlerTests
         var response = await handler.Handle(new CreateRoleCommand { Name = "Editor" }, CancellationToken.None);
 
         await service.Received(1).CreateRole("Editor", CancellationToken.None);
-        Assert.True(response.Succeeded);
     }
 
     [Fact]
@@ -31,7 +30,6 @@ public class RoleHandlerTests
         var response = await handler.Handle(new UpdateRoleCommand { Id = 4, Name = "Reviewer" }, CancellationToken.None);
 
         await service.Received(1).UpdateRole(4, "Reviewer", CancellationToken.None);
-        Assert.True(response.Succeeded);
     }
 
     [Fact]
@@ -43,7 +41,6 @@ public class RoleHandlerTests
         var response = await handler.Handle(new DeleteRoleCommand { Id = 7 }, CancellationToken.None);
 
         await service.Received(1).DeleteRole(7, CancellationToken.None);
-        Assert.True(response.Succeeded);
     }
 
     [Fact]

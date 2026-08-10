@@ -44,7 +44,7 @@ namespace buduns_server.Application.Features.Posts.Commands.Delete
 
             _logger.LogInformation("Post deleted. PostId: {PostId}, UserId: {UserId}", request.Id, request.UserId);
 
-            return new DeletePostsCommandResponse(true, "Post başarıyla silinmiştir.");
+            return new DeletePostsCommandResponse("Post başarıyla silinmiştir.");
         }
     }
 }

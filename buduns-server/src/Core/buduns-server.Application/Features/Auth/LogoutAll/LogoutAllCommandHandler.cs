@@ -16,7 +16,7 @@ namespace buduns_server.Application.Features.Auth.LogoutAll
         {
             await _authSessionService.RevokeAllSessionsAsync(request.UserId, "User logout from all sessions", cancellationToken);
 
-            return new LogoutAllCommandResponse(true, "Tüm oturumlar başarıyla kapatıldı.");
+            return new LogoutAllCommandResponse("Tüm oturumlar başarıyla kapatıldı.");
         }
     }
 }

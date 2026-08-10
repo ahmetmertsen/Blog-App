@@ -8,7 +8,6 @@ namespace buduns_server.Application.Features.Users.Commands.Update.UpdateMailVer
 {
     public class UpdateUserMailVerifyCommandResponse
     {
-        public bool Succeeded { get; set; }
         public required string Message { get; set; }
     }
 }

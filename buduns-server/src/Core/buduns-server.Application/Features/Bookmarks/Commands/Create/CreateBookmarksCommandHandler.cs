@@ -37,7 +37,6 @@ namespace buduns_server.Application.Features.Bookmarks.Commands.Create
             var message = result.Created ? "Yer işareti başarıyla eklendi." : "Paylaşım zaten yer işaretlerinizde bulunuyor.";
 
             return new CreateBookmarksCommandResponse(
-                Succeeded: true,
                 Message: message,
                 BookmarkId: result.Bookmark.Id,
                 AlreadyBookmarked: !result.Created);

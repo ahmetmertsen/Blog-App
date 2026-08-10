@@ -35,7 +35,7 @@ namespace buduns_server.Application.Features.Tags.Commands.Update
             tag.UpdateAt = DateTime.UtcNow;
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return new UpdateTagsCommandResponse(Succeeded: true, Message: "Tag başarıyla güncellendi.");
+            return new UpdateTagsCommandResponse(Message: "Tag başarıyla güncellendi.");
         }
     }
 }

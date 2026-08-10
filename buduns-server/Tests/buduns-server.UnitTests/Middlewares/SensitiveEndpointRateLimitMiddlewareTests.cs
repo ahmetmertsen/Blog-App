@@ -65,8 +65,7 @@ public class SensitiveEndpointRateLimitMiddlewareTests
         var body = await ReadBodyAsync(limited);
         Assert.False(body.RootElement.GetProperty("isSuccess").GetBoolean());
         Assert.Equal("RATE_LIMIT_EXCEEDED", body.RootElement.GetProperty("error").GetProperty("code").GetString());
-        Assert.Equal(429, body.RootElement.GetProperty("error").GetProperty("httpStatus").GetInt32());
-        Assert.False(string.IsNullOrWhiteSpace(body.RootElement.GetProperty("error").GetProperty("traceId").GetString()));
+        Assert.False(string.IsNullOrWhiteSpace(body.RootElement.GetProperty("traceId").GetString()));
     }
 
     [Fact]

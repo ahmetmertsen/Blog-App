@@ -26,7 +26,7 @@ namespace buduns_server.Application.Features.Auth.Login
                 throw new UnauthorizedAccesException("Kullanıcı adı, Email veya şifre hatalı!");
             } else
             {
-                return new LoginUserCommandResponse(Succeeded: true, Message: "Giriş başarılı!", Token: token);
+                return new LoginUserCommandResponse(Message: "Giriş başarılı!", Token: token);
             }
         }
     }

@@ -27,7 +27,7 @@ namespace buduns_server.Application.Features.Auth.ChangeEmail
 
             var response = await _authService.ChangeEmailAsync(request, cancellationToken);
 
-            ChangeEmailCommandResponse changeResponse = new(Succeeded: response.Succeeded, Message: response.Message);
+            ChangeEmailCommandResponse changeResponse = new(Message: response.Message);
             return changeResponse;
         }
     }

@@ -19,7 +19,7 @@ namespace buduns_server.Application.Features.Roles.Commands.Delete
         {
             await _roleService.DeleteRole(request.Id, cancellationToken);
             _logger.LogInformation("Role deleted. RoleId: {RoleId}", request.Id);
-            return new DeleteRoleCommandResponse { Succeeded = true, Message = "Rol başarıyla silindi." };
+            return new DeleteRoleCommandResponse { Message = "Rol başarıyla silindi." };
         }
     }
 }

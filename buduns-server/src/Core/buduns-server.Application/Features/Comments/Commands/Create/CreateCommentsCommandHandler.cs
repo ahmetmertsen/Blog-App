@@ -58,7 +58,7 @@ namespace buduns_server.Application.Features.Comments.Commands.Create
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             var commentDto = await _unitOfWork.CommentRepository.GetDtoByIdAsync(comment.Id, cancellationToken) ?? throw new NotFoundException("Oluşturulan yorum bulunamadı.");
-            return new CreateCommentsCommandResponse(true, "Yorum başarıyla eklendi.", commentDto);
+            return new CreateCommentsCommandResponse("Yorum başarıyla eklendi.", commentDto);
         }
     }
 }

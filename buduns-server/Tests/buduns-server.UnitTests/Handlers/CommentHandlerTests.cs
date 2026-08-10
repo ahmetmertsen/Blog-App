@@ -29,7 +29,6 @@ public class CommentHandlerTests
 
         var response = await handler.Handle(new CreateCommentsCommand { PostId = 7, UserId = 9, Content = "  yorum  " }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         Assert.Equal("yorum", persisted!.Content);
         Assert.Equal(7, persisted.PostId);
         Assert.Equal(9, persisted.UserId);
@@ -71,7 +70,6 @@ public class CommentHandlerTests
 
         var response = await handler.Handle(new CreateCommentsCommand { PostId = 7, UserId = 9, Content = "yorum" }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
     }
 
     [Fact]
@@ -105,7 +103,6 @@ public class CommentHandlerTests
 
         var response = await handler.Handle(new UpdateCommentsCommand { Id = 3, UserId = 9, Content = "  guncel  " }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         Assert.Equal("guncel", comment.Content);
         Assert.NotEqual(default, comment.UpdateAt);
         await unitOfWork.Received(1).SaveChangesAsync(CancellationToken.None);
@@ -171,7 +168,6 @@ public class CommentHandlerTests
 
         var response = await handler.Handle(new DeleteCommentsCommand { Id = 3, UserId = 9 }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         Assert.Equal(CommentStatus.DeletedByOwner, comment.Status);
         Assert.False(comment.isActive);
         Assert.True(comment.isDeleted);
@@ -189,7 +185,6 @@ public class CommentHandlerTests
 
         var response = await handler.Handle(new DeleteCommentsCommand { Id = 3, UserId = 9 }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         await unitOfWork.DidNotReceiveWithAnyArgs().SaveChangesAsync(default);
     }
 

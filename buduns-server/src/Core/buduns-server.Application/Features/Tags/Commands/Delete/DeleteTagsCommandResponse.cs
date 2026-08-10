@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Tags.Commands.Delete
 {
-    public record DeleteTagsCommandResponse(bool Succeeded, string Message)
+    public record DeleteTagsCommandResponse(string Message)
     {
     }
 }

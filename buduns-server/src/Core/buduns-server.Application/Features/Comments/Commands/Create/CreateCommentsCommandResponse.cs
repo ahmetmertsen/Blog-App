@@ -7,7 +7,7 @@ using buduns_server.Application.Dtos;
 
 namespace buduns_server.Application.Features.Comments.Commands.Create
 {
-    public record CreateCommentsCommandResponse(bool Succeeded, string Message, CommentDto Comment)
+    public record CreateCommentsCommandResponse(string Message, CommentDto Comment)
     {
     }
 }

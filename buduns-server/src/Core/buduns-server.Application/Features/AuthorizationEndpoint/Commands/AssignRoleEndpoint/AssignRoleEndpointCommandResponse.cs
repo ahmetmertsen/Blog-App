@@ -8,7 +8,6 @@ namespace buduns_server.Application.Features.AuthorizationEndpoint.Commands.Assi
 {
     public class AssignRoleEndpointCommandResponse
     {
-        public bool Succeeded { get; set; }
         public string Message { get; set; } = null!;
     }
 }

@@ -23,14 +23,8 @@ namespace buduns_server.Application.Features.Auth.Register
         {
             RegisterUserRequestDto userDto = request.ToRequestDto();
             RegisterUserResponseDto response = await _userService.RegisterAsync(userDto, cancellationToken);
-            if (response.Succeeded)
-            {
-                return new RegisterUserCommandResponse(Succeeded: true, Message: response.Message);
-            }
-            else
-            {
-                return new RegisterUserCommandResponse(Succeeded: response.Succeeded, Message: response.Message);
-            }
+
+            return new RegisterUserCommandResponse(Message: response.Message);
         }
     }
 }

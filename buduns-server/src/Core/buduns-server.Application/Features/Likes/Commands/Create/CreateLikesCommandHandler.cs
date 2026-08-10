@@ -32,7 +32,7 @@ namespace buduns_server.Application.Features.Likes.Commands.Create
             var notification = await _notificationService.BuildAsync(new NotificationCreateModel { Type = NotificationType.POST_LIKED, UserId = postOwnerId.Value, ActorUserId = request.UserId, PostId = request.PostId, Cooldown = TimeSpan.FromHours(1) }, cancellationToken);
             var result = await _unitOfWork.LikeRepository.CreateIfNotExistsAsync(like, notification, cancellationToken);
             var message = result.Created ? "Paylaşım beğenildi." : "Paylaşım zaten beğenilmiş.";
-            return new CreateLikesCommandResponse(Succeeded: true, Message: message, LikeId: result.Like.Id, AlreadyLiked: !result.Created);
+            return new CreateLikesCommandResponse(Message: message, LikeId: result.Like.Id, AlreadyLiked: !result.Created);
         }
     }
 }

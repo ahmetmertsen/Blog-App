@@ -19,7 +19,7 @@ namespace buduns_server.Application.Features.Roles.Commands.Update
         {
             await _roleService.UpdateRole(request.Id, request.Name, cancellationToken);
             _logger.LogInformation("Role updated. RoleId: {RoleId}, RoleName: {RoleName}", request.Id, request.Name.Trim());
-            return new UpdateRoleCommandResponse { Succeeded = true, Message = "Rol başarıyla güncellendi." };
+            return new UpdateRoleCommandResponse { Message = "Rol başarıyla güncellendi." };
         }
     }
 }

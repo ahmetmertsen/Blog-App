@@ -191,7 +191,7 @@ public sealed class DailyTopPostsTests : IntegrationTestBase
         using var client = Factory.CreateHttpsClient();
         var response = await client.GetAsync(Endpoint);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var payload = await response.Content.ReadFromJsonAsync<List<TopPostDto>>();
+        var payload = await response.ReadDataAsync<List<TopPostDto>>();
         payload.Should().NotBeNull();
         return payload!;
     }

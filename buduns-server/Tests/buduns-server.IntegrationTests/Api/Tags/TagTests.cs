@@ -110,7 +110,7 @@ public sealed class TagTests : IntegrationTestBase
 
         using var reader = Factory.CreateHttpsClient();
         (await reader.GetAsync($"/api/Tag/getById/{tag.Id}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
-        var listing = await reader.GetFromJsonAsync<PagedResponse<TagDto>>("/api/Tag/getAll?page=1&size=50");
+        var listing = await reader.GetDataAsync<PagedResponse<TagDto>>("/api/Tag/getAll?page=1&size=50");
         listing!.Items.Should().BeEmpty();
     }
 
@@ -145,8 +145,8 @@ public sealed class TagTests : IntegrationTestBase
         });
         using var client = Factory.CreateHttpsClient();
 
-        var all = await client.GetFromJsonAsync<PagedResponse<TagDto>>("/api/Tag/getAll?page=1&size=50");
-        var searched = await client.GetFromJsonAsync<PagedResponse<TagDto>>("/api/Tag/getAll?page=1&size=50&search=sayi");
+        var all = await client.GetDataAsync<PagedResponse<TagDto>>("/api/Tag/getAll?page=1&size=50");
+        var searched = await client.GetDataAsync<PagedResponse<TagDto>>("/api/Tag/getAll?page=1&size=50&search=sayi");
 
         all!.TotalCount.Should().Be(2);
         all.Items.Single(item => item.Id == tag.Id).PostCount.Should().Be(1);
@@ -160,7 +160,7 @@ public sealed class TagTests : IntegrationTestBase
         var tag = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateTagAsync(services, "acik"));
         using var client = Factory.CreateHttpsClient();
 
-        var dto = await client.GetFromJsonAsync<TagDto>($"/api/Tag/getById/{tag.Id}");
+        var dto = await client.GetDataAsync<TagDto>($"/api/Tag/getById/{tag.Id}");
 
         dto!.Name.Should().Be("acik");
     }

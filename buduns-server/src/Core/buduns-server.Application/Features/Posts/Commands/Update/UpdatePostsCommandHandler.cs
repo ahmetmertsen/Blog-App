@@ -54,7 +54,7 @@ namespace buduns_server.Application.Features.Posts.Commands.Update
             request.ApplyTo(post);
             post.UpdateAt = DateTime.UtcNow;
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return new UpdatePostsCommandResponse(true, "Post başarıyla güncellenmiştir");
+            return new UpdatePostsCommandResponse("Post başarıyla güncellenmiştir");
         }
     }
 }

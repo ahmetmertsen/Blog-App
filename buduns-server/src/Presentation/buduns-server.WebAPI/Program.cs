@@ -3,6 +3,8 @@ using buduns_server.Infrastructure;
 using buduns_server.Application.Common.Options;
 using buduns_server.Application.Abstractions.Services;
 using buduns_server.Persistence;
+using buduns_server.WebAPI.Http;
+using buduns_server.WebAPI.Models;
 using buduns_server.WebAPI.Configurations.Serilog.ColumnWriters;
 using buduns_server.WebAPI.Configurations.RateLimiting;
 using buduns_server.WebAPI.Filters;
@@ -10,6 +12,7 @@ using buduns_server.WebAPI.Middlewares;
 using buduns_server.WebAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -39,6 +42,11 @@ namespace buduns_server.WebAPI
             builder.Services.AddControllers(options =>
             {
                 options.Filters.Add<RolePermissionFilter>();
+            });
+
+            builder.Services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = ApiValidationProblemFactory.Create;
             });
 
             builder.Services.AddScoped<IClientContext, HttpClientContext>();
@@ -290,6 +298,8 @@ namespace buduns_server.WebAPI
             });
 
             app.UseMiddleware<GlobalExceptionMiddleware>();
+
+            app.UseApiStatusCodePages();
 
             if (app.Environment.IsDevelopment())
             {

@@ -32,7 +32,7 @@ namespace buduns_server.Application.Features.Comments.Commands.Delete
 
             if (comment.Status == CommentStatus.DeletedByOwner)
             {
-                return new DeleteCommentsCommandResponse(true, "Yorum daha önce silinmiş.");
+                return new DeleteCommentsCommandResponse("Yorum daha önce silinmiş.");
             }
 
             if (comment.Status != CommentStatus.Published)
@@ -47,7 +47,7 @@ namespace buduns_server.Application.Features.Comments.Commands.Delete
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Comment deleted by owner. CommentId: {CommentId}, PostId: {PostId}, UserId: {UserId}", comment.Id, comment.PostId, request.UserId);
-            return new DeleteCommentsCommandResponse(true, "Yorum başarıyla silindi.");
+            return new DeleteCommentsCommandResponse("Yorum başarıyla silindi.");
         }
     }
 }

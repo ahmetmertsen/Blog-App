@@ -19,7 +19,7 @@ namespace buduns_server.Application.Features.Roles.Commands.Create
         {
             await _roleService.CreateRole(request.Name, cancellationToken);
             _logger.LogInformation("Role created. RoleName: {RoleName}", request.Name.Trim());
-            return new CreateRoleCommandResponse { Succeeded = true, Message = "Rol başarıyla eklendi." };
+            return new CreateRoleCommandResponse { Message = "Rol başarıyla eklendi." };
         }
     }
 }

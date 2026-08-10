@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Notifications.Commands.Delete
 {
-    public record DeleteNotificationCommandResponse(bool Succeeded,string Message)
+    public record DeleteNotificationCommandResponse(string Message)
     {
     }
 }

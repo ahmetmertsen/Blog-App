@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Auth.Register
 {
-    public record RegisterUserCommandResponse(bool Succeeded, string Message)
+    public record RegisterUserCommandResponse(string Message)
     {
     }
 }

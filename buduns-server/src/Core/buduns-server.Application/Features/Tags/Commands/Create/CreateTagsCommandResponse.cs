@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Tags.Commands.Create
 {
-    public record CreateTagsCommandResponse(bool Succeeded, string Message)
+    public record CreateTagsCommandResponse(string Message)
     {
     }
 }

@@ -8,7 +8,6 @@ namespace buduns_server.Application.Features.Users.Commands.AssignRoleToUser
 {
     public class AssignRoleToUserCommandResponse
     {
-        public bool Succeeded { get; set; }
         public string Message { get; set; } = null!;
     }
 }

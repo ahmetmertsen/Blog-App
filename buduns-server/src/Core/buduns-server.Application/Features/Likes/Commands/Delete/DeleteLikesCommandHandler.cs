@@ -16,7 +16,7 @@ namespace buduns_server.Application.Features.Likes.Commands.Delete
         {
             var deleted = await _unitOfWork.LikeRepository.DeleteByUserAndPostAsync(request.UserId, request.PostId, cancellationToken);
             var message = deleted ? "Beğeni kaldırıldı." : "Paylaşım zaten beğenilmemiş.";
-            return new DeleteLikesCommandResponse(Succeeded: true, Message: message);
+            return new DeleteLikesCommandResponse(Message: message);
         }
     }
 }

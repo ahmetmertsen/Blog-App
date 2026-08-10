@@ -18,7 +18,7 @@ namespace buduns_server.Application.Features.Bookmarks.Commands.Delete
 
             var message = deleted ? "Yer işareti başarıyla silindi." : "Paylaşım yer işaretlerinizde bulunmuyor.";
 
-            return new DeleteBookmarksCommandResponse(Succeeded: true, Message: message);
+            return new DeleteBookmarksCommandResponse(Message: message);
         }
     }
 }

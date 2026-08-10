@@ -1,4 +1,4 @@
 namespace buduns_server.Application.Features.Auth.RevokeSession
 {
-    public record RevokeSessionCommandResponse(bool Succeeded, string Message);
+    public record RevokeSessionCommandResponse(string Message);
 }

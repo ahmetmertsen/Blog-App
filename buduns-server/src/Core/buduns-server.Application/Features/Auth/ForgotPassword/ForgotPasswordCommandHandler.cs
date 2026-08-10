@@ -27,7 +27,7 @@ namespace buduns_server.Application.Features.Auth.ForgotPassword
 
             var response = await _authService.ForgotPasswordResetAsync(request, cancellationToken);
 
-            ForgotPasswordCommandResponse forgotResponse = new(Succeeded: response.Succeeded, Message: response.Message);
+            ForgotPasswordCommandResponse forgotResponse = new(Message: response.Message);
             return forgotResponse;
         }
     }

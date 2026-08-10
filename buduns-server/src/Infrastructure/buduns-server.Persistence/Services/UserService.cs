@@ -96,7 +96,6 @@ namespace buduns_server.Persistence.Services
 
                 return new RegisterUserResponseDto
                 {
-                    Succeeded = true,
                     Message = message
                 };
             }
@@ -138,7 +137,6 @@ namespace buduns_server.Persistence.Services
                 
                 return new UpdateUserPasswordResponse
                 {
-                    Succeeded = true,
                     Message = "Şifre başarılı bir şekilde güncellenmiştir."
                 };
             }
@@ -160,7 +158,6 @@ namespace buduns_server.Persistence.Services
             {
                 return new UpdateUserMailVerifyResponse
                 {
-                    Succeeded = true,
                     Message = "E-posta adresi zaten doğrulanmış."
                 };
             }
@@ -185,7 +182,6 @@ namespace buduns_server.Persistence.Services
 
                 return new UpdateUserMailVerifyResponse
                 {
-                    Succeeded = true,
                     Message = "E-posta adresiniz başarıyla doğrulandı."
                 };
             }
@@ -212,7 +208,6 @@ namespace buduns_server.Persistence.Services
             {
                 return new UpdateUserProfileResponse
                 {
-                    Succeeded = true,
                     Message = "Profil başarıyla güncellendi."
                 };
             }
@@ -262,7 +257,6 @@ namespace buduns_server.Persistence.Services
 
                 return new UpdateUserEmailResponse
                 {
-                    Succeeded = true,
                     Message = "Email başarılı bir şekilde güncellenmiştir."
                 };
             }

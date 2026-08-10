@@ -151,7 +151,7 @@ public sealed class ReportTests : IntegrationTestBase
         }
 
         using var moderatorAuthentication = await Factory.CreateAuthenticatedClientAsync(moderator.Id);
-        var listing = await moderatorAuthentication.Client.GetFromJsonAsync<PagedResponse<ReportListDto>>("/api/Report?page=1&size=20");
+        var listing = await moderatorAuthentication.Client.GetDataAsync<PagedResponse<ReportListDto>>("/api/Report?page=1&size=20");
 
         var item = listing!.Items.Should().ContainSingle().Subject;
         item.TargetPostId.Should().Be(post.Id);
@@ -178,7 +178,7 @@ public sealed class ReportTests : IntegrationTestBase
             (await services.GetRequiredService<BudunsDbContext>().Reports.AsNoTracking().SingleAsync()).Id);
         using var moderatorAuthentication = await Factory.CreateAuthenticatedClientAsync(moderator.Id);
 
-        var detail = await moderatorAuthentication.Client.GetFromJsonAsync<ReportDetailDto>($"/api/Report/getById/{reportId}");
+        var detail = await moderatorAuthentication.Client.GetDataAsync<ReportDetailDto>($"/api/Report/getById/{reportId}");
 
         detail!.TargetPostContent.Should().Be("detay icerigi");
         detail.ReporterUserName.Should().Be("detail-reporter");
@@ -225,9 +225,9 @@ public sealed class ReportTests : IntegrationTestBase
 
         using var moderatorAuthentication = await Factory.CreateAuthenticatedClientAsync(moderator.Id);
 
-        var postReports = await moderatorAuthentication.Client.GetFromJsonAsync<PagedResponse<ReportListDto>>($"/api/Report?page=1&size=20&targetType={ReportTargetType.Post}");
-        var spamReports = await moderatorAuthentication.Client.GetFromJsonAsync<PagedResponse<ReportListDto>>($"/api/Report?page=1&size=20&reason={ReportReason.Spam}");
-        var resolvedReports = await moderatorAuthentication.Client.GetFromJsonAsync<PagedResponse<ReportListDto>>($"/api/Report?page=1&size=20&status={ReportStatus.ResolvedActionTaken}");
+        var postReports = await moderatorAuthentication.Client.GetDataAsync<PagedResponse<ReportListDto>>($"/api/Report?page=1&size=20&targetType={ReportTargetType.Post}");
+        var spamReports = await moderatorAuthentication.Client.GetDataAsync<PagedResponse<ReportListDto>>($"/api/Report?page=1&size=20&reason={ReportReason.Spam}");
+        var resolvedReports = await moderatorAuthentication.Client.GetDataAsync<PagedResponse<ReportListDto>>($"/api/Report?page=1&size=20&status={ReportStatus.ResolvedActionTaken}");
 
         postReports!.Items.Should().ContainSingle().Which.TargetType.Should().Be(ReportTargetType.Post);
         spamReports!.Items.Should().ContainSingle().Which.Reason.Should().Be(ReportReason.Spam);
@@ -244,8 +244,8 @@ public sealed class ReportTests : IntegrationTestBase
         var response = await authentication.Client.GetAsync("/api/Report?page=1&size=20&fromDate=2026-02-01&toDate=2026-01-01");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        var body = await response.Content.ReadFromJsonAsync<WebAPI.Models.ApiResponse>();
-        body!.Error!.ValidationErrors.Should().ContainKey("ToDate");
+        var error = await response.ReadErrorAsync();
+        error.ValidationErrors.Should().ContainKey("ToDate");
     }
 
     [Fact]

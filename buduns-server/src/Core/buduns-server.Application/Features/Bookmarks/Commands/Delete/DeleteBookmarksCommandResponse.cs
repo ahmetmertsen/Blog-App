@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Bookmarks.Commands.Delete
 {
-    public record DeleteBookmarksCommandResponse(bool Succeeded, string Message)
+    public record DeleteBookmarksCommandResponse(string Message)
     {
     }
 }

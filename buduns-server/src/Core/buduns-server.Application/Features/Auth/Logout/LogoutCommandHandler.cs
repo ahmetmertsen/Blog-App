@@ -16,7 +16,7 @@ namespace buduns_server.Application.Features.Auth.Logout
         {
             await _authSessionService.RevokeSessionAsync(request.UserId, request.CurrentSessionId, "User logout", cancellationToken);
 
-            return new LogoutCommandResponse(true, "Oturum başarıyla kapatıldı.");
+            return new LogoutCommandResponse("Oturum başarıyla kapatıldı.");
         }
     }
 }

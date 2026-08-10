@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Auth.Login
 {
-    public record LoginUserCommandResponse(bool Succeeded, string Message, Token Token)
+    public record LoginUserCommandResponse(string Message, Token Token)
     {
     }
 }

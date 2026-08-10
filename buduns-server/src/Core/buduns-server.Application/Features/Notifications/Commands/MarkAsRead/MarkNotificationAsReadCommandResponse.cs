@@ -1,4 +1,4 @@
 namespace buduns_server.Application.Features.Notifications.Commands.MarkAsRead
 {
-    public record MarkNotificationAsReadCommandResponse(bool Succeeded, string Message);
+    public record MarkNotificationAsReadCommandResponse(string Message);
 }

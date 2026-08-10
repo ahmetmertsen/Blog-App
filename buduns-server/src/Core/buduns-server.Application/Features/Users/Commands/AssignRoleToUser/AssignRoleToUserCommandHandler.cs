@@ -28,7 +28,6 @@ namespace buduns_server.Application.Features.Users.Commands.AssignRoleToUser
 
             AssignRoleToUserCommandResponse response = new()
             {
-                Succeeded = true,
                 Message = "Kullanıcıya roller atandı."
             };
             return response;

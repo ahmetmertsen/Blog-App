@@ -27,7 +27,7 @@ namespace buduns_server.Application.Features.Notifications.Commands.Delete
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return new DeleteNotificationCommandResponse(true, "Bildirim başarıyla silinmiştir.");
+            return new DeleteNotificationCommandResponse("Bildirim başarıyla silinmiştir.");
         }
     }
 }

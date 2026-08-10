@@ -43,7 +43,6 @@ public class AuthHandlerTests
 
         var response = await handler.Handle(new LoginUserCommand("ahmet", "secret"), CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         Assert.Same(token, response.Token);
     }
 
@@ -85,12 +84,11 @@ public class AuthHandlerTests
     {
         var authService = Substitute.For<IAuthService>();
         authService.ForgotPasswordResetAsync(Arg.Any<ForgotPasswordRequest>(), Arg.Any<CancellationToken>())
-            .Returns(new ForgotPasswordResponse { Succeeded = true, Message = "Mail adresi dogru ise kod gonderildi." });
+            .Returns(new ForgotPasswordResponse { Message = "Mail adresi dogru ise kod gonderildi." });
         var handler = new ForgotPasswordCommandHandler(authService);
 
         var response = await handler.Handle(new ForgotPasswordCommand { EmailOrUsername = "ahmet@test.com" }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         await authService.Received(1).ForgotPasswordResetAsync(Arg.Is<ForgotPasswordRequest>(request => request.EmailOrUsername == "ahmet@test.com"), CancellationToken.None);
     }
 
@@ -99,12 +97,11 @@ public class AuthHandlerTests
     {
         var authService = Substitute.For<IAuthService>();
         authService.MailVerifyAsync(Arg.Any<MailVerifyRequest>(), Arg.Any<CancellationToken>())
-            .Returns(new MailVerifyResponse { Succeeded = true, Message = "gonderildi" });
+            .Returns(new MailVerifyResponse { Message = "gonderildi" });
         var handler = new MailVerifyCommandHandler(authService);
 
         var response = await handler.Handle(new MailVerifyCommand { UserId = 9 }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         await authService.Received(1).MailVerifyAsync(Arg.Is<MailVerifyRequest>(request => request.UserId == 9), CancellationToken.None);
     }
 
@@ -113,12 +110,11 @@ public class AuthHandlerTests
     {
         var authService = Substitute.For<IAuthService>();
         authService.ChangeEmailAsync(Arg.Any<ChangeEmailRequest>(), Arg.Any<CancellationToken>())
-            .Returns(new ChangeEmailResponse { Succeeded = true, Message = "kodlar gonderildi" });
+            .Returns(new ChangeEmailResponse { Message = "kodlar gonderildi" });
         var handler = new ChangeEmailCommandHandler(authService);
 
         var response = await handler.Handle(new ChangeEmailCommand { UserId = 9, NewEmail = "yeni@test.com" }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         await authService.Received(1).ChangeEmailAsync(Arg.Is<ChangeEmailRequest>(request => request.UserId == 9 && request.NewEmail == "yeni@test.com"), CancellationToken.None);
     }
 
@@ -131,7 +127,6 @@ public class AuthHandlerTests
 
         var response = await handler.Handle(new LogoutCommand { UserId = 9, CurrentSessionId = sessionId }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         await sessionService.Received(1).RevokeSessionAsync(9, sessionId, "User logout", CancellationToken.None);
         await sessionService.DidNotReceiveWithAnyArgs().RevokeAllSessionsAsync(default, default!, default);
     }
@@ -144,7 +139,6 @@ public class AuthHandlerTests
 
         var response = await handler.Handle(new LogoutAllCommand { UserId = 9 }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         await sessionService.Received(1).RevokeAllSessionsAsync(9, "User logout from all sessions", CancellationToken.None);
     }
 
@@ -158,7 +152,6 @@ public class AuthHandlerTests
 
         var response = await handler.Handle(new RevokeSessionCommand { UserId = 9, SessionId = sessionId }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
     }
 
     [Fact]
@@ -190,29 +183,27 @@ public class AuthHandlerTests
     {
         var userService = Substitute.For<IUserService>();
         userService.RegisterAsync(Arg.Any<RegisterUserRequestDto>(), Arg.Any<CancellationToken>())
-            .Returns(new RegisterUserResponseDto { Succeeded = true, Message = "kaydedildi" });
+            .Returns(new RegisterUserResponseDto { Message = "kaydedildi" });
         var handler = new RegisterUserCommandHandler(userService);
 
         var response = await handler.Handle(new RegisterUserCommand("ahmet", "Ahmet Mert", "ahmet@test.com", "Secret123!"), CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         await userService.Received(1).RegisterAsync(
             Arg.Is<RegisterUserRequestDto>(dto => dto.UserName == "ahmet" && dto.FullName == "Ahmet Mert" && dto.Email == "ahmet@test.com" && dto.Password == "Secret123!"),
             CancellationToken.None);
     }
 
     [Fact]
-    public async Task Register_FailedResult_ShouldBePassedThrough()
+    public async Task Register_ShouldPassServiceMessageThrough()
     {
         var userService = Substitute.For<IUserService>();
         userService.RegisterAsync(Arg.Any<RegisterUserRequestDto>(), Arg.Any<CancellationToken>())
-            .Returns(new RegisterUserResponseDto { Succeeded = false, Message = "hata" });
+            .Returns(new RegisterUserResponseDto { Message = "kaydedildi ama dogrulama postasi gonderilemedi" });
         var handler = new RegisterUserCommandHandler(userService);
 
         var response = await handler.Handle(new RegisterUserCommand("ahmet", "Ahmet", "a@test.com", "123456"), CancellationToken.None);
 
-        Assert.False(response.Succeeded);
-        Assert.Equal("hata", response.Message);
+        Assert.Equal("kaydedildi ama dogrulama postasi gonderilemedi", response.Message);
     }
 
     [Fact]
@@ -220,7 +211,7 @@ public class AuthHandlerTests
     {
         var userService = Substitute.For<IUserService>();
         userService.UpdatePasswordAsync(Arg.Any<UpdateUserPasswordRequest>(), Arg.Any<CancellationToken>())
-            .Returns(new UpdateUserPasswordResponse { Succeeded = true, Message = "guncellendi" });
+            .Returns(new UpdateUserPasswordResponse { Message = "guncellendi" });
         var handler = new UpdateUserPasswordCommandHandler(userService);
 
         var response = await handler.Handle(new UpdateUserPasswordCommand
@@ -231,7 +222,6 @@ public class AuthHandlerTests
             newPasswordConfirmed = "yeni123"
         }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         await userService.Received(1).UpdatePasswordAsync(
             Arg.Is<UpdateUserPasswordRequest>(request => request.EmailOrUsername == "ahmet" && request.VerificationCode == "123456" && request.newPassword == "yeni123" && request.newPasswordConfirmed == "yeni123"),
             CancellationToken.None);
@@ -242,12 +232,11 @@ public class AuthHandlerTests
     {
         var userService = Substitute.For<IUserService>();
         userService.UpdateUserMailVerify(Arg.Any<UpdateUserMailVerifyRequest>(), Arg.Any<CancellationToken>())
-            .Returns(new UpdateUserMailVerifyResponse { Succeeded = true, Message = "dogrulandi" });
+            .Returns(new UpdateUserMailVerifyResponse { Message = "dogrulandi" });
         var handler = new UpdateUserMailVerifyCommandHandler(userService);
 
         var response = await handler.Handle(new UpdateUserMailVerifyCommand { UserId = 9, VerificationCode = "123456" }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         await userService.Received(1).UpdateUserMailVerify(Arg.Is<UpdateUserMailVerifyRequest>(request => request.UserId == 9 && request.VerificationCode == "123456"), CancellationToken.None);
     }
 
@@ -256,7 +245,7 @@ public class AuthHandlerTests
     {
         var userService = Substitute.For<IUserService>();
         userService.UpdateUserEmailAsync(Arg.Any<UpdateUserEmailRequest>(), Arg.Any<CancellationToken>())
-            .Returns(new UpdateUserEmailResponse { Succeeded = true, Message = "guncellendi" });
+            .Returns(new UpdateUserEmailResponse { Message = "guncellendi" });
         var handler = new UpdateUserEmailCommandHandler(userService);
 
         var response = await handler.Handle(new UpdateUserEmailCommand
@@ -267,7 +256,6 @@ public class AuthHandlerTests
             NewEmail = "yeni@test.com"
         }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         await userService.Received(1).UpdateUserEmailAsync(
             Arg.Is<UpdateUserEmailRequest>(request => request.UserId == 9 && request.OldEmailVerificationCode == "111111" && request.NewEmailVerificationCode == "222222" && request.NewEmail == "yeni@test.com"),
             CancellationToken.None);
@@ -278,12 +266,11 @@ public class AuthHandlerTests
     {
         var userService = Substitute.For<IUserService>();
         userService.UpdateUserProfile(Arg.Any<UpdateUserProfileRequest>())
-            .Returns(new UpdateUserProfileResponse { Succeeded = true, Message = "guncellendi" });
+            .Returns(new UpdateUserProfileResponse { Message = "guncellendi" });
         var handler = new UpdateUserProfileCommandHandler(userService);
 
         var response = await handler.Handle(new UpdateUserProfileCommand { UserId = 9, FullName = "Ahmet Mert", Bio = "bio", ImageUrl = "http://img" }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         await userService.Received(1).UpdateUserProfile(Arg.Is<UpdateUserProfileRequest>(request => request.UserId == 9 && request.FullName == "Ahmet Mert" && request.Bio == "bio" && request.ImageUrl == "http://img"));
     }
 
@@ -364,7 +351,6 @@ public class AuthHandlerTests
 
         var response = await handler.Handle(new AssignRoleEndpointCommand { Roles = roles, Menu = "Posts", Code = "POST.Writing.CreatePost", Type = typeof(WebAPI.Program) }, CancellationToken.None);
 
-        Assert.True(response.Succeeded);
         await endpointService.Received(1).AssignRoleEndpointAsync(roles, "Posts", "POST.Writing.CreatePost", typeof(WebAPI.Program));
     }
 

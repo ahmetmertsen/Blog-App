@@ -27,10 +27,10 @@ public sealed class CommentTests : IntegrationTestBase
         using var authentication = await Factory.CreateAuthenticatedClientAsync(commenter.Id);
 
         var response = await authentication.Client.PostAsJsonAsync("/api/Comment", new CreateCommentsCommand { PostId = post.Id, Content = "  ilk yorum  " });
-        var body = await response.Content.ReadFromJsonAsync<CreateCommentsCommandResponse>();
+        var body = await response.ReadDataAsync<CreateCommentsCommandResponse>();
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        body!.Succeeded.Should().BeTrue();
+        body.Message.Should().NotBeNullOrWhiteSpace();
         body.Comment.Content.Should().Be("ilk yorum");
         body.Comment.UserId.Should().Be(commenter.Id);
 
@@ -82,7 +82,7 @@ public sealed class CommentTests : IntegrationTestBase
         var duplicate = await authentication.Client.PostAsJsonAsync("/api/Comment", command);
 
         duplicate.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        (await duplicate.Content.ReadFromJsonAsync<ApiResponse>())!.Error!.Code.Should().Be("BAD_REQUEST");
+        (await duplicate.ReadErrorAsync()).Code.Should().Be("BAD_REQUEST");
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public sealed class CommentTests : IntegrationTestBase
         stored.isDeleted.Should().BeTrue();
 
         using var reader = Factory.CreateHttpsClient();
-        var listing = await reader.GetFromJsonAsync<PagedResponse<CommentDto>>($"/api/Comment/post/{post.Id}?page=1&size=20");
+        var listing = await reader.GetDataAsync<PagedResponse<CommentDto>>($"/api/Comment/post/{post.Id}?page=1&size=20");
         listing!.Items.Should().BeEmpty();
     }
 
@@ -187,8 +187,8 @@ public sealed class CommentTests : IntegrationTestBase
         await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateCommentAsync(services, post.Id, commenter.Id, "ikinci"));
         using var client = Factory.CreateHttpsClient();
 
-        var byPost = await client.GetFromJsonAsync<PagedResponse<CommentDto>>($"/api/Comment/post/{post.Id}?page=1&size=1");
-        var byUser = await client.GetFromJsonAsync<PagedResponse<CommentDto>>($"/api/Comment/user/{commenter.Id}?page=1&size=20");
+        var byPost = await client.GetDataAsync<PagedResponse<CommentDto>>($"/api/Comment/post/{post.Id}?page=1&size=1");
+        var byUser = await client.GetDataAsync<PagedResponse<CommentDto>>($"/api/Comment/user/{commenter.Id}?page=1&size=20");
 
         byPost!.Items.Should().ContainSingle();
         byPost.TotalCount.Should().Be(2);
@@ -214,7 +214,7 @@ public sealed class CommentTests : IntegrationTestBase
         var comment = await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateCommentAsync(services, post.Id, owner.Id, "tekil yorum"));
         using var client = Factory.CreateHttpsClient();
 
-        var dto = await client.GetFromJsonAsync<CommentDto>($"/api/Comment/{comment.Id}");
+        var dto = await client.GetDataAsync<CommentDto>($"/api/Comment/{comment.Id}");
 
         dto!.Content.Should().Be("tekil yorum");
         dto.PostId.Should().Be(post.Id);
@@ -249,8 +249,8 @@ public sealed class CommentTests : IntegrationTestBase
         var response = await authentication.Client.PostAsJsonAsync("/api/Comment", new CreateCommentsCommand { PostId = 0, Content = string.Empty });
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse>();
-        body!.Error!.Code.Should().Be("VALIDATION_ERROR");
-        body.Error.ValidationErrors.Should().ContainKey("PostId").And.ContainKey("Content");
+        var error = await response.ReadErrorAsync();
+        error.Code.Should().Be("VALIDATION_ERROR");
+        error.ValidationErrors.Should().ContainKey("PostId").And.ContainKey("Content");
     }
 }

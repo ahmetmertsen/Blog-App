@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Users.Commands.Update.UpdateEmail
 {
-    public record UpdateUserEmailCommandResponse(bool Succeeded, string Message)
+    public record UpdateUserEmailCommandResponse(string Message)
     {
     }
 }

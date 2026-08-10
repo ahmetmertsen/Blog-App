@@ -74,8 +74,8 @@ public sealed class UserProfileTests : IntegrationTestBase
         });
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse>();
-        body!.Error!.ValidationErrors.Should().ContainKey("FullName").And.ContainKey("Bio");
+        var error = await response.ReadErrorAsync();
+        error.ValidationErrors.Should().ContainKey("FullName").And.ContainKey("Bio");
     }
 
     [Fact]
@@ -94,8 +94,8 @@ public sealed class UserProfileTests : IntegrationTestBase
         var user = await CreateUserAsync("public-profile-user");
         using var client = Factory.CreateHttpsClient();
 
-        var byId = await client.GetFromJsonAsync<UserDto>($"/api/User/getUserById/{user.Id}");
-        var byUsername = await client.GetFromJsonAsync<UserDto>("/api/User/getUserByUsername/public-profile-user");
+        var byId = await client.GetDataAsync<UserDto>($"/api/User/getUserById/{user.Id}");
+        var byUsername = await client.GetDataAsync<UserDto>("/api/User/getUserByUsername/public-profile-user");
 
         byId!.UserName.Should().Be("public-profile-user");
         byUsername!.Id.Should().Be(user.Id);
@@ -107,7 +107,7 @@ public sealed class UserProfileTests : IntegrationTestBase
         var user = await CreateUserAsync("case-profile-user");
         using var client = Factory.CreateHttpsClient();
 
-        var response = await client.GetFromJsonAsync<UserDto>("/api/User/getUserByUsername/CASE-PROFILE-USER");
+        var response = await client.GetDataAsync<UserDto>("/api/User/getUserByUsername/CASE-PROFILE-USER");
 
         response!.Id.Should().Be(user.Id);
     }
@@ -141,7 +141,7 @@ public sealed class UserProfileTests : IntegrationTestBase
         await Factory.ExecuteScopeAsync(services => DatabaseSeeder.SetUserStatusAsync(services, suspended.Id, UserStatus.Suspended, DateTime.UtcNow.AddDays(3)));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(admin.Id);
 
-        var response = await authentication.Client.GetFromJsonAsync<PagedResponse<Application.Dtos.User.AdminUserDto>>("/api/User/getAllUsers?page=1&size=20&search=listing-suspended");
+        var response = await authentication.Client.GetDataAsync<PagedResponse<Application.Dtos.User.AdminUserDto>>("/api/User/getAllUsers?page=1&size=20&search=listing-suspended");
 
         var item = response!.Items.Should().ContainSingle().Subject;
         item.Status.Should().Be(UserStatus.Suspended);
@@ -174,7 +174,7 @@ public sealed class UserProfileTests : IntegrationTestBase
         });
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var roles = await authentication.Client.GetFromJsonAsync<Application.Features.Users.Queries.GetRolesToUser.GetRolesToUserQueryResponse>($"/api/User/getRolesToUser/{target.Id}");
+        var roles = await authentication.Client.GetDataAsync<Application.Features.Users.Queries.GetRolesToUser.GetRolesToUserQueryResponse>($"/api/User/getRolesToUser/{target.Id}");
         roles!.Roles.Should().BeEquivalentTo(new[] { RoleConstants.User });
     }
 

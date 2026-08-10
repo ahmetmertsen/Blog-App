@@ -1,16 +1,16 @@
 using buduns_server.Application.Abstractions.Services.Configurations;
 using buduns_server.Application.Common.CustomAttrributes;
+using buduns_server.Application.Dtos.Configurations;
 using buduns_server.Domain.Enums;
+using buduns_server.WebAPI.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace buduns_server.WebAPI.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
     [Authorize(Roles = "Admin")]
-    public class ApplicationServiceController : ControllerBase
+    public class ApplicationServiceController : ApiControllerBase
     {
         private readonly IApplicationService _applicationService;
 
@@ -21,10 +21,10 @@ namespace buduns_server.WebAPI.Controllers
 
         [AuthorizeDefinition(Menu = "Application Services", ActionType = ActionType.Reading, Definition = "Get Authorize Definition Endpoints")]
         [HttpGet]
-        public IActionResult GetAuthorizeDefinitionEndpoints()
+        public ActionResult<ApiResponse<List<Menu>>> GetAuthorizeDefinitionEndpoints()
         {
             var datas = _applicationService.GetAuthorizeDefinitionEndpoints(typeof(Program));
-            return Ok(datas);
+            return Success(datas);
         }
     }
 }

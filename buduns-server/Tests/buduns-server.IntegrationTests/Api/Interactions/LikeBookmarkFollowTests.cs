@@ -35,12 +35,12 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
         using var authentication = await Factory.CreateAuthenticatedClientAsync(liker.Id);
 
         var created = await authentication.Client.PostAsync($"/api/Like/{post.Id}", null);
-        var createdBody = await created.Content.ReadFromJsonAsync<CreateLikesCommandResponse>();
+        var createdBody = await created.ReadDataAsync<CreateLikesCommandResponse>();
         var duplicate = await authentication.Client.PostAsync($"/api/Like/{post.Id}", null);
-        var duplicateBody = await duplicate.Content.ReadFromJsonAsync<CreateLikesCommandResponse>();
-        var status = await authentication.Client.GetFromJsonAsync<GetLikeStatusQueryResponse>($"/api/Like/status/{post.Id}");
+        var duplicateBody = await duplicate.ReadDataAsync<CreateLikesCommandResponse>();
+        var status = await authentication.Client.GetDataAsync<GetLikeStatusQueryResponse>($"/api/Like/status/{post.Id}");
         var removed = await authentication.Client.DeleteAsync($"/api/Like/{post.Id}");
-        var statusAfterRemoval = await authentication.Client.GetFromJsonAsync<GetLikeStatusQueryResponse>($"/api/Like/status/{post.Id}");
+        var statusAfterRemoval = await authentication.Client.GetDataAsync<GetLikeStatusQueryResponse>($"/api/Like/status/{post.Id}");
 
         created.StatusCode.Should().Be(HttpStatusCode.OK);
         createdBody!.AlreadyLiked.Should().BeFalse();
@@ -116,7 +116,7 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
         using var authentication = await Factory.CreateAuthenticatedClientAsync(liker.Id);
         (await authentication.Client.PostAsync($"/api/Like/{post.Id}", null)).EnsureSuccessStatusCode();
 
-        var response = await authentication.Client.GetFromJsonAsync<PagedResponse<LikedPostDto>>("/api/Like/me?page=1&size=20");
+        var response = await authentication.Client.GetDataAsync<PagedResponse<LikedPostDto>>("/api/Like/me?page=1&size=20");
 
         response!.Items.Should().ContainSingle();
         response.Items[0].Post.Content.Should().Be("begenilen icerik");
@@ -132,7 +132,7 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
         using var authentication = await Factory.CreateAuthenticatedClientAsync(liker.Id);
         (await authentication.Client.PostAsync($"/api/Like/{post.Id}", null)).EnsureSuccessStatusCode();
 
-        var response = await authentication.Client.GetFromJsonAsync<PagedResponse<LikeDto>>($"/api/Like/post/{post.Id}?page=1&size=20");
+        var response = await authentication.Client.GetDataAsync<PagedResponse<LikeDto>>($"/api/Like/post/{post.Id}?page=1&size=20");
 
         response!.Items.Should().ContainSingle().Which.UserName.Should().Be("like-listing-liker");
     }
@@ -147,13 +147,13 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
         using var authentication = await Factory.CreateAuthenticatedClientAsync(reader.Id);
 
         var created = await authentication.Client.PostAsJsonAsync("/api/Bookmark", new CreateBookmarksCommand { PostId = post.Id });
-        var createdBody = await created.Content.ReadFromJsonAsync<CreateBookmarksCommandResponse>();
+        var createdBody = await created.ReadDataAsync<CreateBookmarksCommandResponse>();
         var duplicate = await authentication.Client.PostAsJsonAsync("/api/Bookmark", new CreateBookmarksCommand { PostId = post.Id });
-        var duplicateBody = await duplicate.Content.ReadFromJsonAsync<CreateBookmarksCommandResponse>();
-        var listing = await authentication.Client.GetFromJsonAsync<PagedResponse<BookmarkDto>>("/api/Bookmark?page=1&size=20");
-        var status = await authentication.Client.GetFromJsonAsync<GetBookmarkStatusQueryResponse>($"/api/Bookmark/status/{post.Id}");
+        var duplicateBody = await duplicate.ReadDataAsync<CreateBookmarksCommandResponse>();
+        var listing = await authentication.Client.GetDataAsync<PagedResponse<BookmarkDto>>("/api/Bookmark?page=1&size=20");
+        var status = await authentication.Client.GetDataAsync<GetBookmarkStatusQueryResponse>($"/api/Bookmark/status/{post.Id}");
         var removed = await authentication.Client.DeleteAsync($"/api/Bookmark/{post.Id}");
-        var statusAfterRemoval = await authentication.Client.GetFromJsonAsync<GetBookmarkStatusQueryResponse>($"/api/Bookmark/status/{post.Id}");
+        var statusAfterRemoval = await authentication.Client.GetDataAsync<GetBookmarkStatusQueryResponse>($"/api/Bookmark/status/{post.Id}");
 
         createdBody!.AlreadyBookmarked.Should().BeFalse();
         duplicateBody!.AlreadyBookmarked.Should().BeTrue();
@@ -213,12 +213,12 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
         using var authentication = await Factory.CreateAuthenticatedClientAsync(follower.Id);
 
         var created = await authentication.Client.PostAsync($"/api/Follower/{target.Id}", null);
-        var createdBody = await created.Content.ReadFromJsonAsync<CreateFollowersCommandResponse>();
+        var createdBody = await created.ReadDataAsync<CreateFollowersCommandResponse>();
         var duplicate = await authentication.Client.PostAsync($"/api/Follower/{target.Id}", null);
-        var duplicateBody = await duplicate.Content.ReadFromJsonAsync<CreateFollowersCommandResponse>();
-        var status = await authentication.Client.GetFromJsonAsync<GetFollowerStatusQueryResponse>($"/api/Follower/status/{target.Id}");
+        var duplicateBody = await duplicate.ReadDataAsync<CreateFollowersCommandResponse>();
+        var status = await authentication.Client.GetDataAsync<GetFollowerStatusQueryResponse>($"/api/Follower/status/{target.Id}");
         var removed = await authentication.Client.DeleteAsync($"/api/Follower/{target.Id}");
-        var statusAfterRemoval = await authentication.Client.GetFromJsonAsync<GetFollowerStatusQueryResponse>($"/api/Follower/status/{target.Id}");
+        var statusAfterRemoval = await authentication.Client.GetDataAsync<GetFollowerStatusQueryResponse>($"/api/Follower/status/{target.Id}");
 
         createdBody!.AlreadyFollowing.Should().BeFalse();
         duplicateBody!.AlreadyFollowing.Should().BeTrue();
@@ -291,8 +291,8 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
         (await authentication.Client.PostAsync($"/api/Follower/{target.Id}", null)).EnsureSuccessStatusCode();
         using var client = Factory.CreateHttpsClient();
 
-        var followers = await client.GetFromJsonAsync<PagedResponse<FollowerDto>>($"/api/Follower/{target.Id}/followers?page=1&size=20");
-        var followings = await client.GetFromJsonAsync<PagedResponse<FollowerDto>>($"/api/Follower/{follower.Id}/followings?page=1&size=20");
+        var followers = await client.GetDataAsync<PagedResponse<FollowerDto>>($"/api/Follower/{target.Id}/followers?page=1&size=20");
+        var followings = await client.GetDataAsync<PagedResponse<FollowerDto>>($"/api/Follower/{follower.Id}/followings?page=1&size=20");
 
         followers!.Items.Should().ContainSingle().Which.UserId.Should().Be(follower.Id);
         followings!.Items.Should().ContainSingle().Which.UserId.Should().Be(target.Id);
@@ -319,8 +319,8 @@ public sealed class LikeBookmarkFollowTests : IntegrationTestBase
         (await authentication.Client.PostAsync($"/api/Follower/{target.Id}", null)).EnsureSuccessStatusCode();
         using var client = Factory.CreateHttpsClient();
 
-        var targetProfile = await client.GetFromJsonAsync<UserDto>($"/api/User/getUserById/{target.Id}");
-        var followerProfile = await client.GetFromJsonAsync<UserDto>($"/api/User/getUserByUsername/count-follower");
+        var targetProfile = await client.GetDataAsync<UserDto>($"/api/User/getUserById/{target.Id}");
+        var followerProfile = await client.GetDataAsync<UserDto>($"/api/User/getUserByUsername/count-follower");
 
         targetProfile!.FollowerCount.Should().Be(1);
         targetProfile.FollowingCount.Should().Be(0);

@@ -30,7 +30,7 @@ namespace buduns_server.Application.Features.Tags.Commands.Create
 
             await _unitOfWork.TagRepository.AddAsync(tag);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return new CreateTagsCommandResponse(Succeeded: true, Message: "Tag başarıyla eklendi.");
+            return new CreateTagsCommandResponse(Message: "Tag başarıyla eklendi.");
         }
     }
 }

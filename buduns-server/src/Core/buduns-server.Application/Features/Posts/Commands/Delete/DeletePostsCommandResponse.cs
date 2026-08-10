@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Posts.Commands.Delete
 {
-    public record DeletePostsCommandResponse(bool Succeeded, string Message)
+    public record DeletePostsCommandResponse(string Message)
     {
     }
 }

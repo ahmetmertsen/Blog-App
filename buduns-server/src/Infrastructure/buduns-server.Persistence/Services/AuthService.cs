@@ -110,7 +110,6 @@ namespace buduns_server.Persistence.Services
         {
             var response = new ForgotPasswordResponse
             {
-                Succeeded = true,
                 Message = "Mail adresi doğru ise şifre sıfırlama kodu gönderildi."
             };
 
@@ -136,7 +135,6 @@ namespace buduns_server.Persistence.Services
         {
             var response = new MailVerifyResponse
             {
-                Succeeded = true,
                 Message = "Doğrulama kodu e-posta adresinize gönderildi."
             };
 
@@ -172,7 +170,6 @@ namespace buduns_server.Persistence.Services
         {
             var response = new ChangeEmailResponse
             {
-                Succeeded = true,
                 Message = "Yeni e-posta adresiniz uygunsa mevcut ve yeni e-posta adreslerinize doğrulama kodları gönderildi."
             };
 

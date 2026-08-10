@@ -81,7 +81,7 @@ namespace buduns_server.Application.Features.Report.Commands.CreatePostReport
 
             _logger.LogInformation("Post report created. ReportId: {ReportId}, ReporterUserId: {ReporterUserId}, TargetPostId: {TargetPostId}, Reason: {Reason}", report.Id, request.UserId, request.PostId, request.Reason);
 
-            return new CreatePostReportCommandResponse(Succeeded:true, Message:"Şikayetiniz başarıyla alındı.");
+            return new CreatePostReportCommandResponse(Message:"Şikayetiniz başarıyla alındı.");
         }
     }
 }

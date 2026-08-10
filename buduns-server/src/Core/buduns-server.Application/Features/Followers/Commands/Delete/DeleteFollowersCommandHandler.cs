@@ -24,7 +24,7 @@ namespace buduns_server.Application.Features.Followers.Commands.Delete
             }
 
             var message = deleted ? "Takip bırakıldı." : "Kullanıcı zaten takip edilmiyor.";
-            return new DeleteFollowersCommandResponse(Succeeded: true, Message: message);
+            return new DeleteFollowersCommandResponse(Message: message);
         }
     }
 }

@@ -23,14 +23,14 @@ public sealed class RefreshTokenTests : IntegrationTestBase
         using var client = Factory.CreateHttpsClient();
 
         var firstResponse = await client.PostAsJsonAsync("/api/Auth/refreshTokenLogin", new RefreshTokenLoginCommand { RefreshToken = authentication.RefreshToken });
-        var firstBody = await firstResponse.Content.ReadFromJsonAsync<RefreshTokenLoginCommandResponse>();
+        var firstBody = await firstResponse.ReadDataAsync<RefreshTokenLoginCommandResponse>();
         firstResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         firstBody!.Token.RefreshToken.Should().NotBe(authentication.RefreshToken);
 
         var reuseResponse = await client.PostAsJsonAsync("/api/Auth/refreshTokenLogin", new RefreshTokenLoginCommand { RefreshToken = authentication.RefreshToken });
-        var reuseBody = await reuseResponse.Content.ReadFromJsonAsync<ApiResponse>();
+        var reuseError = await reuseResponse.ReadErrorAsync();
         reuseResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-        reuseBody!.Error!.Code.Should().Be("INVALID_REFRESH_TOKEN");
+        reuseError.Code.Should().Be("INVALID_REFRESH_TOKEN");
 
         var activeSessionCount = await Factory.ExecuteScopeAsync(async services => await services.GetRequiredService<BudunsDbContext>().AuthSessions.CountAsync(session => session.UserId == user.Id && session.RevokedAt == null));
         activeSessionCount.Should().Be(0);

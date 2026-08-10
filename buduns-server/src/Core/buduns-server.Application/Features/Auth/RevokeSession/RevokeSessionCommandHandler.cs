@@ -22,7 +22,7 @@ namespace buduns_server.Application.Features.Auth.RevokeSession
                 throw new NotFoundException("Oturum bulunamadı.");
             }
 
-            return new RevokeSessionCommandResponse(true, "Oturum başarıyla iptal edildi.");
+            return new RevokeSessionCommandResponse("Oturum başarıyla iptal edildi.");
         }
     }
 }

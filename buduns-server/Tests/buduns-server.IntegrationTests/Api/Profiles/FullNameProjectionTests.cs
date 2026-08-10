@@ -23,11 +23,11 @@ public sealed class FullNameProjectionTests : IntegrationTestBase
         (await authentication.Client.PostAsJsonAsync("/api/Bookmark", new CreateBookmarksCommand { PostId = post.Id })).EnsureSuccessStatusCode();
         (await authentication.Client.PostAsync($"/api/Follower/{author.Id}", null)).EnsureSuccessStatusCode();
 
-        var user = await authentication.Client.GetFromJsonAsync<UserDto>($"/api/User/getUserById/{author.Id}");
-        var posts = await authentication.Client.GetFromJsonAsync<PagedResponse<PostDto>>("/api/Post/getAll?page=1&size=20");
-        var followers = await authentication.Client.GetFromJsonAsync<PagedResponse<FollowerDto>>($"/api/Follower/{author.Id}/followers?page=1&size=20");
-        var likes = await authentication.Client.GetFromJsonAsync<PagedResponse<LikeDto>>($"/api/Like/post/{post.Id}?page=1&size=20");
-        var bookmarks = await authentication.Client.GetFromJsonAsync<PagedResponse<BookmarkDto>>("/api/Bookmark?page=1&size=20");
+        var user = await authentication.Client.GetDataAsync<UserDto>($"/api/User/getUserById/{author.Id}");
+        var posts = await authentication.Client.GetDataAsync<PagedResponse<PostDto>>("/api/Post/getAll?page=1&size=20");
+        var followers = await authentication.Client.GetDataAsync<PagedResponse<FollowerDto>>($"/api/Follower/{author.Id}/followers?page=1&size=20");
+        var likes = await authentication.Client.GetDataAsync<PagedResponse<LikeDto>>($"/api/Like/post/{post.Id}?page=1&size=20");
+        var bookmarks = await authentication.Client.GetDataAsync<PagedResponse<BookmarkDto>>("/api/Bookmark?page=1&size=20");
 
         user!.FullName.Should().Be("Projection Author");
         posts!.Items.Should().ContainSingle(item => item.Id == post.Id && item.UserFullName == "Projection Author");

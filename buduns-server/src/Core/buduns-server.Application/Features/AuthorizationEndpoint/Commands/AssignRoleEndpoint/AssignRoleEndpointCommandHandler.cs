@@ -37,7 +37,6 @@ namespace buduns_server.Application.Features.AuthorizationEndpoint.Commands.Assi
 
             return new AssignRoleEndpointCommandResponse
             {
-                Succeeded = true,
                 Message = "Endpointe roller atandı."
             };
         }

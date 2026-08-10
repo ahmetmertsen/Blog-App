@@ -27,7 +27,7 @@ namespace buduns_server.Application.Features.Auth.MailVerify
 
             var response = await _authService.MailVerifyAsync(request, cancellationToken);
 
-            MailVerifyCommandResponse commandResponse = new(Succeeded:response.Succeeded, Message:response.Message);
+            MailVerifyCommandResponse commandResponse = new(Message:response.Message);
             return commandResponse;
         }
     }

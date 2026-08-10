@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Auth.ForgotPassword
 {
-    public record ForgotPasswordCommandResponse(bool Succeeded, string Message)
+    public record ForgotPasswordCommandResponse(string Message)
     {
     }
 }

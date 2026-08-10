@@ -30,7 +30,7 @@ namespace buduns_server.Application.Features.Users.Commands.Update.UpdateEmail
 
             var response =  await _userService.UpdateUserEmailAsync(request, cancellationToken);
 
-            UpdateUserEmailCommandResponse commandResponse = new(Succeeded: response.Succeeded, Message: response.Message);
+            UpdateUserEmailCommandResponse commandResponse = new(Message: response.Message);
             return commandResponse;
         }
     }

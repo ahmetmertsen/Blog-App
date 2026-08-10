@@ -62,7 +62,7 @@ namespace buduns_server.Application.Features.Followers.Commands.Create
             }
 
             var message = result.Created ? "Kullanıcı takip edildi." : "Bu kullanıcı zaten takip ediliyor.";
-            return new CreateFollowersCommandResponse(Succeeded: true, Message: message, FollowId: result.Follower.Id, AlreadyFollowing: !result.Created);
+            return new CreateFollowersCommandResponse(Message: message, FollowId: result.Follower.Id, AlreadyFollowing: !result.Created);
         }
     }
 }

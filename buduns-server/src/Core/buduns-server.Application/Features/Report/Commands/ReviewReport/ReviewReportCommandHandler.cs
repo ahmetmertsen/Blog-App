@@ -60,7 +60,7 @@ namespace buduns_server.Application.Features.Report.Commands.ReviewReport
 
                 await SaveChangesWithConcurrencyCheckAsync(cancellationToken);
                 _logger.LogInformation("Report review started. ReportId: {ReportId}, ModeratorUserId: {ModeratorUserId}, TargetType: {TargetType}, TargetId: {TargetId}, ClaimedReportCount: {ClaimedReportCount}", report.Id, request.UserId, report.TargetType, targetId, openReports.Count);
-                return new ReviewReportCommandResponse(true, "Şikayet ve aynı hedefe ait açık şikayetler incelemeye alındı.");
+                return new ReviewReportCommandResponse("Şikayet ve aynı hedefe ait açık şikayetler incelemeye alındı.");
             }
 
             ValidateActionForTarget(report, request.ActionType);
@@ -109,7 +109,7 @@ namespace buduns_server.Application.Features.Report.Commands.ReviewReport
             }
 
             _logger.LogInformation("Report resolved. ReportId: {ReportId}, ModeratorUserId: {ModeratorUserId}, Status: {Status}, ActionType: {ActionType}, TargetType: {TargetType}, TargetId: {TargetId}, ResolvedReportCount: {ResolvedReportCount}", report.Id, request.UserId, request.Status, request.ActionType, report.TargetType, targetId, openReports.Count);
-            return new ReviewReportCommandResponse(true, "Şikayet ve aynı hedefe ait açık şikayetler sonuçlandırıldı.");
+            return new ReviewReportCommandResponse("Şikayet ve aynı hedefe ait açık şikayetler sonuçlandırıldı.");
         }
 
         private async Task<DateTime?> ApplyModerationActionAsync(ReportEntity report, ReviewReportCommand request, CancellationToken cancellationToken)

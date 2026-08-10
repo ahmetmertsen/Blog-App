@@ -22,7 +22,7 @@ namespace buduns_server.Application.Features.Notifications.Commands.MarkAsRead
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return new MarkNotificationAsReadCommandResponse(true, "Bildirim okundu olarak işaretlendi.");
+            return new MarkNotificationAsReadCommandResponse("Bildirim okundu olarak işaretlendi.");
         }
     }
 }

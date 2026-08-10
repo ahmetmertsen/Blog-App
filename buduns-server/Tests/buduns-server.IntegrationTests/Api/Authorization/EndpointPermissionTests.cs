@@ -94,7 +94,7 @@ public sealed class EndpointPermissionTests : IntegrationTestBase
         var admin = await CreateUserAsync("definition-admin", RoleConstants.Admin);
         using var authentication = await Factory.CreateAuthenticatedClientAsync(admin.Id);
 
-        var menus = await authentication.Client.GetFromJsonAsync<List<Menu>>("/api/ApplicationService");
+        var menus = await authentication.Client.GetDataAsync<List<Menu>>("/api/ApplicationService");
 
         menus.Should().NotBeNullOrEmpty();
         menus!.Single(menu => menu.Name == AuthorizeDefinitionConstants.Posts)
@@ -134,7 +134,7 @@ public sealed class EndpointPermissionTests : IntegrationTestBase
 
         // GetRolesToEndpointQueryResponse.Roles "object" olarak tanimli oldugu
         // icin govde tipli olarak okunamaz; JSON uzerinden dogrulaniyor.
-        var payload = await rolesResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var payload = await rolesResponse.ReadDataAsync<JsonElement>();
         payload.GetProperty("roles").EnumerateArray().Select(item => item.GetString()).Should().BeEquivalentTo(new[] { RoleConstants.Moderator });
 
         var storedRoles = await Factory.ExecuteScopeAsync(services => PermissionSeeder.GetRoleNamesForEndpointAsync(services, CreatePostCode));

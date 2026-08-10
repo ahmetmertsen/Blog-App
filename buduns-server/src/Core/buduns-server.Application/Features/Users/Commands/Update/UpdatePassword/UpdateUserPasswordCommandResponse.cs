@@ -8,7 +8,6 @@ namespace buduns_server.Application.Features.Users.Commands.Update.UpdatePasswor
 {
     public class UpdateUserPasswordCommandResponse
     {
-        public bool Succeeded { get; set; }
         public required string Message { get; set; }
     }
 }

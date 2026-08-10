@@ -36,7 +36,7 @@ public class GlobalExceptionMiddlewareTests
         Assert.Equal("application/json", result.Context.Response.ContentType);
         Assert.False(result.Json.RootElement.GetProperty("isSuccess").GetBoolean());
         Assert.Equal(errorCode, result.Json.RootElement.GetProperty("error").GetProperty("code").GetString());
-        Assert.False(string.IsNullOrWhiteSpace(result.Json.RootElement.GetProperty("error").GetProperty("traceId").GetString()));
+        Assert.False(string.IsNullOrWhiteSpace(result.Json.RootElement.GetProperty("traceId").GetString()));
     }
 
     [Fact]

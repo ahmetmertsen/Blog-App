@@ -1,10 +1,12 @@
 using buduns_server.Application.Common.Consts;
 using buduns_server.Application.Common.CustomAttrributes;
+using buduns_server.Application.Dtos;
 using buduns_server.Application.Features.Followers.Commands.Create;
 using buduns_server.Application.Features.Followers.Commands.Delete;
 using buduns_server.Application.Features.Followers.Queries.GetAllByUserId;
 using buduns_server.Application.Features.Followers.Queries.GetStatus;
 using buduns_server.Domain.Enums;
+using buduns_server.WebAPI.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,8 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace buduns_server.WebAPI.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    public class FollowerController : ControllerBase
+    public class FollowerController : ApiControllerBase
     {
         private readonly IMediator _mediatR;
 
@@ -25,37 +26,37 @@ namespace buduns_server.WebAPI.Controllers
         [Authorize]
         [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Followers, ActionType = ActionType.Writing, Definition = "Follow User")]
         [HttpPost("{userId:int}")]
-        public async Task<IActionResult> Create(int userId)
+        public async Task<ActionResult<ApiResponse<CreateFollowersCommandResponse>>> Create(int userId)
         {
-            return Ok(await _mediatR.Send(new CreateFollowersCommand { FollowingId = userId }));
+            return Success(await _mediatR.Send(new CreateFollowersCommand { FollowingId = userId }));
         }
 
         [Authorize]
         [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Followers, ActionType = ActionType.Deleting, Definition = "Unfollow User")]
         [HttpDelete("{userId:int}")]
-        public async Task<IActionResult> Delete(int userId)
+        public async Task<ActionResult<ApiResponse<DeleteFollowersCommandResponse>>> Delete(int userId)
         {
-            return Ok(await _mediatR.Send(new DeleteFollowersCommand { FollowingId = userId }));
+            return Success(await _mediatR.Send(new DeleteFollowersCommand { FollowingId = userId }));
         }
 
         [HttpGet("{userId:int}/followers")]
-        public async Task<IActionResult> GetFollowersByUserId(int userId, [FromQuery] int page = 1, [FromQuery] int size = 20)
+        public async Task<ActionResult<ApiResponse<PagedResponse<FollowerDto>>>> GetFollowersByUserId(int userId, [FromQuery] int page = 1, [FromQuery] int size = 20)
         {
-            return Ok(await _mediatR.Send(new GetAllFollowersByUserIdQuery { UserId = userId, Page = page, Size = size }));
+            return Success(await _mediatR.Send(new GetAllFollowersByUserIdQuery { UserId = userId, Page = page, Size = size }));
         }
 
         [HttpGet("{userId:int}/followings")]
-        public async Task<IActionResult> GetFollowingsByUserId(int userId, [FromQuery] int page = 1, [FromQuery] int size = 20)
+        public async Task<ActionResult<ApiResponse<PagedResponse<FollowerDto>>>> GetFollowingsByUserId(int userId, [FromQuery] int page = 1, [FromQuery] int size = 20)
         {
-            return Ok(await _mediatR.Send(new GetAllFollowingsByUserIdQuery { UserId = userId, Page = page, Size = size }));
+            return Success(await _mediatR.Send(new GetAllFollowingsByUserIdQuery { UserId = userId, Page = page, Size = size }));
         }
 
         [Authorize]
         [AuthorizeDefinition( Menu = AuthorizeDefinitionConstants.Followers, ActionType = ActionType.Reading, Definition = "Get Follow Status")]
         [HttpGet("status/{userId:int}")]
-        public async Task<IActionResult> GetStatus(int userId)
+        public async Task<ActionResult<ApiResponse<GetFollowerStatusQueryResponse>>> GetStatus(int userId)
         {
-            return Ok(await _mediatR.Send(new GetFollowerStatusQuery { FollowingId = userId }));
+            return Success(await _mediatR.Send(new GetFollowerStatusQuery { FollowingId = userId }));
         }
     }
 }

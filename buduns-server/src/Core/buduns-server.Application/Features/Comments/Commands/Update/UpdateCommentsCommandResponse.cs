@@ -7,7 +7,7 @@ using buduns_server.Application.Dtos;
 
 namespace buduns_server.Application.Features.Comments.Commands.Update
 {
-    public record UpdateCommentsCommandResponse(bool Succeeded, string Message, CommentDto Comment)
+    public record UpdateCommentsCommandResponse(string Message, CommentDto Comment)
     {
     }
 }

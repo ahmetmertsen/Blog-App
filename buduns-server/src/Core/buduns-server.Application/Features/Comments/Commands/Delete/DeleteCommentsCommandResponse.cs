@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Comments.Commands.Delete
 {
-    public record DeleteCommentsCommandResponse(bool Succeeded, string Message)
+    public record DeleteCommentsCommandResponse(string Message)
     {
     }
 }

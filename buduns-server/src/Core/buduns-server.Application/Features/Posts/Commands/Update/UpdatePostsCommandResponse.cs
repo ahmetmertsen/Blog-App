@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Posts.Commands.Update
 {
-    public record UpdatePostsCommandResponse(bool Succeeded, string Message)
+    public record UpdatePostsCommandResponse(string Message)
     {
     }
 }

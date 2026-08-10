@@ -25,7 +25,7 @@ namespace buduns_server.Application.Features.Tags.Commands.Delete
             tag.isDeleted = true;
             tag.UpdateAt = DateTime.UtcNow;
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return new DeleteTagsCommandResponse(Succeeded: true, Message: "Tag başarıyla silindi.");
+            return new DeleteTagsCommandResponse(Message: "Tag başarıyla silindi.");
         }
     }
 }

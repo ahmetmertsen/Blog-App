@@ -21,7 +21,7 @@ public sealed class UserQueryTests : IntegrationTestBase
         await Factory.ExecuteScopeAsync(services => DatabaseSeeder.CreateUserAsync(services, "bob-active", "Bob User", RoleConstants.User));
         using var authentication = await Factory.CreateAuthenticatedClientAsync(admin.Id);
         var response = await authentication.Client.GetAsync("/api/User/getAllUsers?page=1&size=1&search=Alice&status=Active&emailConfirmed=true");
-        var body = await response.Content.ReadFromJsonAsync<PagedResponse<AdminUserDto>>();
+        var body = await response.ReadDataAsync<PagedResponse<AdminUserDto>>();
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         body!.Page.Should().Be(1);
         body.Size.Should().Be(1);
