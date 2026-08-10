@@ -57,6 +57,7 @@ namespace buduns_server.Persistence
             services.AddScoped<IRoleSeeder, RoleSeeder>();
             services.AddScoped<IAdminSeeder, AdminSeeder>();
             services.AddScoped<IEndpointSeeder, EndpointSeeder>();
+            services.AddScoped<IMailTemplateSeeder, MailTemplateSeeder>();
             services.AddScoped<IAuthorizationEndpointService, AuthorizationEndpointService>();
             services.AddScoped<IEndpointPermissionService, EndpointPermissionService>();
 

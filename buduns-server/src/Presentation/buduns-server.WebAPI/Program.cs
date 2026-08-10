@@ -289,6 +289,8 @@ namespace buduns_server.WebAPI
 
             SeedEndpoints(app);
 
+            SeedMailTemplates(app);
+
             SeedBootstrapAdmin(app);
 
             app.UseSerilogRequestLogging(options =>
@@ -356,12 +358,6 @@ namespace buduns_server.WebAPI
             }
         }
 
-        /// <summary>
-        /// Yetki katalogu kodla esitlenir. Rollerle ayni gerekce ile fail-fast:
-        /// katalog yazilamadiysa yonetim ekrani da denetim de calismaz, ama
-        /// sunucu saglikli gorunur. Kodda karsiligi kalmayan kayitlar silinmez,
-        /// yalnizca uyari olarak loglanir; silmek insan karari.
-        /// </summary>
         private static void SeedEndpoints(WebApplication app)
         {
             using var scope = app.Services.CreateScope();
@@ -395,10 +391,34 @@ namespace buduns_server.WebAPI
             }
         }
 
-        /// <summary>
-        /// Rollerin aksine bu adim acilisi engellemez: admin'i olmayan sistem
-        /// calisir, sadece yonetim uclari kullanilamaz.
-        /// </summary>
+        private static void SeedMailTemplates(WebApplication app)
+        {
+            using var scope = app.Services.CreateScope();
+            var seeder = scope.ServiceProvider.GetRequiredService<IMailTemplateSeeder>();
+
+            try
+            {
+                var result = seeder.SeedAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+                if (result.CreatedKeys.Count > 0)
+                {
+                    Log.Information("Eksik mail sablonlari olusturuldu: {CreatedKeys}", string.Join(", ", result.CreatedKeys));
+                }
+
+                if (result.DivergedKeys.Count > 0)
+                {
+                    Log.Warning(
+                        "Veritabanindaki mail sablonu koddakinden farkli. Icerik ezilmedi; veritabanindaki surum kullanilmaya devam edecek. DivergedKeys: {DivergedKeys}",
+                        string.Join(", ", result.DivergedKeys));
+                }
+            }
+            catch (Exception exception)
+            {
+                Log.Fatal(exception, "Mail sablonlari olusturulamadi, uygulama baslatilmiyor.");
+                throw;
+            }
+        }
+
         private static void SeedBootstrapAdmin(WebApplication app)
         {
             using var scope = app.Services.CreateScope();

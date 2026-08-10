@@ -1,4 +1,5 @@
 using buduns_server.Application.Abstractions.Services;
+using buduns_server.Application.Common.Consts;
 using buduns_server.Application.UnitOfWork;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -14,6 +15,9 @@ namespace buduns_server.Infrastructure.Services.Mail
 {
     public class MailService : IMailService
     {
+        /// <summary>Sablonlardaki {app_name} yer tutucusunun karsiligi.</summary>
+        private const string ApplicationName = "Buduns";
+
         private readonly IConfiguration _configuration;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<MailService> _logger;
@@ -95,55 +99,48 @@ namespace buduns_server.Infrastructure.Services.Mail
         // Şifre Sıfırlama Maili
         public async Task SendForgotPasswordMailAsync(string to, string fullName, string verificationCode)
         {
-            string description = await GetTemplateAsync("FORGOT_PASSWORD");
-            description = description.Replace("{full_name}", $"{fullName}");
-            description = description.Replace("{verification_code}", verificationCode);
-            description = description.Replace("{reset_code}", verificationCode);
-            description = description.Replace("{reset_link}", verificationCode);
-            description = description.Replace("{app_name}", "Buduns");
+            var body = await BuildBodyAsync(MailTemplateKeys.ForgotPassword, fullName, verificationCode);
 
-            await SendMailAsync(to, "Şifre Sıfırlama Talebi", description);
+            await SendMailAsync(to, "Şifre Sıfırlama Talebi", body);
         }
 
         // Mail Doğrulama
         public async Task SendVerifyMailAsync(string to, string fullName, string verificationCode)
         {
-            string description = await GetTemplateAsync("MAIL_VERIFY");
-            description = description.Replace("{full_name}", $"{fullName}");
-            description = description.Replace("{verification_code}", verificationCode);
-            description = description.Replace("{verify_code}", verificationCode);
-            description = description.Replace("{verify_link}", verificationCode);
-            description = description.Replace("{app_name}", "Buduns");
+            var body = await BuildBodyAsync(MailTemplateKeys.MailVerify, fullName, verificationCode);
 
-            await SendMailAsync(to, "E-Posta Doğrulama", description);
+            await SendMailAsync(to, "E-Posta Doğrulama", body);
         }
 
         // Mevcut Email Değiştirme Onayı
         public async Task SendChangeEmailOldMailAsync(string to, string fullName, string newEmail, string verificationCode)
         {
-            string description = await GetTemplateAsync("CHANGE_EMAIL_OLD");
-            description = description.Replace("{full_name}", $"{fullName}");
-            description = description.Replace("{new_email}", newEmail);
-            description = description.Replace("{verification_code}", verificationCode);
-            description = description.Replace("{confirm_code}", verificationCode);
-            description = description.Replace("{confirm_link}", verificationCode);
-            description = description.Replace("{app_name}", "Buduns");
+            var body = await BuildBodyAsync(MailTemplateKeys.ChangeEmailOld, fullName, verificationCode);
+            body = body.Replace("{new_email}", newEmail);
 
-            await SendMailAsync(to, "E-Posta Değişikliği Onayı", description);
+            await SendMailAsync(to, "E-Posta Değişikliği Onayı", body);
         }
 
         // Email Değiştirme
         public async Task SendChangeEmailMailAsync(string to, string fullName, string verificationCode)
         {
-            string description = await GetTemplateAsync("CHANGE_EMAIL");
-            description = description.Replace("{full_name}", $"{fullName}");
-            description = description.Replace("{verification_code}", verificationCode);
-            description = description.Replace("{confirm_code}", verificationCode);
-            description = description.Replace("{confirm_link}", verificationCode);
-            description = description.Replace("{app_name}", "Buduns");
+            var body = await BuildBodyAsync(MailTemplateKeys.ChangeEmail, fullName, verificationCode);
 
-            await SendMailAsync(to, "E-Posta Değişikliği Talebi", description);
+            await SendMailAsync(to, "E-Posta Değişikliği Talebi", body);
         }
 
+        /// <summary>
+        /// Tum sablonlarda ortak olan yer tutucular. Sablona ozel olanlar
+        /// (ornegin {new_email}) cagiran metotta doldurulur.
+        /// </summary>
+        private async Task<string> BuildBodyAsync(string templateKey, string fullName, string verificationCode)
+        {
+            var body = await GetTemplateAsync(templateKey);
+
+            return body
+                .Replace("{full_name}", fullName)
+                .Replace("{verification_code}", verificationCode)
+                .Replace("{app_name}", ApplicationName);
+        }
     }
 }

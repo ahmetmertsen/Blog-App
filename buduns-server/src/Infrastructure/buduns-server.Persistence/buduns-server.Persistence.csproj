@@ -19,4 +19,10 @@
     <ProjectReference Include="..\..\Core\buduns-server.Application\buduns-server.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Mail sablonlari HTML olarak durur; .cs icine gomulen kacisli string
+         yerine duzenlenebilir dosya olarak tasinip assembly'ye gomulur. -->
+    <EmbeddedResource Include="MailTemplates\*.html" />
+  </ItemGroup>
+
 </Project>

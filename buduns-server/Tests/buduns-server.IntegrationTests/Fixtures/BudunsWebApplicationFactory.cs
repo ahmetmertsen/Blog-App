@@ -175,6 +175,7 @@ public sealed class BudunsWebApplicationFactory : WebApplicationFactory<WebAPI.P
         // roller endpoint'lerden once var olmali.
         await ExecuteScopeAsync(services => services.GetRequiredService<IRoleSeeder>().SeedAsync(CancellationToken.None));
         await ExecuteScopeAsync(services => services.GetRequiredService<IEndpointSeeder>().SeedAsync(typeof(WebAPI.Program), CancellationToken.None));
+        await ExecuteScopeAsync(services => services.GetRequiredService<IMailTemplateSeeder>().SeedAsync(CancellationToken.None));
     }
 
     public async Task ClearCacheAsync()
