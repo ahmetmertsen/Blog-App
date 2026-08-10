@@ -60,6 +60,9 @@ namespace buduns_server.WebAPI
             builder.Services.Configure<BootstrapAdminOptions>(
                 builder.Configuration.GetSection(BootstrapAdminOptions.SectionName));
 
+            builder.Services.Configure<MailOptions>(
+                builder.Configuration.GetSection(MailOptions.SectionName));
+
             builder.Services.AddOptions<JwtTokenOptions>()
                 .Bind(builder.Configuration.GetSection(JwtTokenOptions.SectionName))
                 .Validate(options => !string.IsNullOrWhiteSpace(options.SecurityKey), "'Token:SecurityKey' yapilandirmasi zorunlu.")
@@ -291,6 +294,8 @@ namespace buduns_server.WebAPI
 
             SeedMailTemplates(app);
 
+            WarnIfMailIsNotConfigured(app);
+
             SeedBootstrapAdmin(app);
 
             app.UseSerilogRequestLogging(options =>
@@ -417,6 +422,25 @@ namespace buduns_server.WebAPI
                 Log.Fatal(exception, "Mail sablonlari olusturulamadi, uygulama baslatilmiyor.");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// SMTP yapilandirmasi zorunlu tutulmaz: hesabi olmayan bir gelistirici
+        /// uygulamayi calistirabilmeli. Ama sessiz de kalmamali; eksiklik aksi
+        /// halde ancak ilk mail gonderiminde, istegin ortasinda ortaya cikar.
+        /// </summary>
+        private static void WarnIfMailIsNotConfigured(WebApplication app)
+        {
+            var mailOptions = app.Services.GetRequiredService<IOptions<MailOptions>>().Value;
+
+            if (mailOptions.IsConfigured)
+            {
+                return;
+            }
+
+            Log.Warning(
+                "SMTP yapilandirmasi eksik; dogrulama ve sifre sifirlama mailleri gonderilemeyecek. MissingSettings: {MissingSettings}",
+                string.Join(", ", mailOptions.GetMissingSettings()));
         }
 
         private static void SeedBootstrapAdmin(WebApplication app)

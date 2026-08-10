@@ -1,8 +1,9 @@
 using buduns_server.Application.Abstractions.Services;
 using buduns_server.Application.Common.Consts;
+using buduns_server.Application.Common.Options;
 using buduns_server.Application.UnitOfWork;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,18 +19,34 @@ namespace buduns_server.Infrastructure.Services.Mail
         /// <summary>Sablonlardaki {app_name} yer tutucusunun karsiligi.</summary>
         private const string ApplicationName = "Buduns";
 
-        private readonly IConfiguration _configuration;
+        private readonly MailOptions _options;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<MailService> _logger;
 
-        public MailService(IConfiguration configuration, IUnitOfWork unitOfWork, ILogger<MailService> logger)
+        public MailService(IOptions<MailOptions> options, IUnitOfWork unitOfWork, ILogger<MailService> logger)
         {
-            _configuration = configuration;
+            _options = options.Value;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
         public Task SendMailAsync(string to, string subject, string content) => SendMailAsync(new[] { to }, subject, content);
+
+        /// <summary>
+        /// SMTP bilgileri eksikken gonderim denenirse hata System.Net.Mail'in
+        /// icinden "The value cannot be an empty string. (Parameter 'address')"
+        /// olarak cikiyordu; hangi ayarin eksik oldugu hicbir yerde yazmiyordu.
+        /// </summary>
+        private void EnsureConfigured()
+        {
+            if (_options.IsConfigured)
+            {
+                return;
+            }
+
+            throw new InvalidOperationException(
+                $"Mail gonderilemez: SMTP yapilandirmasi eksik. Eksik ayarlar: {string.Join(", ", _options.GetMissingSettings())}.");
+        }
 
         // Sablonun eksik olmasi istemci hatasi degil sunucu yapilandirma hatasi;
         // bu yuzden NotFoundException degil InvalidOperationException.
@@ -46,30 +63,26 @@ namespace buduns_server.Infrastructure.Services.Mail
 
         public async Task SendMailAsync(string[] toes, string subject, string content)
         {
-            var username = _configuration["Mail:Username"];
-            var password = _configuration["Mail:Password"];
-            var host = _configuration["Mail:Host"];
-            var port = _configuration.GetValue<int>("Mail:Port");
-            var fromName = _configuration["Mail:FromName"] ?? "Buduns";
+            EnsureConfigured();
 
             using var mail = new MailMessage
             {
                 IsBodyHtml = true,
                 Subject = subject,
                 Body = content,
-                From = new MailAddress(username!, fromName, Encoding.UTF8)
+                From = new MailAddress(_options.Username, _options.FromName, Encoding.UTF8)
             };
 
             foreach (var to in toes)
             {
                 mail.To.Add(to);
             }
-                
-            using var smtp = new SmtpClient(host, port)
+
+            using var smtp = new SmtpClient(_options.Host, _options.Port)
             {
                 EnableSsl = true,
                 UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(username, password),
+                Credentials = new NetworkCredential(_options.Username, _options.Password),
                 DeliveryMethod = SmtpDeliveryMethod.Network
             };
 
@@ -81,7 +94,7 @@ namespace buduns_server.Infrastructure.Services.Mail
                     "Mail sent successfully. Subject: {Subject}, RecipientCount: {RecipientCount}, Host: {Host}",
                     subject,
                     toes.Length,
-                    host);
+                    _options.Host);
             }
             catch (Exception exception)
             {
@@ -90,7 +103,7 @@ namespace buduns_server.Infrastructure.Services.Mail
                     "Mail sending failed. Subject: {Subject}, RecipientCount: {RecipientCount}, Host: {Host}",
                     subject,
                     toes.Length,
-                    host);
+                    _options.Host);
 
                 throw;
             }
