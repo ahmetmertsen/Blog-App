@@ -9,6 +9,11 @@ x-app-config: &app-config
 services:
   postgres:
     image: postgres:16-alpine
+    # jit=off: OLTP yukunde JIT derlemesi neredeyse hic karsiligini vermiyor.
+    # daily-top50 olcumunde 1652 ms'nin 1437 ms'si JIT derlemesiydi; kapatinca
+    # 324 ms'ye dustu. Yonetilen bir Postgres kullanilirsa ayni ayar sunucu
+    # tarafinda ya da baglanti dizesine "Options=-c jit=off" eklenerek yapilir.
+    command: ["postgres", "-c", "jit=off"]
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
@@ -23,6 +28,25 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+
+  redis:
+    image: redis:7-alpine
+    # Onbellek olarak kullanildigi icin kalicilik kapali. Bellek dolarsa en az
+    # kullanilan anahtarlar atilir; veri kaybi tolere edilebilir.
+    command: >
+      redis-server
+      --save ""
+      --appendonly no
+      --maxmemory ${REDIS_MAXMEMORY:-256mb}
+      --maxmemory-policy allkeys-lru
+    # Postgres ile ayni gerekce: host'ta 6379 genelde yerel bir Redis'in.
+    ports:
+      - "56379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   seq:
     image: datalust/seq:2024.3
@@ -52,6 +76,11 @@ services:
     environment:
       <<: *app-config
       ASPNETCORE_ENVIRONMENT: Development
+      # Redis yalnizca api'nin isine yarar; migrator onbellek kullanmiyor.
+      # Tanimli olmazsa uygulama NullCacheService ile onbelleksiz calisir.
+      ConnectionStrings__Redis: "redis:6379"
+      Cache__DailyTopPostsTtlSeconds: ${CACHE_DAILY_TOP_POSTS_TTL_SECONDS:-60}
+      Cache__EndpointPermissionTtlSeconds: ${CACHE_ENDPOINT_PERMISSION_TTL_SECONDS:-300}
       Cors__AllowedOrigins__0: ${CORS_ORIGIN:-http://localhost:5173}
       Mail__Username: ${MAIL_USERNAME:-}
       Mail__Password: ${MAIL_PASSWORD:-}
@@ -59,6 +88,8 @@ services:
       - "8080:8080"
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       migrator:
         condition: service_completed_successfully
