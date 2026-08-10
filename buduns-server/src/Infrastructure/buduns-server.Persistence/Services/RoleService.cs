@@ -117,7 +117,7 @@ namespace buduns_server.Persistence.Services
 
         private static void EnsureRoleCanBeChanged(Role role)
         {
-            if (role.Name != null && (role.Name.Equals(RoleConstants.Admin, StringComparison.OrdinalIgnoreCase) || role.Name.Equals(RoleConstants.Moderator, StringComparison.OrdinalIgnoreCase) || role.Name.Equals(RoleConstants.User, StringComparison.OrdinalIgnoreCase)))
+            if (RoleConstants.IsSystemRole(role.Name))
             {
                 throw new BadRequestException("Sistem rolleri güncellenemez veya silinemez.");
             }

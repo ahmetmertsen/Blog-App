@@ -43,6 +43,15 @@ public sealed class BudunsWebApplicationFactory : WebApplicationFactory<WebAPI.P
     /// </summary>
     public const string ForgotPasswordRateLimitedPath = "/api/Auth/forgotPassword";
 
+    /// <summary>
+    /// Bootstrap admin yukseltmesinin hedefi. Host kurulurken bu hesap kayitli
+    /// olmadigi icin acilistaki yukseltme atlanir; ilgili testler hesabi kendisi
+    /// olusturup seeder'i yeniden calistirir.
+    /// </summary>
+    public const string BootstrapAdminUserName = "bootstrap-admin";
+
+    public const string BootstrapAdminEmail = $"{BootstrapAdminUserName}@integration.test";
+
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:16-alpine").WithDatabase("buduns_integration_tests").WithUsername("postgres").WithPassword("postgres").Build();
     private readonly RedisContainer _redis = new RedisBuilder("redis:7-alpine").Build();
     private Respawner? _respawner;
@@ -66,6 +75,7 @@ public sealed class BudunsWebApplicationFactory : WebApplicationFactory<WebAPI.P
             ["Token:RefreshTokenExpirationDays"] = "30",
             ["Seq:ServerURL"] = "http://127.0.0.1:5341",
             ["Cors:AllowedOrigins:0"] = AllowedCorsOrigin,
+            ["BootstrapAdmin:Email"] = BootstrapAdminEmail,
             // Hassas uc limitleri surec boyunca statik bir sayacta tutuluyor ve
             // Respawn ile sifirlanmiyor. Auth akislarini test edebilmek icin
             // limitler yukseltiliyor; ForgotPasswordRateLimitedPath bilerek
@@ -106,9 +116,16 @@ public sealed class BudunsWebApplicationFactory : WebApplicationFactory<WebAPI.P
         // Konteynerler, Services'e ilk erisimde host kurulmadan once ayakta
         // olmali; baglanti dizeleri o anda okunuyor.
         await Task.WhenAll(_postgres.StartAsync(), _redis.StartAsync());
-        using var scope = Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<BudunsDbContext>();
-        await context.Database.MigrateAsync();
+
+        // Host kurulur kurulmaz uygulamanin rol seeder'i calisiyor; sema o an
+        // hazir olmali. Bu yuzden migration, Services'e ilk erisimden ONCE
+        // elle kurulan bir context uzerinden uygulaniyor.
+        var contextOptions = new DbContextOptionsBuilder<BudunsDbContext>().UseNpgsql(ConnectionString).Options;
+        await using (var migrationContext = new BudunsDbContext(contextOptions))
+        {
+            await migrationContext.Database.MigrateAsync();
+        }
+
         await using var connection = new NpgsqlConnection(ConnectionString);
         await connection.OpenAsync();
         _respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
@@ -151,7 +168,10 @@ public sealed class BudunsWebApplicationFactory : WebApplicationFactory<WebAPI.P
         await _respawner.ResetAsync(connection);
         await ClearCacheAsync();
         MailService.Clear();
-        await ExecuteScopeAsync(DatabaseSeeder.SeedSystemRolesAsync);
+
+        // Respawn rolleri de siliyor; uygulamanin acilista kullandigi seeder'in
+        // ta kendisi yeniden calistiriliyor, testlere ozel bir kopya yok.
+        await ExecuteScopeAsync(services => services.GetRequiredService<IRoleSeeder>().SeedAsync(CancellationToken.None));
     }
 
     public async Task ClearCacheAsync()

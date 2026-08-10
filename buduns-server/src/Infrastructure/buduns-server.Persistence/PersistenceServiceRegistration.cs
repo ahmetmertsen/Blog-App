@@ -54,6 +54,8 @@ namespace buduns_server.Persistence
             services.AddScoped<IVerificationChallengeService, VerificationChallengeService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IRoleSeeder, RoleSeeder>();
+            services.AddScoped<IAdminSeeder, AdminSeeder>();
             services.AddScoped<IAuthorizationEndpointService, AuthorizationEndpointService>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();

@@ -57,6 +57,9 @@ namespace buduns_server.WebAPI
             builder.Services.Configure<ReportPolicyOptions>(
                 builder.Configuration.GetSection(ReportPolicyOptions.SectionName));
 
+            builder.Services.Configure<BootstrapAdminOptions>(
+                builder.Configuration.GetSection(BootstrapAdminOptions.SectionName));
+
             builder.Services.AddOptions<JwtTokenOptions>()
                 .Bind(builder.Configuration.GetSection(JwtTokenOptions.SectionName))
                 .Validate(options => !string.IsNullOrWhiteSpace(options.SecurityKey), "'Token:SecurityKey' yapilandirmasi zorunlu.")
@@ -282,6 +285,10 @@ namespace buduns_server.WebAPI
 
             var app = builder.Build();
 
+            SeedRoles(app);
+
+            SeedBootstrapAdmin(app);
+
             app.UseSerilogRequestLogging(options =>
             {
                 options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
@@ -324,6 +331,46 @@ namespace buduns_server.WebAPI
             app.MapControllers();
 
             app.Run();
+        }
+
+        /// <summary>
+        /// Sistem rolleri olmadan kayit ve yetkilendirme calismaz; eksikse
+        /// uygulama sessizce ayakta kalmak yerine acilmadan hata verir.
+        /// Semayi kurmak seeder'in isi degil, migration zaten uygulanmis olmali.
+        /// </summary>
+        private static void SeedRoles(WebApplication app)
+        {
+            using var scope = app.Services.CreateScope();
+            var seeder = scope.ServiceProvider.GetRequiredService<IRoleSeeder>();
+
+            try
+            {
+                seeder.SeedAsync(CancellationToken.None).GetAwaiter().GetResult();
+            }
+            catch (Exception exception)
+            {
+                Log.Fatal(exception, "Sistem rolleri olusturulamadi, uygulama baslatilmiyor.");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Rollerin aksine bu adim acilisi engellemez: admin'i olmayan sistem
+        /// calisir, sadece yonetim uclari kullanilamaz.
+        /// </summary>
+        private static void SeedBootstrapAdmin(WebApplication app)
+        {
+            using var scope = app.Services.CreateScope();
+            var seeder = scope.ServiceProvider.GetRequiredService<IAdminSeeder>();
+
+            try
+            {
+                seeder.SeedAsync(CancellationToken.None).GetAwaiter().GetResult();
+            }
+            catch (Exception exception)
+            {
+                Log.Error(exception, "Bootstrap admin yukseltmesi yapilamadi.");
+            }
         }
     }
 }

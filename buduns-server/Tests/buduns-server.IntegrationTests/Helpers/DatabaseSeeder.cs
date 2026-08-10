@@ -1,4 +1,3 @@
-using buduns_server.Application.Common.Consts;
 using buduns_server.Domain.Entities;
 using buduns_server.Domain.Entities.Identity;
 using buduns_server.Domain.Enums;
@@ -12,19 +11,6 @@ namespace buduns_server.IntegrationTests.Helpers;
 public static class DatabaseSeeder
 {
     public const string DefaultPassword = "Integration123!";
-
-    public static async Task SeedSystemRolesAsync(IServiceProvider services)
-    {
-        var roleManager = services.GetRequiredService<RoleManager<Role>>();
-        foreach (var roleName in new[] { RoleConstants.Admin, RoleConstants.Moderator, RoleConstants.User })
-        {
-            if (!await roleManager.RoleExistsAsync(roleName))
-            {
-                var result = await roleManager.CreateAsync(new Role { Name = roleName });
-                EnsureSucceeded(result, $"Role could not be created: {roleName}");
-            }
-        }
-    }
 
     public static async Task<User> CreateUserAsync(IServiceProvider services, string userName, string fullName, params string[] roles)
     {
