@@ -169,7 +169,7 @@ namespace buduns_server.WebAPI
                     Scheme = "bearer",
                     BearerFormat = "JWT",
                     In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                    Description = "JWT Authorization header kullan�m�: token"
+                    Description = "JWT Authorization header kullanımı: token"
                 });
 
                 c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement()
@@ -204,16 +204,16 @@ namespace buduns_server.WebAPI
                 {
                     options.TokenValidationParameters = new()
                     {
-                        // Do�rulamas� gereken de�erler
-                        ValidateAudience = true, //Olu�turulacak token de�erini kimlerin/hangi originlerin/sitelerin kullan�c���n� belirledi�imiz de�erdir.
-                        ValidateIssuer = true, // Olu�turulacak token de�erini kimin da��tt�n� ifade edece�imiz alan�d�r.
-                        ValidateLifetime = true, //Olu�turulan token de�erinin s�resini kontrol edecek olan do�rulamad�r.
-                        ValidateIssuerSigningKey = true, //�retilecek token de�erinin uygulamam�za ait bir de�er oldu�unu ifade eden security key verisinin do�rulanmas�d�r.
+                        // Dogrulanacak degerler
+                        ValidateAudience = true,
+                        ValidateIssuer = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
 
                         // Audience/Issuer/IssuerSigningKey asagida IOptions uzerinden
                         // atanir; token'i ureten TokenHandler ile ayni kaynagi okumalari
                         // icin yapilandirmanin burada erken okunmamasi gerekiyor.
-                        NameClaimType = ClaimTypes.Name, //Jwt �zerinden gelen Name claimine kar��l�k gelen de�eri User.Identity.Name propertysinden elde edilir.
+                        NameClaimType = ClaimTypes.Name,
                         RoleClaimType = ClaimTypes.Role,
                         ClockSkew = TimeSpan.FromMinutes(1)
                     };
@@ -231,7 +231,7 @@ namespace buduns_server.WebAPI
                             if (!int.TryParse(userIdValue, out var userId) ||
                                 !Guid.TryParse(sessionIdValue, out var sessionId))
                             {
-                                context.Fail("Ge�erli kullan�c� veya oturum bilgisi bulunamad�.");
+                                context.Fail("Geçerli kullanıcı veya oturum bilgisi bulunamadı.");
                                 return;
                             }
 
@@ -244,7 +244,7 @@ namespace buduns_server.WebAPI
 
                             if (!isActive)
                             {
-                                context.Fail("Oturum ge�ersiz veya s�resi dolmu�.");
+                                context.Fail("Oturum geçersiz veya süresi dolmuş.");
                             }
                         }
                     };
