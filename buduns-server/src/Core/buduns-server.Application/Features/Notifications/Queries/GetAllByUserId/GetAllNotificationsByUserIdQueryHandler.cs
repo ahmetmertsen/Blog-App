@@ -1,5 +1,5 @@
 using buduns_server.Application.Dtos;
-using buduns_server.Application.UnitOfWork;
+using buduns_server.Application.Repositories;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -11,16 +11,16 @@ namespace buduns_server.Application.Features.Notifications.Queries.GetAllByUserI
 {
     public class GetAllNotificationsByUserIdQueryHandler : IRequestHandler<GetAllNotificationsByUserIdQuery, PagedResponse<NotificationDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly INotificationRepository _notificationRepository;
 
-        public GetAllNotificationsByUserIdQueryHandler(IUnitOfWork unitOfWork)
+        public GetAllNotificationsByUserIdQueryHandler(INotificationRepository notificationRepository)
         {
-            _unitOfWork = unitOfWork;
+            _notificationRepository = notificationRepository;
         }
 
         public async Task<PagedResponse<NotificationDto>> Handle(GetAllNotificationsByUserIdQuery request, CancellationToken cancellationToken)
         {
-            var result = await _unitOfWork.NotificationRepository.GetPagedByUserIdAsync(request.UserId, request.Page, request.Size, request.OnlyUnread, cancellationToken);
+            var result = await _notificationRepository.GetPagedByUserIdAsync(request.UserId, request.Page, request.Size, request.OnlyUnread, cancellationToken);
             return new PagedResponse<NotificationDto> { Items = result.Items, Page = request.Page, Size = request.Size, TotalCount = result.TotalCount };
         }
     }

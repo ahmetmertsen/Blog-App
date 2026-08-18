@@ -1,7 +1,7 @@
 using buduns_server.Application.Common.Helpers;
 using buduns_server.Application.Dtos;
 using buduns_server.Application.Mapping;
-using buduns_server.Application.UnitOfWork;
+using buduns_server.Application.Repositories;
 using buduns_server.Domain.Enums;
 using MediatR;
 
@@ -9,16 +9,16 @@ namespace buduns_server.Application.Features.Report.Queries.GetReports
 {
     public class GetReportsQueryHandler : IRequestHandler<GetReportsQuery, PagedResponse<ReportListDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IReportRepository _reportRepository;
 
-        public GetReportsQueryHandler(IUnitOfWork unitOfWork)
+        public GetReportsQueryHandler(IReportRepository reportRepository)
         {
-            _unitOfWork = unitOfWork;
+            _reportRepository = reportRepository;
         }
 
         public async Task<PagedResponse<ReportListDto>> Handle(GetReportsQuery request, CancellationToken cancellationToken)
         {
-            var (reports, totalCount) = await _unitOfWork.ReportRepository.GetFilteredReportGroupsAsync(request.Status, request.TargetType, request.Reason, request.FromDate, request.ToDate, request.Page, request.Size, cancellationToken);
+            var (reports, totalCount) = await _reportRepository.GetFilteredReportGroupsAsync(request.Status, request.TargetType, request.Reason, request.FromDate, request.ToDate, request.Page, request.Size, cancellationToken);
 
             var items = reports
                 .GroupBy(report => new

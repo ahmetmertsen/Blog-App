@@ -1,22 +1,22 @@
 using buduns_server.Application.Dtos;
 using buduns_server.Application.Exceptions;
-using buduns_server.Application.UnitOfWork;
+using buduns_server.Application.Repositories;
 using MediatR;
 
 namespace buduns_server.Application.Features.Tags.Queries.GetById
 {
     public class GetTagByIdQueryHandler : IRequestHandler<GetTagByIdQuery, TagDto>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly ITagRepository _tagRepository;
 
-        public GetTagByIdQueryHandler(IUnitOfWork unitOfWork)
+        public GetTagByIdQueryHandler(ITagRepository tagRepository)
         {
-            _unitOfWork = unitOfWork;
+            _tagRepository = tagRepository;
         }
 
         public async Task<TagDto> Handle(GetTagByIdQuery request, CancellationToken cancellationToken)
         {
-            var response = await _unitOfWork.TagRepository.GetDtoByIdAsync(request.Id, cancellationToken);
+            var response = await _tagRepository.GetDtoByIdAsync(request.Id, cancellationToken);
             if (response == null)
             {
                 throw new NotFoundException("Tag bulunamadı.");

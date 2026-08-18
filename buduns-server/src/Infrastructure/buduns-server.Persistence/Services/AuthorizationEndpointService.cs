@@ -1,6 +1,7 @@
 using buduns_server.Application.Abstractions.Services;
 using buduns_server.Application.Abstractions.Services.Configurations;
 using buduns_server.Application.Exceptions;
+using buduns_server.Application.Repositories;
 using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Entities;
 using buduns_server.Domain.Entities.Identity;
@@ -17,17 +18,21 @@ namespace buduns_server.Persistence.Services
     public class AuthorizationEndpointService : IAuthorizationEndpointService
     {
         private readonly IApplicationService _applicationService;
+        private readonly IEndpointRepository _endpointRepository;
+        private readonly IMenuRepository _menuRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly RoleManager<Role> _roleManager;
         private readonly IEndpointPermissionService _endpointPermissionService;
 
         public AuthorizationEndpointService(
             IApplicationService applicationService,
-            IUnitOfWork unitOfWork,
+            IEndpointRepository endpointRepository, IMenuRepository menuRepository, IUnitOfWork unitOfWork,
             RoleManager<Role> roleManager,
             IEndpointPermissionService endpointPermissionService)
         {
             _applicationService = applicationService;
+            _endpointRepository = endpointRepository;
+            _menuRepository = menuRepository;
             _unitOfWork = unitOfWork;
             _roleManager = roleManager;
             _endpointPermissionService = endpointPermissionService;
@@ -37,7 +42,7 @@ namespace buduns_server.Persistence.Services
         {
             CancellationToken cancellationToken = new();
 
-            Menu? _menu = await _unitOfWork.MenuRepository.GetMenuByNameAsync(menu);
+            Menu? _menu = await _menuRepository.GetMenuByNameAsync(menu);
             if (_menu == null)
             {
                 _menu = new()
@@ -45,14 +50,14 @@ namespace buduns_server.Persistence.Services
                     Name = menu,
                     CreatedAt = DateTime.UtcNow
                 };
-                await _unitOfWork.MenuRepository.AddAsync(_menu);
+                await _menuRepository.AddAsync(_menu);
 
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
 
 
 
-            var endpoint = await _unitOfWork.EndpointRepository.GetEndpointWithMenuByCodeAsync(code, menu);
+            var endpoint = await _endpointRepository.GetEndpointWithMenuByCodeAsync(code, menu);
             if (endpoint == null)
             {
                 var action = _applicationService.GetAuthorizeDefinitionEndpoints(type).FirstOrDefault(m => m.Name == menu)?
@@ -71,7 +76,7 @@ namespace buduns_server.Persistence.Services
                     Menu = _menu
                 };
 
-                await _unitOfWork.EndpointRepository.AddAsync(endpoint);
+                await _endpointRepository.AddAsync(endpoint);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
 
@@ -94,7 +99,7 @@ namespace buduns_server.Persistence.Services
         public async Task<List<string>> GetRolesToEndpoint(string code, string menu)
         {
 
-            Endpoint? endpoint = await _unitOfWork.EndpointRepository.GetRolesToEndpointWithMenu(code, menu);
+            Endpoint? endpoint = await _endpointRepository.GetRolesToEndpointWithMenu(code, menu);
             if (endpoint == null)
             {
                 throw new NotFoundException("Endpoint bulunamadı.");

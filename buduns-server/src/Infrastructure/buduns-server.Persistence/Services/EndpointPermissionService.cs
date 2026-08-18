@@ -1,7 +1,7 @@
 using buduns_server.Application.Abstractions.Services;
 using buduns_server.Application.Common.Options;
 using buduns_server.Application.Dtos.Configurations;
-using buduns_server.Application.UnitOfWork;
+using buduns_server.Application.Repositories;
 using buduns_server.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
@@ -12,18 +12,18 @@ namespace buduns_server.Persistence.Services
     {
         private const string CacheKeyPrefix = "endpoint-permission:";
 
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IEndpointRepository _endpointRepository;
         private readonly UserManager<User> _userManager;
         private readonly ICacheService _cacheService;
         private readonly TimeSpan _timeToLive;
 
         public EndpointPermissionService(
-            IUnitOfWork unitOfWork,
+            IEndpointRepository endpointRepository,
             UserManager<User> userManager,
             ICacheService cacheService,
             IOptions<CacheOptions> cacheOptions)
         {
-            _unitOfWork = unitOfWork;
+            _endpointRepository = endpointRepository;
             _userManager = userManager;
             _cacheService = cacheService;
             _timeToLive = TimeSpan.FromSeconds(cacheOptions.Value.EndpointPermissionTtlSeconds);
@@ -62,7 +62,7 @@ namespace buduns_server.Persistence.Services
                 _timeToLive,
                 async _ =>
                 {
-                    var endpoint = await _unitOfWork.EndpointRepository.GetRolesToEndpoint(code);
+                    var endpoint = await _endpointRepository.GetRolesToEndpoint(code);
                     if (endpoint == null)
                     {
                         return EndpointRoleSet.NotRegistered();

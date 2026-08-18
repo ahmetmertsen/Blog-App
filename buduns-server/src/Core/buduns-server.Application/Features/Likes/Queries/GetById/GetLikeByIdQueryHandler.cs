@@ -1,7 +1,7 @@
 using buduns_server.Application.Dtos;
 using buduns_server.Application.Exceptions;
 using buduns_server.Application.Mapping;
-using buduns_server.Application.UnitOfWork;
+using buduns_server.Application.Repositories;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -13,16 +13,16 @@ namespace buduns_server.Application.Features.Likes.Queries.GetById
 {
     public class GetLikeByIdQueryHandler : IRequestHandler<GetLikeByIdQuery, LikeDto>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly ILikeRepository _likeRepository;
 
-        public GetLikeByIdQueryHandler(IUnitOfWork unitOfWork)
+        public GetLikeByIdQueryHandler(ILikeRepository likeRepository)
         {
-            _unitOfWork = unitOfWork;
+            _likeRepository = likeRepository;
         }
 
         public async Task<LikeDto> Handle(GetLikeByIdQuery request, CancellationToken cancellationToken)
         {
-            var like = await _unitOfWork.LikeRepository.GetByIdAsync(request.Id);
+            var like = await _likeRepository.GetByIdAsync(request.Id);
             if (like == null)
             {
                 throw new NotFoundException("Like bulunamadı!");

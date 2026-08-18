@@ -116,11 +116,11 @@ public sealed class MailTemplateSeederTests : IntegrationTestBase
     {
         await Factory.ExecuteScopeAsync(async services =>
         {
-            var unitOfWork = services.GetRequiredService<Application.UnitOfWork.IUnitOfWork>();
+            var utilityRepository = services.GetRequiredService<Application.Repositories.IUtilityRepository>();
 
             foreach (var key in MailTemplateKeys.All)
             {
-                Utility? template = await unitOfWork.UtilityRepository.GetByNameAsync(key);
+                Utility? template = await utilityRepository.GetByNameAsync(key);
                 template.Should().NotBeNull(key);
             }
         });

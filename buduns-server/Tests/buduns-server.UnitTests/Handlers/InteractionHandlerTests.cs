@@ -1,3 +1,4 @@
+using buduns_server.Application.Repositories;
 using buduns_server.Application.Abstractions.Services;
 using buduns_server.Application.Dtos;
 using buduns_server.Application.Exceptions;
@@ -34,12 +35,13 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateLike_NewLike_ShouldReportCreatedAndBuildCooldownNotification()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.PostRepository.GetVisibleOwnerIdAsync(7, Arg.Any<CancellationToken>()).Returns(3);
+        var likeRepository = Substitute.For<ILikeRepository>();
+        var postRepository = Substitute.For<IPostRepository>();
+        postRepository.GetVisibleOwnerIdAsync(7, Arg.Any<CancellationToken>()).Returns(3);
         var like = new Like { Id = 15, PostId = 7, UserId = 9 };
-        unitOfWork.LikeRepository.CreateIfNotExistsAsync(Arg.Any<Like>(), Arg.Any<Notification?>(), Arg.Any<CancellationToken>()).Returns((like, true));
+        likeRepository.CreateIfNotExistsAsync(Arg.Any<Like>(), Arg.Any<Notification?>(), Arg.Any<CancellationToken>()).Returns((like, true));
         var notificationService = Substitute.For<INotificationService>();
-        var handler = new CreateLikesCommandHandler(unitOfWork, notificationService);
+        var handler = new CreateLikesCommandHandler(likeRepository, postRepository, notificationService);
 
         var response = await handler.Handle(new CreateLikesCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
@@ -52,10 +54,11 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateLike_ExistingLike_ShouldReportAlreadyLikedWithoutFailing()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.PostRepository.GetVisibleOwnerIdAsync(7, Arg.Any<CancellationToken>()).Returns(3);
-        unitOfWork.LikeRepository.CreateIfNotExistsAsync(Arg.Any<Like>(), Arg.Any<Notification?>(), Arg.Any<CancellationToken>()).Returns((new Like { Id = 15 }, false));
-        var handler = new CreateLikesCommandHandler(unitOfWork, Substitute.For<INotificationService>());
+        var likeRepository = Substitute.For<ILikeRepository>();
+        var postRepository = Substitute.For<IPostRepository>();
+        postRepository.GetVisibleOwnerIdAsync(7, Arg.Any<CancellationToken>()).Returns(3);
+        likeRepository.CreateIfNotExistsAsync(Arg.Any<Like>(), Arg.Any<Notification?>(), Arg.Any<CancellationToken>()).Returns((new Like { Id = 15 }, false));
+        var handler = new CreateLikesCommandHandler(likeRepository, postRepository, Substitute.For<INotificationService>());
 
         var response = await handler.Handle(new CreateLikesCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
@@ -65,9 +68,10 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateLike_InvisiblePost_ShouldThrowNotFound()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.PostRepository.GetVisibleOwnerIdAsync(7, Arg.Any<CancellationToken>()).Returns((int?)null);
-        var handler = new CreateLikesCommandHandler(unitOfWork, Substitute.For<INotificationService>());
+        var likeRepository = Substitute.For<ILikeRepository>();
+        var postRepository = Substitute.For<IPostRepository>();
+        postRepository.GetVisibleOwnerIdAsync(7, Arg.Any<CancellationToken>()).Returns((int?)null);
+        var handler = new CreateLikesCommandHandler(likeRepository, postRepository, Substitute.For<INotificationService>());
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new CreateLikesCommand { PostId = 7, UserId = 9 }, CancellationToken.None));
     }
@@ -77,9 +81,9 @@ public class InteractionHandlerTests
     [InlineData(false)]
     public async Task DeleteLike_ShouldSucceedRegardlessOfExistingLike(bool deleted)
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.LikeRepository.DeleteByUserAndPostAsync(9, 7, Arg.Any<CancellationToken>()).Returns(deleted);
-        var handler = new DeleteLikesCommandHandler(unitOfWork);
+        var likeRepository = Substitute.For<ILikeRepository>();
+        likeRepository.DeleteByUserAndPostAsync(9, 7, Arg.Any<CancellationToken>()).Returns(deleted);
+        var handler = new DeleteLikesCommandHandler(likeRepository);
 
         var response = await handler.Handle(new DeleteLikesCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
@@ -88,9 +92,10 @@ public class InteractionHandlerTests
     [Fact]
     public async Task GetLikeStatus_InvisiblePost_ShouldThrowNotFound()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.PostRepository.ExistsVisibleAsync(7, Arg.Any<CancellationToken>()).Returns(false);
-        var handler = new GetLikeStatusQueryHandler(unitOfWork);
+        var likeRepository = Substitute.For<ILikeRepository>();
+        var postRepository = Substitute.For<IPostRepository>();
+        postRepository.ExistsVisibleAsync(7, Arg.Any<CancellationToken>()).Returns(false);
+        var handler = new GetLikeStatusQueryHandler(likeRepository, postRepository);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new GetLikeStatusQuery { PostId = 7, UserId = 9 }, CancellationToken.None));
     }
@@ -98,10 +103,11 @@ public class InteractionHandlerTests
     [Fact]
     public async Task GetLikeStatus_ExistingLike_ShouldReturnLikeId()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.PostRepository.ExistsVisibleAsync(7, Arg.Any<CancellationToken>()).Returns(true);
-        unitOfWork.LikeRepository.GetByUserAndPostAsync(9, 7, Arg.Any<CancellationToken>()).Returns(new Like { Id = 15 });
-        var handler = new GetLikeStatusQueryHandler(unitOfWork);
+        var likeRepository = Substitute.For<ILikeRepository>();
+        var postRepository = Substitute.For<IPostRepository>();
+        postRepository.ExistsVisibleAsync(7, Arg.Any<CancellationToken>()).Returns(true);
+        likeRepository.GetByUserAndPostAsync(9, 7, Arg.Any<CancellationToken>()).Returns(new Like { Id = 15 });
+        var handler = new GetLikeStatusQueryHandler(likeRepository, postRepository);
 
         var response = await handler.Handle(new GetLikeStatusQuery { PostId = 7, UserId = 9 }, CancellationToken.None);
 
@@ -112,10 +118,11 @@ public class InteractionHandlerTests
     [Fact]
     public async Task GetLikeStatus_MissingLike_ShouldReturnNegativeStatus()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.PostRepository.ExistsVisibleAsync(7, Arg.Any<CancellationToken>()).Returns(true);
-        unitOfWork.LikeRepository.GetByUserAndPostAsync(9, 7, Arg.Any<CancellationToken>()).Returns((Like?)null);
-        var handler = new GetLikeStatusQueryHandler(unitOfWork);
+        var likeRepository = Substitute.For<ILikeRepository>();
+        var postRepository = Substitute.For<IPostRepository>();
+        postRepository.ExistsVisibleAsync(7, Arg.Any<CancellationToken>()).Returns(true);
+        likeRepository.GetByUserAndPostAsync(9, 7, Arg.Any<CancellationToken>()).Returns((Like?)null);
+        var handler = new GetLikeStatusQueryHandler(likeRepository, postRepository);
 
         var response = await handler.Handle(new GetLikeStatusQuery { PostId = 7, UserId = 9 }, CancellationToken.None);
 
@@ -126,9 +133,10 @@ public class InteractionHandlerTests
     [Fact]
     public async Task GetLikesByPostId_InvisiblePost_ShouldThrowNotFound()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.PostRepository.ExistsVisibleAsync(7, Arg.Any<CancellationToken>()).Returns(false);
-        var handler = new GetLikesByPostIdQueryHandler(unitOfWork);
+        var likeRepository = Substitute.For<ILikeRepository>();
+        var postRepository = Substitute.For<IPostRepository>();
+        postRepository.ExistsVisibleAsync(7, Arg.Any<CancellationToken>()).Returns(false);
+        var handler = new GetLikesByPostIdQueryHandler(likeRepository, postRepository);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new GetLikesByPostIdQuery { PostId = 7 }, CancellationToken.None));
     }
@@ -136,10 +144,10 @@ public class InteractionHandlerTests
     [Fact]
     public async Task GetMyLikedPosts_ShouldBuildPagedResponse()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
+        var likeRepository = Substitute.For<ILikeRepository>();
         var items = new List<LikedPostDto> { new() { LikeId = 1 } };
-        unitOfWork.LikeRepository.GetPagedByUserIdAsync(9, 2, 10, Arg.Any<CancellationToken>()).Returns((items, 11));
-        var handler = new GetMyLikedPostsQueryHandler(unitOfWork);
+        likeRepository.GetPagedByUserIdAsync(9, 2, 10, Arg.Any<CancellationToken>()).Returns((items, 11));
+        var handler = new GetMyLikedPostsQueryHandler(likeRepository);
 
         var result = await handler.Handle(new GetMyLikedPostsQuery { UserId = 9, Page = 2, Size = 10 }, CancellationToken.None);
 
@@ -150,9 +158,9 @@ public class InteractionHandlerTests
     [Fact]
     public async Task GetLikeById_MissingLike_ShouldThrowNotFound()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.LikeRepository.GetByIdAsync(15).Returns((Like?)null);
-        var handler = new GetLikeByIdQueryHandler(unitOfWork);
+        var likeRepository = Substitute.For<ILikeRepository>();
+        likeRepository.GetByIdAsync(15).Returns((Like?)null);
+        var handler = new GetLikeByIdQueryHandler(likeRepository);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new GetLikeByIdQuery(15), CancellationToken.None));
     }
@@ -160,10 +168,11 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateBookmark_NewBookmark_ShouldReportCreated()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.PostRepository.GetByIdAsync(7).Returns(new Post { Id = 7 });
-        unitOfWork.BookmarkRepository.CreateIfNotExistsAsync(Arg.Any<Bookmark>(), Arg.Any<CancellationToken>()).Returns((new Bookmark { Id = 22 }, true));
-        var handler = new CreateBookmarksCommandHandler(unitOfWork);
+        var bookmarkRepository = Substitute.For<IBookmarkRepository>();
+        var postRepository = Substitute.For<IPostRepository>();
+        postRepository.GetByIdAsync(7).Returns(new Post { Id = 7 });
+        bookmarkRepository.CreateIfNotExistsAsync(Arg.Any<Bookmark>(), Arg.Any<CancellationToken>()).Returns((new Bookmark { Id = 22 }, true));
+        var handler = new CreateBookmarksCommandHandler(bookmarkRepository, postRepository);
 
         var response = await handler.Handle(new CreateBookmarksCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
@@ -174,10 +183,11 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateBookmark_ExistingBookmark_ShouldReportAlreadyBookmarked()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.PostRepository.GetByIdAsync(7).Returns(new Post { Id = 7 });
-        unitOfWork.BookmarkRepository.CreateIfNotExistsAsync(Arg.Any<Bookmark>(), Arg.Any<CancellationToken>()).Returns((new Bookmark { Id = 22 }, false));
-        var handler = new CreateBookmarksCommandHandler(unitOfWork);
+        var bookmarkRepository = Substitute.For<IBookmarkRepository>();
+        var postRepository = Substitute.For<IPostRepository>();
+        postRepository.GetByIdAsync(7).Returns(new Post { Id = 7 });
+        bookmarkRepository.CreateIfNotExistsAsync(Arg.Any<Bookmark>(), Arg.Any<CancellationToken>()).Returns((new Bookmark { Id = 22 }, false));
+        var handler = new CreateBookmarksCommandHandler(bookmarkRepository, postRepository);
 
         var response = await handler.Handle(new CreateBookmarksCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
@@ -187,9 +197,10 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateBookmark_MissingPost_ShouldThrowNotFound()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.PostRepository.GetByIdAsync(7).Returns((Post?)null);
-        var handler = new CreateBookmarksCommandHandler(unitOfWork);
+        var bookmarkRepository = Substitute.For<IBookmarkRepository>();
+        var postRepository = Substitute.For<IPostRepository>();
+        postRepository.GetByIdAsync(7).Returns((Post?)null);
+        var handler = new CreateBookmarksCommandHandler(bookmarkRepository, postRepository);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new CreateBookmarksCommand { PostId = 7, UserId = 9 }, CancellationToken.None));
     }
@@ -197,11 +208,12 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateBookmark_ShouldStampOwnershipAndActiveFlags()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.PostRepository.GetByIdAsync(7).Returns(new Post { Id = 7 });
+        var bookmarkRepository = Substitute.For<IBookmarkRepository>();
+        var postRepository = Substitute.For<IPostRepository>();
+        postRepository.GetByIdAsync(7).Returns(new Post { Id = 7 });
         Bookmark? candidate = null;
-        unitOfWork.BookmarkRepository.CreateIfNotExistsAsync(Arg.Do<Bookmark>(bookmark => candidate = bookmark), Arg.Any<CancellationToken>()).Returns((new Bookmark { Id = 22 }, true));
-        var handler = new CreateBookmarksCommandHandler(unitOfWork);
+        bookmarkRepository.CreateIfNotExistsAsync(Arg.Do<Bookmark>(bookmark => candidate = bookmark), Arg.Any<CancellationToken>()).Returns((new Bookmark { Id = 22 }, true));
+        var handler = new CreateBookmarksCommandHandler(bookmarkRepository, postRepository);
 
         await handler.Handle(new CreateBookmarksCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
@@ -216,9 +228,9 @@ public class InteractionHandlerTests
     [InlineData(false)]
     public async Task DeleteBookmark_ShouldSucceedRegardlessOfExistingBookmark(bool deleted)
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.BookmarkRepository.DeleteByUserAndPostAsync(9, 7, Arg.Any<CancellationToken>()).Returns(deleted);
-        var handler = new DeleteBookmarksCommandHandler(unitOfWork);
+        var bookmarkRepository = Substitute.For<IBookmarkRepository>();
+        bookmarkRepository.DeleteByUserAndPostAsync(9, 7, Arg.Any<CancellationToken>()).Returns(deleted);
+        var handler = new DeleteBookmarksCommandHandler(bookmarkRepository);
 
         var response = await handler.Handle(new DeleteBookmarksCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
@@ -227,9 +239,9 @@ public class InteractionHandlerTests
     [Fact]
     public async Task GetBookmarkStatus_ShouldReflectRepositoryResult()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.BookmarkRepository.GetByUserAndPostAsync(9, 7, Arg.Any<CancellationToken>()).Returns(new Bookmark { Id = 22 });
-        var handler = new GetBookmarkStatusQueryHandler(unitOfWork);
+        var bookmarkRepository = Substitute.For<IBookmarkRepository>();
+        bookmarkRepository.GetByUserAndPostAsync(9, 7, Arg.Any<CancellationToken>()).Returns(new Bookmark { Id = 22 });
+        var handler = new GetBookmarkStatusQueryHandler(bookmarkRepository);
 
         var response = await handler.Handle(new GetBookmarkStatusQuery { PostId = 7, UserId = 9 }, CancellationToken.None);
 
@@ -240,10 +252,10 @@ public class InteractionHandlerTests
     [Fact]
     public async Task GetBookmarks_ShouldBuildPagedResponse()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
+        var bookmarkRepository = Substitute.For<IBookmarkRepository>();
         var items = new List<BookmarkDto> { new() { Id = 1, PostId = 7, Post = new PostDto() } };
-        unitOfWork.BookmarkRepository.GetPagedByUserIdAsync(9, 1, 20, Arg.Any<CancellationToken>()).Returns((items, 1));
-        var handler = new GetBookmarksQueryHandler(unitOfWork);
+        bookmarkRepository.GetPagedByUserIdAsync(9, 1, 20, Arg.Any<CancellationToken>()).Returns((items, 1));
+        var handler = new GetBookmarksQueryHandler(bookmarkRepository);
 
         var result = await handler.Handle(new GetBookmarksQuery { UserId = 9, Page = 1, Size = 20 }, CancellationToken.None);
 
@@ -254,20 +266,22 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateFollower_SelfFollow_ShouldThrowBadRequestBeforeLookup()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        var handler = new CreateFollowersCommandHandler(unitOfWork, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
+        var followerRepository = Substitute.For<IFollowerRepository>();
+        var userRepository = Substitute.For<IUserRepository>();
+        var handler = new CreateFollowersCommandHandler(followerRepository, userRepository, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
 
         await Assert.ThrowsAsync<BadRequestException>(() => handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 9 }, CancellationToken.None));
 
-        await unitOfWork.UserRepository.DidNotReceiveWithAnyArgs().GetByIdAsync(default, default);
+        await userRepository.DidNotReceiveWithAnyArgs().GetByIdAsync(default, default);
     }
 
     [Fact]
     public async Task CreateFollower_MissingTargetUser_ShouldThrowNotFound()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.UserRepository.GetByIdAsync(3, Arg.Any<CancellationToken>()).Returns((User?)null);
-        var handler = new CreateFollowersCommandHandler(unitOfWork, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
+        var followerRepository = Substitute.For<IFollowerRepository>();
+        var userRepository = Substitute.For<IUserRepository>();
+        userRepository.GetByIdAsync(3, Arg.Any<CancellationToken>()).Returns((User?)null);
+        var handler = new CreateFollowersCommandHandler(followerRepository, userRepository, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None));
     }
@@ -276,8 +290,10 @@ public class InteractionHandlerTests
     public async Task CreateFollower_BannedTargetUser_ShouldThrowBadRequest()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        HandlerTestContext.RegisterUsers(unitOfWork, HandlerTestContext.CreateUser(3, "yasakli", UserStatus.Banned));
-        var handler = new CreateFollowersCommandHandler(unitOfWork, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
+        var followerRepository = Substitute.For<IFollowerRepository>();
+        var userRepository = Substitute.For<IUserRepository>();
+        HandlerTestContext.RegisterUsers(userRepository, HandlerTestContext.CreateUser(3, "yasakli", UserStatus.Banned));
+        var handler = new CreateFollowersCommandHandler(followerRepository, userRepository, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
 
         await Assert.ThrowsAsync<BadRequestException>(() => handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None));
     }
@@ -286,10 +302,12 @@ public class InteractionHandlerTests
     public async Task CreateFollower_NewFollow_ShouldBuildDailyCooldownNotification()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.FollowerRepository.CreateIfNotExistsAsync(Arg.Any<Follower>(), Arg.Any<Notification?>(), Arg.Any<CancellationToken>()).Returns((new Follower { Id = 33 }, true));
-        HandlerTestContext.RegisterUsers(unitOfWork, HandlerTestContext.CreateUser(3));
+        var userRepository = Substitute.For<IUserRepository>();
+        var followerRepository = Substitute.For<IFollowerRepository>();
+        followerRepository.CreateIfNotExistsAsync(Arg.Any<Follower>(), Arg.Any<Notification?>(), Arg.Any<CancellationToken>()).Returns((new Follower { Id = 33 }, true));
+        HandlerTestContext.RegisterUsers(userRepository, HandlerTestContext.CreateUser(3));
         var notificationService = Substitute.For<INotificationService>();
-        var handler = new CreateFollowersCommandHandler(unitOfWork, NullLogger<CreateFollowersCommandHandler>.Instance, notificationService);
+        var handler = new CreateFollowersCommandHandler(followerRepository, userRepository, NullLogger<CreateFollowersCommandHandler>.Instance, notificationService);
 
         var response = await handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None);
 
@@ -303,9 +321,11 @@ public class InteractionHandlerTests
     public async Task CreateFollower_ExistingFollow_ShouldReportAlreadyFollowing()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.FollowerRepository.CreateIfNotExistsAsync(Arg.Any<Follower>(), Arg.Any<Notification?>(), Arg.Any<CancellationToken>()).Returns((new Follower { Id = 33 }, false));
-        HandlerTestContext.RegisterUsers(unitOfWork, HandlerTestContext.CreateUser(3));
-        var handler = new CreateFollowersCommandHandler(unitOfWork, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
+        var userRepository = Substitute.For<IUserRepository>();
+        var followerRepository = Substitute.For<IFollowerRepository>();
+        followerRepository.CreateIfNotExistsAsync(Arg.Any<Follower>(), Arg.Any<Notification?>(), Arg.Any<CancellationToken>()).Returns((new Follower { Id = 33 }, false));
+        HandlerTestContext.RegisterUsers(userRepository, HandlerTestContext.CreateUser(3));
+        var handler = new CreateFollowersCommandHandler(followerRepository, userRepository, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
 
         var response = await handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None);
 
@@ -317,9 +337,9 @@ public class InteractionHandlerTests
     [InlineData(false)]
     public async Task DeleteFollower_ShouldSucceedRegardlessOfExistingFollow(bool deleted)
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.FollowerRepository.DeleteByUsersAsync(9, 3, Arg.Any<CancellationToken>()).Returns(deleted);
-        var handler = new DeleteFollowersCommandHandler(unitOfWork, NullLogger<DeleteFollowersCommandHandler>.Instance);
+        var followerRepository = Substitute.For<IFollowerRepository>();
+        followerRepository.DeleteByUsersAsync(9, 3, Arg.Any<CancellationToken>()).Returns(deleted);
+        var handler = new DeleteFollowersCommandHandler(followerRepository, NullLogger<DeleteFollowersCommandHandler>.Instance);
 
         var response = await handler.Handle(new DeleteFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None);
 
@@ -329,8 +349,10 @@ public class InteractionHandlerTests
     public async Task GetFollowerStatus_BannedTargetUser_ShouldThrowNotFound()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        HandlerTestContext.RegisterUsers(unitOfWork, HandlerTestContext.CreateUser(3, "yasakli", UserStatus.Banned));
-        var handler = new GetFollowerStatusQueryHandler(unitOfWork);
+        var followerRepository = Substitute.For<IFollowerRepository>();
+        var userRepository = Substitute.For<IUserRepository>();
+        HandlerTestContext.RegisterUsers(userRepository, HandlerTestContext.CreateUser(3, "yasakli", UserStatus.Banned));
+        var handler = new GetFollowerStatusQueryHandler(followerRepository, userRepository);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new GetFollowerStatusQuery { UserId = 9, FollowingId = 3 }, CancellationToken.None));
     }
@@ -339,9 +361,11 @@ public class InteractionHandlerTests
     public async Task GetFollowerStatus_ExistingFollow_ShouldReturnFollowId()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.FollowerRepository.GetByUsersAsync(9, 3, Arg.Any<CancellationToken>()).Returns(new Follower { Id = 33 });
-        HandlerTestContext.RegisterUsers(unitOfWork, HandlerTestContext.CreateUser(3));
-        var handler = new GetFollowerStatusQueryHandler(unitOfWork);
+        var userRepository = Substitute.For<IUserRepository>();
+        var followerRepository = Substitute.For<IFollowerRepository>();
+        followerRepository.GetByUsersAsync(9, 3, Arg.Any<CancellationToken>()).Returns(new Follower { Id = 33 });
+        HandlerTestContext.RegisterUsers(userRepository, HandlerTestContext.CreateUser(3));
+        var handler = new GetFollowerStatusQueryHandler(followerRepository, userRepository);
 
         var response = await handler.Handle(new GetFollowerStatusQuery { UserId = 9, FollowingId = 3 }, CancellationToken.None);
 
@@ -353,8 +377,10 @@ public class InteractionHandlerTests
     public async Task GetFollowersByUserId_BannedUser_ShouldThrowNotFound()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        HandlerTestContext.RegisterUsers(unitOfWork, HandlerTestContext.CreateUser(3, "yasakli", UserStatus.Banned));
-        var handler = new GetAllFollowersByUserIdQueryHandler(unitOfWork);
+        var followerRepository = Substitute.For<IFollowerRepository>();
+        var userRepository = Substitute.For<IUserRepository>();
+        HandlerTestContext.RegisterUsers(userRepository, HandlerTestContext.CreateUser(3, "yasakli", UserStatus.Banned));
+        var handler = new GetAllFollowersByUserIdQueryHandler(followerRepository, userRepository);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new GetAllFollowersByUserIdQuery { UserId = 3 }, CancellationToken.None));
     }
@@ -363,10 +389,12 @@ public class InteractionHandlerTests
     public async Task GetFollowersByUserId_ShouldBuildPagedResponse()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
+        var userRepository = Substitute.For<IUserRepository>();
+        var followerRepository = Substitute.For<IFollowerRepository>();
         var items = new List<FollowerDto> { new() { Id = 1, UserId = 9 } };
-        unitOfWork.FollowerRepository.GetPagedFollowersByUserIdAsync(3, 1, 20, Arg.Any<CancellationToken>()).Returns((items, 1));
-        HandlerTestContext.RegisterUsers(unitOfWork, HandlerTestContext.CreateUser(3));
-        var handler = new GetAllFollowersByUserIdQueryHandler(unitOfWork);
+        followerRepository.GetPagedFollowersByUserIdAsync(3, 1, 20, Arg.Any<CancellationToken>()).Returns((items, 1));
+        HandlerTestContext.RegisterUsers(userRepository, HandlerTestContext.CreateUser(3));
+        var handler = new GetAllFollowersByUserIdQueryHandler(followerRepository, userRepository);
 
         var result = await handler.Handle(new GetAllFollowersByUserIdQuery { UserId = 3, Page = 1, Size = 20 }, CancellationToken.None);
 
@@ -376,9 +404,10 @@ public class InteractionHandlerTests
     [Fact]
     public async Task GetFollowingsByUserId_MissingUser_ShouldThrowNotFound()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.UserRepository.GetByIdAsync(3, Arg.Any<CancellationToken>()).Returns((User?)null);
-        var handler = new GetAllFollowingsByUserIdQueryHandler(unitOfWork);
+        var followerRepository = Substitute.For<IFollowerRepository>();
+        var userRepository = Substitute.For<IUserRepository>();
+        userRepository.GetByIdAsync(3, Arg.Any<CancellationToken>()).Returns((User?)null);
+        var handler = new GetAllFollowingsByUserIdQueryHandler(followerRepository, userRepository);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new GetAllFollowingsByUserIdQuery { UserId = 3 }, CancellationToken.None));
     }
@@ -386,9 +415,9 @@ public class InteractionHandlerTests
     [Fact]
     public async Task GetFollowerById_MissingFollow_ShouldThrowNotFound()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.FollowerRepository.GetByIdAsync(33).Returns((Follower?)null);
-        var handler = new GetFollowerByIdQueryHandler(unitOfWork);
+        var followerRepository = Substitute.For<IFollowerRepository>();
+        followerRepository.GetByIdAsync(33).Returns((Follower?)null);
+        var handler = new GetFollowerByIdQueryHandler(followerRepository);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new GetFollowerByIdQuery(33), CancellationToken.None));
     }
@@ -396,9 +425,9 @@ public class InteractionHandlerTests
     [Fact]
     public async Task GetFollowerById_ShouldMapFollowingUserAsSubject()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.FollowerRepository.GetByIdAsync(33).Returns(new Follower { Id = 33, FollowerId = 9, FollowingId = 3 });
-        var handler = new GetFollowerByIdQueryHandler(unitOfWork);
+        var followerRepository = Substitute.For<IFollowerRepository>();
+        followerRepository.GetByIdAsync(33).Returns(new Follower { Id = 33, FollowerId = 9, FollowingId = 3 });
+        var handler = new GetFollowerByIdQueryHandler(followerRepository);
 
         var dto = await handler.Handle(new GetFollowerByIdQuery(33), CancellationToken.None);
 

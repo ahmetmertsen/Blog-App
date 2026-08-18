@@ -1,4 +1,5 @@
 using buduns_server.Application.Exceptions;
+using buduns_server.Application.Repositories;
 using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Enums;
 using MediatR;
@@ -11,11 +12,13 @@ namespace buduns_server.Application.Common.Behaviors
     public class AccountStatusBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public AccountStatusBehavior(IHttpContextAccessor httpContextAccessor, IUnitOfWork unitOfWork)
+        public AccountStatusBehavior(IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, IUnitOfWork unitOfWork)
         {
             _httpContextAccessor = httpContextAccessor;
+            _userRepository = userRepository;
             _unitOfWork = unitOfWork;
         }
 
@@ -36,7 +39,7 @@ namespace buduns_server.Application.Common.Behaviors
                 throw new UnauthorizedAccesException("Geçerli kullanıcı bilgisi bulunamadı.");
             }
 
-            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId, cancellationToken);
+            var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
             if (user == null)
             {
                 throw new UnauthorizedAccesException("Kullanıcı hesabı bulunamadı.");
@@ -56,7 +59,7 @@ namespace buduns_server.Application.Common.Behaviors
 
                 user.Status = UserStatus.Active;
                 user.SuspendedUntil = null;
-                _unitOfWork.UserRepository.Update(user);
+                _userRepository.Update(user);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
 

@@ -2,7 +2,7 @@ using buduns_server.Application.Common.Helpers;
 using buduns_server.Application.Dtos;
 using buduns_server.Application.Exceptions;
 using buduns_server.Application.Mapping;
-using buduns_server.Application.UnitOfWork;
+using buduns_server.Application.Repositories;
 using buduns_server.Domain.Enums;
 using MediatR;
 
@@ -10,16 +10,16 @@ namespace buduns_server.Application.Features.Report.Queries.GetById
 {
     public class GetReportByIdQueryHandler : IRequestHandler<GetReportByIdQuery, ReportDetailDto>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IReportRepository _reportRepository;
 
-        public GetReportByIdQueryHandler(IUnitOfWork unitOfWork)
+        public GetReportByIdQueryHandler(IReportRepository reportRepository)
         {
-            _unitOfWork = unitOfWork;
+            _reportRepository = reportRepository;
         }
 
         public async Task<ReportDetailDto> Handle(GetReportByIdQuery request, CancellationToken cancellationToken)
         {
-            var report = await _unitOfWork.ReportRepository.GetByIdWithDetailsAsync(request.ReportId);
+            var report = await _reportRepository.GetByIdWithDetailsAsync(request.ReportId);
             if (report == null)
             {
                 throw new NotFoundException("Şikayet bulunamadı.");
@@ -31,7 +31,7 @@ namespace buduns_server.Application.Features.Report.Queries.GetById
                 throw new BadRequestException("Şikayet hedefi bulunamadı.");
             }
 
-            var relatedReports = await _unitOfWork.ReportRepository.GetReportsForTargetAsync(report.TargetType, targetId.Value, cancellationToken);
+            var relatedReports = await _reportRepository.GetReportsForTargetAsync(report.TargetType, targetId.Value, cancellationToken);
 
             var response = report.ToDetailDto();
             response.Priority = ReportPriorityHelper.GetHighestPriority(relatedReports.Select(relatedReport => relatedReport.Reason));

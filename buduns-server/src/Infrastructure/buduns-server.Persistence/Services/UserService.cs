@@ -4,7 +4,6 @@ using buduns_server.Application.Dtos;
 using buduns_server.Application.Dtos.User;
 using buduns_server.Application.Exceptions;
 using buduns_server.Application.Mapping;
-using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Entities;
 using buduns_server.Domain.Entities.Identity;
 using buduns_server.Domain.Enums;
@@ -24,17 +23,15 @@ namespace buduns_server.Persistence.Services
     {
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<Role> _roleManager;
-        private readonly IUnitOfWork _unitOfWork;
         private readonly IAuthSessionService _authSessionService;
         private readonly IMailService _mailService;
         private readonly IVerificationChallengeService _verificationChallengeService;
         private readonly ILogger<UserService> _logger;
         
-        public UserService(UserManager<User> userManager, RoleManager<Role> roleManager, IUnitOfWork unitOfWork, IAuthSessionService authSessionService, IMailService mailService, IVerificationChallengeService verificationChallengeService, ILogger<UserService> logger)
+        public UserService(UserManager<User> userManager, RoleManager<Role> roleManager, IAuthSessionService authSessionService, IMailService mailService, IVerificationChallengeService verificationChallengeService, ILogger<UserService> logger)
         {
             _userManager = userManager;
             _roleManager = roleManager;
-            _unitOfWork = unitOfWork;
             _authSessionService = authSessionService;
             _mailService = mailService;
             _verificationChallengeService = verificationChallengeService;

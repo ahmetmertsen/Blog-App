@@ -1,3 +1,4 @@
+using buduns_server.Application.Repositories;
 using buduns_server.Application.Common.Consts;
 using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Entities;
@@ -38,7 +39,7 @@ public sealed class NotificationProjectionTests : IntegrationTestBase
         });
 
         var (items, totalCount) = await Factory.ExecuteScopeAsync(services =>
-            services.GetRequiredService<IUnitOfWork>().NotificationRepository.GetPagedByUserIdAsync(owner.Id, 1, 10, false, CancellationToken.None));
+            services.GetRequiredService<INotificationRepository>().GetPagedByUserIdAsync(owner.Id, 1, 10, false, CancellationToken.None));
 
         totalCount.Should().Be(2);
         items.Should().HaveCount(2);
@@ -72,7 +73,7 @@ public sealed class NotificationProjectionTests : IntegrationTestBase
         });
 
         var (items, _) = await Factory.ExecuteScopeAsync(services =>
-            services.GetRequiredService<IUnitOfWork>().NotificationRepository.GetPagedByUserIdAsync(owner.Id, 1, 10, true, CancellationToken.None));
+            services.GetRequiredService<INotificationRepository>().GetPagedByUserIdAsync(owner.Id, 1, 10, true, CancellationToken.None));
 
         items.Should().ContainSingle();
         items[0].Message.Should().Be("okunmamis");

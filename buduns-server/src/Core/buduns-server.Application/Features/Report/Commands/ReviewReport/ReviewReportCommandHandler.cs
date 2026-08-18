@@ -1,6 +1,7 @@
 using buduns_server.Application.Abstractions.Services;
 using buduns_server.Application.Dtos;
 using buduns_server.Application.Exceptions;
+using buduns_server.Application.Repositories;
 using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Entities;
 using buduns_server.Domain.Entities.Identity;
@@ -13,13 +14,21 @@ namespace buduns_server.Application.Features.Report.Commands.ReviewReport
 {
     public class ReviewReportCommandHandler : IRequestHandler<ReviewReportCommand, ReviewReportCommandResponse>
     {
+        private readonly IModerationActionRepository _moderationActionRepository;
+        private readonly IPostRepository _postRepository;
+        private readonly IReportRepository _reportRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ReviewReportCommandHandler> _logger;
         private readonly IAuthSessionService _authSessionService;
         private readonly INotificationService _notificationService;
 
-        public ReviewReportCommandHandler(IUnitOfWork unitOfWork, ILogger<ReviewReportCommandHandler> logger, IAuthSessionService authSessionService, INotificationService notificationService)
+        public ReviewReportCommandHandler(IModerationActionRepository moderationActionRepository, IPostRepository postRepository, IReportRepository reportRepository, IUserRepository userRepository, IUnitOfWork unitOfWork, ILogger<ReviewReportCommandHandler> logger, IAuthSessionService authSessionService, INotificationService notificationService)
         {
+            _moderationActionRepository = moderationActionRepository;
+            _postRepository = postRepository;
+            _reportRepository = reportRepository;
+            _userRepository = userRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _authSessionService = authSessionService;
@@ -28,7 +37,7 @@ namespace buduns_server.Application.Features.Report.Commands.ReviewReport
 
         public async Task<ReviewReportCommandResponse> Handle(ReviewReportCommand request, CancellationToken cancellationToken)
         {
-            var report = await _unitOfWork.ReportRepository.GetByIdWithDetailsAsync(request.ReportId);
+            var report = await _reportRepository.GetByIdWithDetailsAsync(request.ReportId);
             if (report == null)
             {
                 throw new NotFoundException("Şikayet bulunamadı.");
@@ -40,7 +49,7 @@ namespace buduns_server.Application.Features.Report.Commands.ReviewReport
             }
 
             var targetId = GetTargetId(report);
-            var openReports = await _unitOfWork.ReportRepository.GetOpenReportsForTargetAsync(report.TargetType, targetId, cancellationToken);
+            var openReports = await _reportRepository.GetOpenReportsForTargetAsync(report.TargetType, targetId, cancellationToken);
             EnsureReportsCanBeHandledByModerator(openReports, request.UserId);
 
             if (request.Status == ReportStatus.InReview)
@@ -52,7 +61,7 @@ namespace buduns_server.Application.Features.Report.Commands.ReviewReport
                     openReport.ReviewNote = request.ReviewNote?.Trim();
                     openReport.ReviewedByUserId = request.UserId;
                     openReport.UpdateAt = inReviewAt;
-                    _unitOfWork.ReportRepository.Update(openReport);
+                    _reportRepository.Update(openReport);
                 }
 
                 await SaveChangesWithConcurrencyCheckAsync(cancellationToken);
@@ -77,7 +86,7 @@ namespace buduns_server.Application.Features.Report.Commands.ReviewReport
                 openReport.ReviewedByUserId = request.UserId;
                 openReport.ReviewedDate = reviewedAt;
                 openReport.UpdateAt = reviewedAt;
-                _unitOfWork.ReportRepository.Update(openReport);
+                _reportRepository.Update(openReport);
             }
 
             var moderationAction = new ModerationAction
@@ -96,7 +105,7 @@ namespace buduns_server.Application.Features.Report.Commands.ReviewReport
                 isActive = true,
                 isDeleted = false
             };
-            await _unitOfWork.ModerationActionRepository.AddAsync(moderationAction);
+            await _moderationActionRepository.AddAsync(moderationAction);
             await AddReporterNotificationsAsync(openReports, cancellationToken);
             await SaveChangesWithConcurrencyCheckAsync(cancellationToken);
 
@@ -121,7 +130,7 @@ namespace buduns_server.Application.Features.Report.Commands.ReviewReport
                     postToHide.isPublished = false;
                     postToHide.isActive = false;
                     postToHide.UpdateAt = DateTime.UtcNow;
-                    _unitOfWork.PostRepository.Update(postToHide);
+                    _postRepository.Update(postToHide);
                     await AddTargetNotificationAsync(postToHide.UserId, NotificationType.POST_HIDDEN, "Paylaşımınız moderasyon kararıyla gizlendi.", postToHide.Id, null, cancellationToken);
                     return null;
                 case ModerationActionType.DeletePost:
@@ -131,7 +140,7 @@ namespace buduns_server.Application.Features.Report.Commands.ReviewReport
                     postToDelete.isActive = false;
                     postToDelete.isDeleted = true;
                     postToDelete.UpdateAt = DateTime.UtcNow;
-                    _unitOfWork.PostRepository.Update(postToDelete);
+                    _postRepository.Update(postToDelete);
                     await AddTargetNotificationAsync(postToDelete.UserId, NotificationType.POST_REMOVED, "Paylaşımınız moderasyon kararıyla kaldırıldı.", postToDelete.Id, null, cancellationToken);
                     return null;
                 case ModerationActionType.HideComment:
@@ -211,7 +220,7 @@ namespace buduns_server.Application.Features.Report.Commands.ReviewReport
         private async Task<User> GetActionTargetUserAsync(ReportEntity report, CancellationToken cancellationToken)
         {
             var targetUserId = ResolveActionTargetUserId(report, ModerationActionType.WarnUser) ?? throw new NotFoundException("Moderasyon uygulanacak kullanıcı bulunamadı.");
-            return await _unitOfWork.UserRepository.GetByIdAsync(targetUserId, cancellationToken) ?? throw new NotFoundException("Moderasyon uygulanacak kullanıcı bulunamadı.");
+            return await _userRepository.GetByIdAsync(targetUserId, cancellationToken) ?? throw new NotFoundException("Moderasyon uygulanacak kullanıcı bulunamadı.");
         }
 
         private static int? ResolveActionTargetUserId(ReportEntity report, ModerationActionType actionType)

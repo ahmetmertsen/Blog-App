@@ -24,7 +24,7 @@ public class MailTemplateSeederTests
         var added = new List<Utility>();
         utilityRepository.AddAsync(Arg.Do<Utility>(utility => added.Add(utility))).Returns(Task.CompletedTask);
 
-        var result = await CreateSeeder(unitOfWork).SeedAsync(CancellationToken.None);
+        var result = await CreateSeeder(utilityRepository, unitOfWork).SeedAsync(CancellationToken.None);
 
         Assert.Equal(MailTemplateKeys.All, added.Select(utility => utility.Name).ToArray());
         Assert.Equal(MailTemplateKeys.All, result.CreatedKeys);
@@ -39,7 +39,7 @@ public class MailTemplateSeederTests
         var added = new List<Utility>();
         utilityRepository.AddAsync(Arg.Do<Utility>(utility => added.Add(utility))).Returns(Task.CompletedTask);
 
-        await CreateSeeder(unitOfWork).SeedAsync(CancellationToken.None);
+        await CreateSeeder(utilityRepository, unitOfWork).SeedAsync(CancellationToken.None);
 
         foreach (var utility in added)
         {
@@ -54,7 +54,7 @@ public class MailTemplateSeederTests
         utilityRepository.GetByNameAsync(Arg.Any<string>())
             .Returns(callInfo => Existing(callInfo.Arg<string>(), MailTemplateCatalog.GetBody(callInfo.Arg<string>())));
 
-        var result = await CreateSeeder(unitOfWork).SeedAsync(CancellationToken.None);
+        var result = await CreateSeeder(utilityRepository, unitOfWork).SeedAsync(CancellationToken.None);
 
         await utilityRepository.DidNotReceiveWithAnyArgs().AddAsync(default!);
         await unitOfWork.DidNotReceiveWithAnyArgs().SaveChangesAsync(default);
@@ -70,7 +70,7 @@ public class MailTemplateSeederTests
             .Returns(callInfo => Existing(callInfo.Arg<string>(), MailTemplateCatalog.GetBody(callInfo.Arg<string>())));
         utilityRepository.GetByNameAsync(MailTemplateKeys.ChangeEmail).Returns((Utility?)null);
 
-        var result = await CreateSeeder(unitOfWork).SeedAsync(CancellationToken.None);
+        var result = await CreateSeeder(utilityRepository, unitOfWork).SeedAsync(CancellationToken.None);
 
         await utilityRepository.Received(1).AddAsync(Arg.Is<Utility>(utility => utility.Name == MailTemplateKeys.ChangeEmail));
         Assert.Equal(new[] { MailTemplateKeys.ChangeEmail }, result.CreatedKeys);
@@ -90,7 +90,7 @@ public class MailTemplateSeederTests
         var edited = Existing(MailTemplateKeys.MailVerify, "<p>elle duzenlenmis</p>");
         utilityRepository.GetByNameAsync(MailTemplateKeys.MailVerify).Returns(edited);
 
-        var result = await CreateSeeder(unitOfWork).SeedAsync(CancellationToken.None);
+        var result = await CreateSeeder(utilityRepository, unitOfWork).SeedAsync(CancellationToken.None);
 
         Assert.Equal(new[] { MailTemplateKeys.MailVerify }, result.DivergedKeys);
         Assert.Equal("<p>elle duzenlenmis</p>", edited.Value);
@@ -99,15 +99,12 @@ public class MailTemplateSeederTests
         await unitOfWork.DidNotReceiveWithAnyArgs().SaveChangesAsync(default);
     }
 
-    private static MailTemplateSeeder CreateSeeder(IUnitOfWork unitOfWork) =>
-        new(unitOfWork, NullLogger<MailTemplateSeeder>.Instance);
+    private static MailTemplateSeeder CreateSeeder(IUtilityRepository utilityRepository, IUnitOfWork unitOfWork) =>
+        new(utilityRepository, unitOfWork, NullLogger<MailTemplateSeeder>.Instance);
 
     private static (IUnitOfWork UnitOfWork, IUtilityRepository UtilityRepository) CreateUnitOfWork()
     {
-        var utilityRepository = Substitute.For<IUtilityRepository>();
-        var unitOfWork = Substitute.For<IUnitOfWork>();
-        unitOfWork.UtilityRepository.Returns(utilityRepository);
-        return (unitOfWork, utilityRepository);
+        return (Substitute.For<IUnitOfWork>(), Substitute.For<IUtilityRepository>());
     }
 
     private static Utility Existing(string name, string value) => new() { Name = name, Value = value };

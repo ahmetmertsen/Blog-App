@@ -2,7 +2,7 @@ using buduns_server.Application.Abstractions.Services;
 using buduns_server.Application.Common.Consts;
 using buduns_server.Application.Common.Options;
 using buduns_server.Application.Dtos;
-using buduns_server.Application.UnitOfWork;
+using buduns_server.Application.Repositories;
 using MediatR;
 using Microsoft.Extensions.Options;
 
@@ -13,13 +13,13 @@ namespace buduns_server.Application.Features.Posts.Queries.GetDailyTopPosts
         private const int TopPostLimit = 50;
         private static readonly TimeZoneInfo TurkeyTimeZone = ResolveTurkeyTimeZone();
 
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IPostRepository _postRepository;
         private readonly ICacheService _cacheService;
         private readonly CacheOptions _cacheOptions;
 
-        public GetDailyTopPostsQueryHandler(IUnitOfWork unitOfWork, ICacheService cacheService, IOptions<CacheOptions> cacheOptions)
+        public GetDailyTopPostsQueryHandler(IPostRepository postRepository, ICacheService cacheService, IOptions<CacheOptions> cacheOptions)
         {
-            _unitOfWork = unitOfWork;
+            _postRepository = postRepository;
             _cacheService = cacheService;
             _cacheOptions = cacheOptions.Value;
         }
@@ -37,7 +37,7 @@ namespace buduns_server.Application.Features.Posts.Queries.GetDailyTopPosts
                 TimeSpan.FromSeconds(_cacheOptions.DailyTopPostsTtlSeconds),
                 async token =>
                 {
-                    var topPosts = await _unitOfWork.PostRepository.GetDailyTopPostsAsync(startDateUtc, endDateUtc, TopPostLimit, token);
+                    var topPosts = await _postRepository.GetDailyTopPostsAsync(startDateUtc, endDateUtc, TopPostLimit, token);
 
                     for (int i = 0; i < topPosts.Count; i++)
                     {

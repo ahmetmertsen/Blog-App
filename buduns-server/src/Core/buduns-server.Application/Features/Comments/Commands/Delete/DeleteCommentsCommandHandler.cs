@@ -1,4 +1,5 @@
 using buduns_server.Application.Exceptions;
+using buduns_server.Application.Repositories;
 using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Enums;
 using MediatR;
@@ -8,18 +9,20 @@ namespace buduns_server.Application.Features.Comments.Commands.Delete
 {
     public class DeleteCommentsCommandHandler : IRequestHandler<DeleteCommentsCommand, DeleteCommentsCommandResponse>
     {
+        private readonly ICommentRepository _commentRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<DeleteCommentsCommandHandler> _logger;
 
-        public DeleteCommentsCommandHandler(IUnitOfWork unitOfWork, ILogger<DeleteCommentsCommandHandler> logger)
+        public DeleteCommentsCommandHandler(ICommentRepository commentRepository, IUnitOfWork unitOfWork, ILogger<DeleteCommentsCommandHandler> logger)
         {
+            _commentRepository = commentRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
         public async Task<DeleteCommentsCommandResponse> Handle(DeleteCommentsCommand request, CancellationToken cancellationToken)
         {
-            var comment = await _unitOfWork.CommentRepository.GetForMutationAsync(request.Id, cancellationToken);
+            var comment = await _commentRepository.GetForMutationAsync(request.Id, cancellationToken);
             if (comment == null)
             {
                 throw new NotFoundException("Yorum bulunamadı.");

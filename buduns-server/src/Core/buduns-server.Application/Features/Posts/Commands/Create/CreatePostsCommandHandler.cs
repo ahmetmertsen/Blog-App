@@ -1,5 +1,6 @@
 using buduns_server.Application.Exceptions;
 using buduns_server.Application.Mapping;
+using buduns_server.Application.Repositories;
 using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Entities;
 using MediatR;
@@ -14,11 +15,15 @@ namespace buduns_server.Application.Features.Posts.Commands.Create
 {
     public class CreatePostsCommandHandler : IRequestHandler<CreatePostsCommand, CreatePostsCommandResponse>
     {
+        private readonly IPostRepository _postRepository;
+        private readonly ITagRepository _tagRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CreatePostsCommandHandler> _logger;
 
-        public CreatePostsCommandHandler(IUnitOfWork unitOfWork, ILogger<CreatePostsCommandHandler> logger)
+        public CreatePostsCommandHandler(IPostRepository postRepository, ITagRepository tagRepository, IUnitOfWork unitOfWork, ILogger<CreatePostsCommandHandler> logger)
         {
+            _postRepository = postRepository;
+            _tagRepository = tagRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
@@ -30,7 +35,7 @@ namespace buduns_server.Application.Features.Posts.Commands.Create
                 .Distinct()
                 .ToList() ?? new List<int>();
 
-            var tags = await _unitOfWork.TagRepository.GetByIdsAsync(tagIds, cancellationToken);
+            var tags = await _tagRepository.GetByIdsAsync(tagIds, cancellationToken);
             var foundTagIds = tags.Select(t => t.Id).ToHashSet();
             var missingTagIds = tagIds.Where(id => !foundTagIds.Contains(id)).ToList();
 
@@ -52,7 +57,7 @@ namespace buduns_server.Application.Features.Posts.Commands.Create
             post.Tags = tags;
 
  
-            await _unitOfWork.PostRepository.AddAsync(post);
+            await _postRepository.AddAsync(post);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Post created. PostId: {PostId}, UserId: {UserId}, TagCount: {TagCount}", post.Id, request.UserId, tagIds.Count);

@@ -18,12 +18,16 @@ namespace buduns_server.Application.Features.Report.Commands.CreatePostReport
 {
     public class CreatePostReportCommandHandler : IRequestHandler<CreatePostReportCommand, CreatePostReportCommandResponse>
     {
+        private readonly IPostRepository _postRepository;
+        private readonly IReportRepository _reportRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CreatePostReportCommandHandler> _logger;
         private readonly ReportPolicyOptions _reportPolicyOptions;
 
-        public CreatePostReportCommandHandler(IUnitOfWork unitOfWork, ILogger<CreatePostReportCommandHandler> logger, IOptions<ReportPolicyOptions> reportPolicyOptions)
+        public CreatePostReportCommandHandler(IPostRepository postRepository, IReportRepository reportRepository, IUnitOfWork unitOfWork, ILogger<CreatePostReportCommandHandler> logger, IOptions<ReportPolicyOptions> reportPolicyOptions)
         {
+            _postRepository = postRepository;
+            _reportRepository = reportRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _reportPolicyOptions = reportPolicyOptions.Value;
@@ -31,7 +35,7 @@ namespace buduns_server.Application.Features.Report.Commands.CreatePostReport
 
         public async Task<CreatePostReportCommandResponse> Handle(CreatePostReportCommand request, CancellationToken cancellationToken)
         {
-            Post? post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
+            Post? post = await _postRepository.GetByIdAsync(request.PostId);
             if (post == null)
             {
                 throw new NotFoundException("Gönderi bulunamadı.");
@@ -45,14 +49,14 @@ namespace buduns_server.Application.Features.Report.Commands.CreatePostReport
             // Gorunurluk kontrolu burada yok: PostRepository.GetByIdAsync
             // yalnizca gorunur paylasimlari donduruyor, gizlenmis bir paylasim
             // yukaridaki NotFound dalinda kaliyor.
-            var recentReportCount = await _unitOfWork.ReportRepository.CountRecentReportsByUserAsync(request.UserId, DateTime.UtcNow.AddHours(-24), cancellationToken);
+            var recentReportCount = await _reportRepository.CountRecentReportsByUserAsync(request.UserId, DateTime.UtcNow.AddHours(-24), cancellationToken);
             var dailyReportLimit = Math.Max(1, _reportPolicyOptions.DailyReportLimit);
             if (recentReportCount >= dailyReportLimit)
             {
                 throw new TooManyRequestsException($"24 saat içinde en fazla {dailyReportLimit} şikayet oluşturabilirsiniz.");
             }
                 
-            bool alreadyReported = await _unitOfWork.ReportRepository.HasPendingPostReportAsync(request.UserId, request.PostId, cancellationToken);
+            bool alreadyReported = await _reportRepository.HasPendingPostReportAsync(request.UserId, request.PostId, cancellationToken);
             if (alreadyReported)
             {
                 throw new BadRequestException("Bu gönderi için zaten bekleyen bir şikayetiniz var.");
@@ -74,7 +78,7 @@ namespace buduns_server.Application.Features.Report.Commands.CreatePostReport
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _unitOfWork.ReportRepository.AddAsync(report);
+            await _reportRepository.AddAsync(report);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Post report created. ReportId: {ReportId}, ReporterUserId: {ReporterUserId}, TargetPostId: {TargetPostId}, Reason: {Reason}", report.Id, request.UserId, request.PostId, request.Reason);

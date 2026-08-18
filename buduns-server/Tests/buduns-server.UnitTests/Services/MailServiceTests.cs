@@ -92,9 +92,6 @@ public class MailServiceTests
                 .Returns(new Utility { Name = availableTemplateKey, Value = "<p>{full_name} {verification_code} {app_name}</p>" });
         }
 
-        var unitOfWork = Substitute.For<IUnitOfWork>();
-        unitOfWork.UtilityRepository.Returns(utilityRepository);
-
-        return new MailService(Options.Create(options), unitOfWork, NullLogger<MailService>.Instance);
+        return new MailService(Options.Create(options), utilityRepository, NullLogger<MailService>.Instance);
     }
 }

@@ -1,21 +1,21 @@
 using buduns_server.Application.Dtos;
-using buduns_server.Application.UnitOfWork;
+using buduns_server.Application.Repositories;
 using MediatR;
 
 namespace buduns_server.Application.Features.Bookmarks.Queries.GetBookmarks
 {
     public class GetBookmarksQueryHandler : IRequestHandler<GetBookmarksQuery, PagedResponse<BookmarkDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IBookmarkRepository _bookmarkRepository;
 
-        public GetBookmarksQueryHandler(IUnitOfWork unitOfWork)
+        public GetBookmarksQueryHandler(IBookmarkRepository bookmarkRepository)
         {
-            _unitOfWork = unitOfWork;
+            _bookmarkRepository = bookmarkRepository;
         }
 
         public async Task<PagedResponse<BookmarkDto>> Handle(GetBookmarksQuery request, CancellationToken cancellationToken)
         {
-            var result = await _unitOfWork.BookmarkRepository.GetPagedByUserIdAsync(request.UserId, request.Page, request.Size, cancellationToken);
+            var result = await _bookmarkRepository.GetPagedByUserIdAsync(request.UserId, request.Page, request.Size, cancellationToken);
 
             return new PagedResponse<BookmarkDto>
             {

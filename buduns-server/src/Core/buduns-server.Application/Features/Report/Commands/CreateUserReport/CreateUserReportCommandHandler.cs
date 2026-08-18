@@ -18,12 +18,16 @@ namespace buduns_server.Application.Features.Report.Commands.CreateUserReport
 {
     public class CreateUserReportCommandHandler : IRequestHandler<CreateUserReportCommand, CreateUserReportCommandResponse>
     {
+        private readonly IReportRepository _reportRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CreateUserReportCommandHandler> _logger;
         private readonly ReportPolicyOptions _reportPolicyOptions;
 
-        public CreateUserReportCommandHandler(IUnitOfWork unitOfWork, ILogger<CreateUserReportCommandHandler> logger, IOptions<ReportPolicyOptions> reportPolicyOptions)
+        public CreateUserReportCommandHandler(IReportRepository reportRepository, IUserRepository userRepository, IUnitOfWork unitOfWork, ILogger<CreateUserReportCommandHandler> logger, IOptions<ReportPolicyOptions> reportPolicyOptions)
         {
+            _reportRepository = reportRepository;
+            _userRepository = userRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _reportPolicyOptions = reportPolicyOptions.Value;
@@ -36,7 +40,7 @@ namespace buduns_server.Application.Features.Report.Commands.CreateUserReport
                 throw new BadRequestException("Kendinizi şikayet edemezsiniz.");
             }
                 
-            User? targetUser = await _unitOfWork.UserRepository.GetByIdAsync(request.TargetUserId, cancellationToken);
+            User? targetUser = await _userRepository.GetByIdAsync(request.TargetUserId, cancellationToken);
             if (targetUser == null)
             {
                 throw new NotFoundException("Şikayet edilen kullanıcı bulunamadı.");
@@ -47,7 +51,7 @@ namespace buduns_server.Application.Features.Report.Commands.CreateUserReport
                 throw new BadRequestException("Bu kullanıcı zaten platformdan yasaklanmış.");
             }
 
-            var recentReportCount = await _unitOfWork.ReportRepository.CountRecentReportsByUserAsync(request.UserId, DateTime.UtcNow.AddHours(-24), cancellationToken);
+            var recentReportCount = await _reportRepository.CountRecentReportsByUserAsync(request.UserId, DateTime.UtcNow.AddHours(-24), cancellationToken);
             var dailyReportLimit = Math.Max(1, _reportPolicyOptions.DailyReportLimit);
             if (recentReportCount >= dailyReportLimit)
             {
@@ -55,7 +59,7 @@ namespace buduns_server.Application.Features.Report.Commands.CreateUserReport
             }
                 
 
-            bool alreadyReported = await _unitOfWork.ReportRepository.HasPendingUserReportAsync(request.UserId, request.TargetUserId, cancellationToken);
+            bool alreadyReported = await _reportRepository.HasPendingUserReportAsync(request.UserId, request.TargetUserId, cancellationToken);
             if (alreadyReported)
             {
                 throw new BadRequestException("Bu kullanıcı için zaten bekleyen bir şikayetiniz var.");
@@ -78,7 +82,7 @@ namespace buduns_server.Application.Features.Report.Commands.CreateUserReport
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _unitOfWork.ReportRepository.AddAsync(report);
+            await _reportRepository.AddAsync(report);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("User report created. ReportId: {ReportId}, ReporterUserId: {ReporterUserId}, TargetUserId: {TargetUserId}, Reason: {Reason}", report.Id, request.UserId, request.TargetUserId, request.Reason);

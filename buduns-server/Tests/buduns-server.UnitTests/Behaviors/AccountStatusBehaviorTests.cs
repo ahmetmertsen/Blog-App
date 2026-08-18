@@ -17,8 +17,8 @@ public class AccountStatusBehaviorTests
     public async Task Handle_ActiveAndVerifiedUser_ShouldContinue()
     {
         var user = CreateUser(UserStatus.Active, emailConfirmed: true);
-        var unitOfWork = CreateUnitOfWork(user);
-        var behavior = CreateBehavior<TestRequest>(unitOfWork, authenticated: true);
+        var (userRepository, unitOfWork) = CreateContext(user);
+        var behavior = CreateBehavior<TestRequest>(userRepository, unitOfWork, authenticated: true);
 
         var result = await behavior.Handle(new TestRequest(), _ => Task.FromResult("ok"), CancellationToken.None);
 
@@ -28,8 +28,8 @@ public class AccountStatusBehaviorTests
     [Fact]
     public async Task Handle_BannedUser_ShouldThrowForbidden()
     {
-        var unitOfWork = CreateUnitOfWork(CreateUser(UserStatus.Banned, emailConfirmed: true));
-        var behavior = CreateBehavior<TestRequest>(unitOfWork, authenticated: true);
+        var (userRepository, unitOfWork) = CreateContext(CreateUser(UserStatus.Banned, emailConfirmed: true));
+        var behavior = CreateBehavior<TestRequest>(userRepository, unitOfWork, authenticated: true);
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             behavior.Handle(new TestRequest(), _ => Task.FromResult("ok"), CancellationToken.None));
@@ -40,8 +40,8 @@ public class AccountStatusBehaviorTests
     {
         var user = CreateUser(UserStatus.Suspended, emailConfirmed: true);
         user.SuspendedUntil = DateTime.UtcNow.AddMinutes(10);
-        var unitOfWork = CreateUnitOfWork(user);
-        var behavior = CreateBehavior<TestRequest>(unitOfWork, authenticated: true);
+        var (userRepository, unitOfWork) = CreateContext(user);
+        var behavior = CreateBehavior<TestRequest>(userRepository, unitOfWork, authenticated: true);
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             behavior.Handle(new TestRequest(), _ => Task.FromResult("ok"), CancellationToken.None));
@@ -52,23 +52,23 @@ public class AccountStatusBehaviorTests
     {
         var user = CreateUser(UserStatus.Suspended, emailConfirmed: true);
         user.SuspendedUntil = DateTime.UtcNow.AddMinutes(-1);
-        var unitOfWork = CreateUnitOfWork(user);
-        var behavior = CreateBehavior<TestRequest>(unitOfWork, authenticated: true);
+        var (userRepository, unitOfWork) = CreateContext(user);
+        var behavior = CreateBehavior<TestRequest>(userRepository, unitOfWork, authenticated: true);
 
         var result = await behavior.Handle(new TestRequest(), _ => Task.FromResult("ok"), CancellationToken.None);
 
         Assert.Equal("ok", result);
         Assert.Equal(UserStatus.Active, user.Status);
         Assert.Null(user.SuspendedUntil);
-        unitOfWork.UserRepository.Received(1).Update(user);
+        userRepository.Received(1).Update(user);
         await unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task Handle_UnverifiedUser_ShouldRequireVerification()
     {
-        var unitOfWork = CreateUnitOfWork(CreateUser(UserStatus.Active, emailConfirmed: false));
-        var behavior = CreateBehavior<TestRequest>(unitOfWork, authenticated: true);
+        var (userRepository, unitOfWork) = CreateContext(CreateUser(UserStatus.Active, emailConfirmed: false));
+        var behavior = CreateBehavior<TestRequest>(userRepository, unitOfWork, authenticated: true);
 
         await Assert.ThrowsAsync<EmailVerificationRequiredException>(() =>
             behavior.Handle(new TestRequest(), _ => Task.FromResult("ok"), CancellationToken.None));
@@ -77,8 +77,8 @@ public class AccountStatusBehaviorTests
     [Fact]
     public async Task Handle_AllowUnverifiedRequest_ShouldContinue()
     {
-        var unitOfWork = CreateUnitOfWork(CreateUser(UserStatus.Active, emailConfirmed: false));
-        var behavior = CreateBehavior<AllowUnverifiedRequest>(unitOfWork, authenticated: true);
+        var (userRepository, unitOfWork) = CreateContext(CreateUser(UserStatus.Active, emailConfirmed: false));
+        var behavior = CreateBehavior<AllowUnverifiedRequest>(userRepository, unitOfWork, authenticated: true);
 
         var result = await behavior.Handle(new AllowUnverifiedRequest(), _ => Task.FromResult("ok"), CancellationToken.None);
 
@@ -88,22 +88,22 @@ public class AccountStatusBehaviorTests
     [Fact]
     public async Task Handle_AnonymousRequest_ShouldContinueWithoutUserLookup()
     {
-        var unitOfWork = CreateUnitOfWork(CreateUser(UserStatus.Banned, emailConfirmed: false));
-        var behavior = CreateBehavior<TestRequest>(unitOfWork, authenticated: false);
+        var (userRepository, unitOfWork) = CreateContext(CreateUser(UserStatus.Banned, emailConfirmed: false));
+        var behavior = CreateBehavior<TestRequest>(userRepository, unitOfWork, authenticated: false);
 
         var result = await behavior.Handle(new TestRequest(), _ => Task.FromResult("public"), CancellationToken.None);
 
         Assert.Equal("public", result);
-        await unitOfWork.UserRepository.DidNotReceiveWithAnyArgs().GetByIdAsync(default, default);
+        await userRepository.DidNotReceiveWithAnyArgs().GetByIdAsync(default, default);
     }
 
-    private static AccountStatusBehavior<TRequest, string> CreateBehavior<TRequest>(IUnitOfWork unitOfWork, bool authenticated)
+    private static AccountStatusBehavior<TRequest, string> CreateBehavior<TRequest>(IUserRepository userRepository, IUnitOfWork unitOfWork, bool authenticated)
         where TRequest : notnull
     {
         var claims = authenticated ? new[] { new Claim(ClaimTypes.NameIdentifier, "5") } : Array.Empty<Claim>();
         var identity = new ClaimsIdentity(claims, authenticated ? "TestAuthentication" : null);
         var context = new DefaultHttpContext { User = new ClaimsPrincipal(identity) };
-        return new AccountStatusBehavior<TRequest, string>(new HttpContextAccessor { HttpContext = context }, unitOfWork);
+        return new AccountStatusBehavior<TRequest, string>(new HttpContextAccessor { HttpContext = context }, userRepository, unitOfWork);
     }
 
     private static User CreateUser(UserStatus status, bool emailConfirmed) => new()
@@ -115,12 +115,11 @@ public class AccountStatusBehaviorTests
         EmailConfirmed = emailConfirmed
     };
 
-    private static IUnitOfWork CreateUnitOfWork(User user)
+    private static (IUserRepository UserRepository, IUnitOfWork UnitOfWork) CreateContext(User user)
     {
-        var unitOfWork = Substitute.For<IUnitOfWork>();
-        unitOfWork.UserRepository.Returns(Substitute.For<IUserRepository>());
-        unitOfWork.UserRepository.GetByIdAsync(user.Id, Arg.Any<CancellationToken>()).Returns(user);
-        return unitOfWork;
+        var userRepository = Substitute.For<IUserRepository>();
+        userRepository.GetByIdAsync(user.Id, Arg.Any<CancellationToken>()).Returns(user);
+        return (userRepository, Substitute.For<IUnitOfWork>());
     }
 
     private sealed class TestRequest

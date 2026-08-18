@@ -1,7 +1,7 @@
 using buduns_server.Application.Abstractions.Services;
 using buduns_server.Application.Common.Consts;
 using buduns_server.Application.Common.Options;
-using buduns_server.Application.UnitOfWork;
+using buduns_server.Application.Repositories;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -20,13 +20,13 @@ namespace buduns_server.Infrastructure.Services.Mail
         private const string ApplicationName = "Buduns";
 
         private readonly MailOptions _options;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IUtilityRepository _utilityRepository;
         private readonly ILogger<MailService> _logger;
 
-        public MailService(IOptions<MailOptions> options, IUnitOfWork unitOfWork, ILogger<MailService> logger)
+        public MailService(IOptions<MailOptions> options, IUtilityRepository utilityRepository, ILogger<MailService> logger)
         {
             _options = options.Value;
-            _unitOfWork = unitOfWork;
+            _utilityRepository = utilityRepository;
             _logger = logger;
         }
 
@@ -52,7 +52,7 @@ namespace buduns_server.Infrastructure.Services.Mail
         // bu yuzden NotFoundException degil InvalidOperationException.
         private async Task<string> GetTemplateAsync(string name)
         {
-            var utility = await _unitOfWork.UtilityRepository.GetByNameAsync(name);
+            var utility = await _utilityRepository.GetByNameAsync(name);
             if (utility == null)
             {
                 throw new InvalidOperationException($"'{name}' mail sablonu veritabaninda bulunamadi.");

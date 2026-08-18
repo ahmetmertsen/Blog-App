@@ -1,6 +1,6 @@
 using buduns_server.Application.Exceptions;
 using buduns_server.Application.Mapping;
-using buduns_server.Application.UnitOfWork;
+using buduns_server.Application.Repositories;
 using buduns_server.Domain.Entities;
 using MediatR;
 using System;
@@ -13,16 +13,18 @@ namespace buduns_server.Application.Features.Bookmarks.Commands.Create
 {
     public class CreateBookmarksCommandHandler : IRequestHandler<CreateBookmarksCommand, CreateBookmarksCommandResponse>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IBookmarkRepository _bookmarkRepository;
+        private readonly IPostRepository _postRepository;
 
-        public CreateBookmarksCommandHandler(IUnitOfWork unitOfWork)
+        public CreateBookmarksCommandHandler(IBookmarkRepository bookmarkRepository, IPostRepository postRepository)
         {
-            _unitOfWork = unitOfWork;
+            _bookmarkRepository = bookmarkRepository;
+            _postRepository = postRepository;
         }
 
         public async Task<CreateBookmarksCommandResponse> Handle(CreateBookmarksCommand request, CancellationToken cancellationToken)
         {
-            var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
+            var post = await _postRepository.GetByIdAsync(request.PostId);
             if (post == null)
             {
                 throw new NotFoundException("Kaydedilecek paylaşım bulunamadı.");
@@ -33,7 +35,7 @@ namespace buduns_server.Application.Features.Bookmarks.Commands.Create
             bookmark.CreatedAt = DateTime.UtcNow;
             bookmark.isActive = true;
 
-            var result = await _unitOfWork.BookmarkRepository.CreateIfNotExistsAsync(bookmark, cancellationToken);
+            var result = await _bookmarkRepository.CreateIfNotExistsAsync(bookmark, cancellationToken);
             var message = result.Created ? "Yer işareti başarıyla eklendi." : "Paylaşım zaten yer işaretlerinizde bulunuyor.";
 
             return new CreateBookmarksCommandResponse(

@@ -1,20 +1,20 @@
-using buduns_server.Application.UnitOfWork;
+using buduns_server.Application.Repositories;
 using MediatR;
 
 namespace buduns_server.Application.Features.Bookmarks.Commands.Delete
 {
     public class DeleteBookmarksCommandHandler : IRequestHandler<DeleteBookmarksCommand, DeleteBookmarksCommandResponse>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IBookmarkRepository _bookmarkRepository;
 
-        public DeleteBookmarksCommandHandler(IUnitOfWork unitOfWork)
+        public DeleteBookmarksCommandHandler(IBookmarkRepository bookmarkRepository)
         {
-            _unitOfWork = unitOfWork;
+            _bookmarkRepository = bookmarkRepository;
         }
 
         public async Task<DeleteBookmarksCommandResponse> Handle(DeleteBookmarksCommand request, CancellationToken cancellationToken)
         {
-            var deleted = await _unitOfWork.BookmarkRepository.DeleteByUserAndPostAsync(request.UserId, request.PostId, cancellationToken);
+            var deleted = await _bookmarkRepository.DeleteByUserAndPostAsync(request.UserId, request.PostId, cancellationToken);
 
             var message = deleted ? "Yer işareti başarıyla silindi." : "Paylaşım yer işaretlerinizde bulunmuyor.";
 

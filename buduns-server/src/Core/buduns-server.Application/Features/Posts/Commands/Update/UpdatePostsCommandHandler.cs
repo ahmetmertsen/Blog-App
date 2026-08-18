@@ -1,5 +1,6 @@
 using buduns_server.Application.Exceptions;
 using buduns_server.Application.Mapping;
+using buduns_server.Application.Repositories;
 using buduns_server.Application.UnitOfWork;
 using MediatR;
 using System;
@@ -12,17 +13,21 @@ namespace buduns_server.Application.Features.Posts.Commands.Update
 {
     public class UpdatePostsCommandHandler : IRequestHandler<UpdatePostsCommand, UpdatePostsCommandResponse>
     {
+        private readonly IPostRepository _postRepository;
+        private readonly ITagRepository _tagRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public UpdatePostsCommandHandler(IUnitOfWork unitOfWork)
+        public UpdatePostsCommandHandler(IPostRepository postRepository, ITagRepository tagRepository, IUnitOfWork unitOfWork)
         {
+            _postRepository = postRepository;
+            _tagRepository = tagRepository;
             _unitOfWork = unitOfWork;
         }
 
         public async Task<UpdatePostsCommandResponse> Handle(UpdatePostsCommand request, CancellationToken cancellationToken)
         {
 
-            var post = await _unitOfWork.PostRepository.GetByIdWithTagsAsync(request.Id);
+            var post = await _postRepository.GetByIdWithTagsAsync(request.Id);
             if (post == null)
             {
                 throw new NotFoundException("Post bulunamadı!");
@@ -35,7 +40,7 @@ namespace buduns_server.Application.Features.Posts.Commands.Update
             var tagIds = request.TagIds?
                 .Distinct()
                 .ToList() ?? new List<int>();
-            var tags = await _unitOfWork.TagRepository.GetByIdsAsync(tagIds, cancellationToken);
+            var tags = await _tagRepository.GetByIdsAsync(tagIds, cancellationToken);
             var foundTagIds = tags.Select(t => t.Id).ToHashSet();
             var missingTagIds = tagIds.Where(id => !foundTagIds.Contains(id)).ToList();
 

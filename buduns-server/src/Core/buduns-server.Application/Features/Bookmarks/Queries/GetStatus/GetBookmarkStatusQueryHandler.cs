@@ -1,20 +1,20 @@
-using buduns_server.Application.UnitOfWork;
+using buduns_server.Application.Repositories;
 using MediatR;
 
 namespace buduns_server.Application.Features.Bookmarks.Queries.GetStatus
 {
     public class GetBookmarkStatusQueryHandler : IRequestHandler<GetBookmarkStatusQuery, GetBookmarkStatusQueryResponse>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IBookmarkRepository _bookmarkRepository;
 
-        public GetBookmarkStatusQueryHandler(IUnitOfWork unitOfWork)
+        public GetBookmarkStatusQueryHandler(IBookmarkRepository bookmarkRepository)
         {
-            _unitOfWork = unitOfWork;
+            _bookmarkRepository = bookmarkRepository;
         }
 
         public async Task<GetBookmarkStatusQueryResponse> Handle(GetBookmarkStatusQuery request, CancellationToken cancellationToken)
         {
-            var bookmark = await _unitOfWork.BookmarkRepository.GetByUserAndPostAsync(request.UserId, request.PostId, cancellationToken);
+            var bookmark = await _bookmarkRepository.GetByUserAndPostAsync(request.UserId, request.PostId, cancellationToken);
 
             return new GetBookmarkStatusQueryResponse(IsBookmarked: bookmark != null, BookmarkId: bookmark?.Id);
         }

@@ -1,5 +1,5 @@
 using buduns_server.Application.Exceptions;
-using buduns_server.Application.UnitOfWork;
+using buduns_server.Application.Repositories;
 using buduns_server.Application.Abstractions.Services;
 using buduns_server.Application.Dtos;
 using buduns_server.Domain.Entities;
@@ -12,13 +12,15 @@ namespace buduns_server.Application.Features.Followers.Commands.Create
 {
     public class CreateFollowersCommandHandler : IRequestHandler<CreateFollowersCommand, CreateFollowersCommandResponse>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IFollowerRepository _followerRepository;
+        private readonly IUserRepository _userRepository;
         private readonly ILogger<CreateFollowersCommandHandler> _logger;
         private readonly INotificationService _notificationService;
 
-        public CreateFollowersCommandHandler(IUnitOfWork unitOfWork, ILogger<CreateFollowersCommandHandler> logger, INotificationService notificationService)
+        public CreateFollowersCommandHandler(IFollowerRepository followerRepository, IUserRepository userRepository, ILogger<CreateFollowersCommandHandler> logger, INotificationService notificationService)
         {
-            _unitOfWork = unitOfWork;
+            _followerRepository = followerRepository;
+            _userRepository = userRepository;
             _logger = logger;
             _notificationService = notificationService;
         }
@@ -30,7 +32,7 @@ namespace buduns_server.Application.Features.Followers.Commands.Create
                 throw new BadRequestException("Kullanıcı kendisini takip edemez!");
             }
 
-            var followingUser = await _unitOfWork.UserRepository.GetByIdAsync(request.FollowingId, cancellationToken);
+            var followingUser = await _userRepository.GetByIdAsync(request.FollowingId, cancellationToken);
             if (followingUser == null)
             {
                 throw new NotFoundException("Takip edilecek kullanıcı bulunamadı.");
@@ -52,7 +54,7 @@ namespace buduns_server.Application.Features.Followers.Commands.Create
 
             var notification = await _notificationService.BuildAsync(new NotificationCreateModel { Type = NotificationType.NEW_FOLLOWER, UserId = request.FollowingId, ActorUserId = request.UserId, Cooldown = TimeSpan.FromHours(24) }, cancellationToken);
 
-            var result = await _unitOfWork.FollowerRepository.CreateIfNotExistsAsync(follow, notification, cancellationToken);
+            var result = await _followerRepository.CreateIfNotExistsAsync(follow, notification, cancellationToken);
             if (result.Created)
             {
                 _logger.LogInformation("User followed. FollowerUserId: {FollowerUserId}, FollowingUserId: {FollowingUserId}, FollowId: {FollowId}", request.UserId, request.FollowingId, result.Follower.Id);

@@ -1,6 +1,7 @@
 using buduns_server.Application.Abstractions.Services;
 using buduns_server.Application.Common.Consts;
 using buduns_server.Application.Dtos.Configurations;
+using buduns_server.Application.Repositories;
 using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Entities;
 using buduns_server.Persistence.MailTemplates;
@@ -16,11 +17,13 @@ namespace buduns_server.Persistence.Services
     /// </summary>
     public class MailTemplateSeeder : IMailTemplateSeeder
     {
+        private readonly IUtilityRepository _utilityRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<MailTemplateSeeder> _logger;
 
-        public MailTemplateSeeder(IUnitOfWork unitOfWork, ILogger<MailTemplateSeeder> logger)
+        public MailTemplateSeeder(IUtilityRepository utilityRepository, IUnitOfWork unitOfWork, ILogger<MailTemplateSeeder> logger)
         {
+            _utilityRepository = utilityRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
@@ -51,11 +54,11 @@ namespace buduns_server.Persistence.Services
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var body = MailTemplateCatalog.GetBody(key);
-                var stored = await _unitOfWork.UtilityRepository.GetByNameAsync(key);
+                var stored = await _utilityRepository.GetByNameAsync(key);
 
                 if (stored == null)
                 {
-                    await _unitOfWork.UtilityRepository.AddAsync(new Utility
+                    await _utilityRepository.AddAsync(new Utility
                     {
                         Name = key,
                         Value = body,

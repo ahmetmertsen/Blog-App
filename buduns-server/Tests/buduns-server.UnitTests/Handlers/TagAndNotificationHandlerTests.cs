@@ -1,3 +1,4 @@
+using buduns_server.Application.Repositories;
 using buduns_server.Application.Dtos;
 using buduns_server.Application.Exceptions;
 using buduns_server.Application.Features.Notifications.Commands.Delete;
@@ -21,10 +22,11 @@ public class TagAndNotificationHandlerTests
     public async Task CreateTag_ShouldNormalizeDisplayNameAndKey()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.TagRepository.ExistsByNormalizedNameAsync(Arg.Any<string>(), Arg.Any<int?>(), Arg.Any<CancellationToken>()).Returns(false);
+        var tagRepository = Substitute.For<ITagRepository>();
+        tagRepository.ExistsByNormalizedNameAsync(Arg.Any<string>(), Arg.Any<int?>(), Arg.Any<CancellationToken>()).Returns(false);
         Tag? persisted = null;
-        await unitOfWork.TagRepository.AddAsync(Arg.Do<Tag>(tag => persisted = tag));
-        var handler = new CreateTagsCommandHandler(unitOfWork);
+        await tagRepository.AddAsync(Arg.Do<Tag>(tag => persisted = tag));
+        var handler = new CreateTagsCommandHandler(tagRepository, unitOfWork);
 
         var response = await handler.Handle(new CreateTagsCommand("  dotnet   core  "), CancellationToken.None);
 
@@ -39,36 +41,39 @@ public class TagAndNotificationHandlerTests
     public async Task CreateTag_ExistingNormalizedName_ShouldThrowBadRequest()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.TagRepository.ExistsByNormalizedNameAsync("DOTNET", Arg.Any<int?>(), Arg.Any<CancellationToken>()).Returns(true);
-        var handler = new CreateTagsCommandHandler(unitOfWork);
+        var tagRepository = Substitute.For<ITagRepository>();
+        tagRepository.ExistsByNormalizedNameAsync("DOTNET", Arg.Any<int?>(), Arg.Any<CancellationToken>()).Returns(true);
+        var handler = new CreateTagsCommandHandler(tagRepository, unitOfWork);
 
         await Assert.ThrowsAsync<BadRequestException>(() => handler.Handle(new CreateTagsCommand("DotNet"), CancellationToken.None));
 
-        await unitOfWork.TagRepository.DidNotReceiveWithAnyArgs().AddAsync(default!);
+        await tagRepository.DidNotReceiveWithAnyArgs().AddAsync(default!);
     }
 
     [Fact]
     public async Task UpdateTag_ShouldExcludeItselfFromDuplicateCheck()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
+        var tagRepository = Substitute.For<ITagRepository>();
         var tag = new Tag { Id = 4, Name = "eski", NormalizedName = "ESKI", isActive = true };
-        unitOfWork.TagRepository.GetVisibleByIdAsync(4, Arg.Any<CancellationToken>()).Returns(tag);
-        unitOfWork.TagRepository.ExistsByNormalizedNameAsync("YENI", 4, Arg.Any<CancellationToken>()).Returns(false);
-        var handler = new UpdateTagsCommandHandler(unitOfWork);
+        tagRepository.GetVisibleByIdAsync(4, Arg.Any<CancellationToken>()).Returns(tag);
+        tagRepository.ExistsByNormalizedNameAsync("YENI", 4, Arg.Any<CancellationToken>()).Returns(false);
+        var handler = new UpdateTagsCommandHandler(tagRepository, unitOfWork);
 
         var response = await handler.Handle(new UpdateTagsCommand(4, " yeni "), CancellationToken.None);
 
         Assert.Equal("yeni", tag.Name);
         Assert.Equal("YENI", tag.NormalizedName);
-        await unitOfWork.TagRepository.Received(1).ExistsByNormalizedNameAsync("YENI", 4, Arg.Any<CancellationToken>());
+        await tagRepository.Received(1).ExistsByNormalizedNameAsync("YENI", 4, Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task UpdateTag_MissingTag_ShouldThrowNotFound()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.TagRepository.GetVisibleByIdAsync(4, Arg.Any<CancellationToken>()).Returns((Tag?)null);
-        var handler = new UpdateTagsCommandHandler(unitOfWork);
+        var tagRepository = Substitute.For<ITagRepository>();
+        tagRepository.GetVisibleByIdAsync(4, Arg.Any<CancellationToken>()).Returns((Tag?)null);
+        var handler = new UpdateTagsCommandHandler(tagRepository, unitOfWork);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new UpdateTagsCommand(4, "yeni"), CancellationToken.None));
     }
@@ -77,10 +82,11 @@ public class TagAndNotificationHandlerTests
     public async Task UpdateTag_DuplicateName_ShouldThrowBadRequestAndKeepOldName()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
+        var tagRepository = Substitute.For<ITagRepository>();
         var tag = new Tag { Id = 4, Name = "eski", NormalizedName = "ESKI" };
-        unitOfWork.TagRepository.GetVisibleByIdAsync(4, Arg.Any<CancellationToken>()).Returns(tag);
-        unitOfWork.TagRepository.ExistsByNormalizedNameAsync("YENI", 4, Arg.Any<CancellationToken>()).Returns(true);
-        var handler = new UpdateTagsCommandHandler(unitOfWork);
+        tagRepository.GetVisibleByIdAsync(4, Arg.Any<CancellationToken>()).Returns(tag);
+        tagRepository.ExistsByNormalizedNameAsync("YENI", 4, Arg.Any<CancellationToken>()).Returns(true);
+        var handler = new UpdateTagsCommandHandler(tagRepository, unitOfWork);
 
         await Assert.ThrowsAsync<BadRequestException>(() => handler.Handle(new UpdateTagsCommand(4, "yeni"), CancellationToken.None));
 
@@ -91,9 +97,10 @@ public class TagAndNotificationHandlerTests
     public async Task DeleteTag_ShouldSoftDelete()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
+        var tagRepository = Substitute.For<ITagRepository>();
         var tag = new Tag { Id = 4, Name = "dotnet", NormalizedName = "DOTNET", isActive = true, isDeleted = false };
-        unitOfWork.TagRepository.GetVisibleByIdAsync(4, Arg.Any<CancellationToken>()).Returns(tag);
-        var handler = new DeleteTagsCommandHandler(unitOfWork);
+        tagRepository.GetVisibleByIdAsync(4, Arg.Any<CancellationToken>()).Returns(tag);
+        var handler = new DeleteTagsCommandHandler(tagRepository, unitOfWork);
 
         var response = await handler.Handle(new DeleteTagsCommand(4), CancellationToken.None);
 
@@ -106,8 +113,9 @@ public class TagAndNotificationHandlerTests
     public async Task DeleteTag_MissingTag_ShouldThrowNotFound()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.TagRepository.GetVisibleByIdAsync(4, Arg.Any<CancellationToken>()).Returns((Tag?)null);
-        var handler = new DeleteTagsCommandHandler(unitOfWork);
+        var tagRepository = Substitute.For<ITagRepository>();
+        tagRepository.GetVisibleByIdAsync(4, Arg.Any<CancellationToken>()).Returns((Tag?)null);
+        var handler = new DeleteTagsCommandHandler(tagRepository, unitOfWork);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new DeleteTagsCommand(4), CancellationToken.None));
     }
@@ -115,9 +123,9 @@ public class TagAndNotificationHandlerTests
     [Fact]
     public async Task GetTagById_MissingTag_ShouldThrowNotFound()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.TagRepository.GetDtoByIdAsync(4, Arg.Any<CancellationToken>()).Returns((TagDto?)null);
-        var handler = new GetTagByIdQueryHandler(unitOfWork);
+        var tagRepository = Substitute.For<ITagRepository>();
+        tagRepository.GetDtoByIdAsync(4, Arg.Any<CancellationToken>()).Returns((TagDto?)null);
+        var handler = new GetTagByIdQueryHandler(tagRepository);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new GetTagByIdQuery(4), CancellationToken.None));
     }
@@ -125,10 +133,10 @@ public class TagAndNotificationHandlerTests
     [Fact]
     public async Task GetAllTags_ShouldForwardSearchAndBuildPagedResponse()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
+        var tagRepository = Substitute.For<ITagRepository>();
         var items = new List<TagDto> { new() { Id = 1, Name = "dotnet" } };
-        unitOfWork.TagRepository.GetPagedAsync(1, 50, "dot", Arg.Any<CancellationToken>()).Returns((items, 1));
-        var handler = new GetAllTagsQueryHandler(unitOfWork);
+        tagRepository.GetPagedAsync(1, 50, "dot", Arg.Any<CancellationToken>()).Returns((items, 1));
+        var handler = new GetAllTagsQueryHandler(tagRepository);
 
         var result = await handler.Handle(new GetAllTagsQuery { Page = 1, Size = 50, Search = "dot" }, CancellationToken.None);
 
@@ -140,8 +148,9 @@ public class TagAndNotificationHandlerTests
     public async Task MarkNotificationAsRead_ShouldSaveWhenFound()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.NotificationRepository.MarkAsReadAsync(5, 9, Arg.Any<CancellationToken>()).Returns(true);
-        var handler = new MarkNotificationAsReadCommandHandler(unitOfWork);
+        var notificationRepository = Substitute.For<INotificationRepository>();
+        notificationRepository.MarkAsReadAsync(5, 9, Arg.Any<CancellationToken>()).Returns(true);
+        var handler = new MarkNotificationAsReadCommandHandler(notificationRepository, unitOfWork);
 
         var response = await handler.Handle(new MarkNotificationAsReadCommand { Id = 5, UserId = 9 }, CancellationToken.None);
 
@@ -152,8 +161,9 @@ public class TagAndNotificationHandlerTests
     public async Task MarkNotificationAsRead_ForeignOrMissingNotification_ShouldThrowNotFound()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.NotificationRepository.MarkAsReadAsync(5, 9, Arg.Any<CancellationToken>()).Returns(false);
-        var handler = new MarkNotificationAsReadCommandHandler(unitOfWork);
+        var notificationRepository = Substitute.For<INotificationRepository>();
+        notificationRepository.MarkAsReadAsync(5, 9, Arg.Any<CancellationToken>()).Returns(false);
+        var handler = new MarkNotificationAsReadCommandHandler(notificationRepository, unitOfWork);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new MarkNotificationAsReadCommand { Id = 5, UserId = 9 }, CancellationToken.None));
 
@@ -164,8 +174,9 @@ public class TagAndNotificationHandlerTests
     public async Task MarkAllNotificationsAsRead_ShouldReturnUpdatedCount()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.NotificationRepository.MarkAllAsReadAsync(9, Arg.Any<CancellationToken>()).Returns(4);
-        var handler = new MarkAllNotificationsAsReadCommandHandler(unitOfWork);
+        var notificationRepository = Substitute.For<INotificationRepository>();
+        notificationRepository.MarkAllAsReadAsync(9, Arg.Any<CancellationToken>()).Returns(4);
+        var handler = new MarkAllNotificationsAsReadCommandHandler(notificationRepository, unitOfWork);
 
         var response = await handler.Handle(new MarkAllNotificationsAsReadCommand { UserId = 9 }, CancellationToken.None);
 
@@ -177,8 +188,9 @@ public class TagAndNotificationHandlerTests
     public async Task MarkAllNotificationsAsRead_NothingToUpdate_ShouldSkipSave()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.NotificationRepository.MarkAllAsReadAsync(9, Arg.Any<CancellationToken>()).Returns(0);
-        var handler = new MarkAllNotificationsAsReadCommandHandler(unitOfWork);
+        var notificationRepository = Substitute.For<INotificationRepository>();
+        notificationRepository.MarkAllAsReadAsync(9, Arg.Any<CancellationToken>()).Returns(0);
+        var handler = new MarkAllNotificationsAsReadCommandHandler(notificationRepository, unitOfWork);
 
         var response = await handler.Handle(new MarkAllNotificationsAsReadCommand { UserId = 9 }, CancellationToken.None);
 
@@ -190,8 +202,9 @@ public class TagAndNotificationHandlerTests
     public async Task DeleteNotification_ShouldSoftDeleteWhenOwned()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.NotificationRepository.SoftDeleteByIdAndUserAsync(5, 9, Arg.Any<CancellationToken>()).Returns(true);
-        var handler = new DeleteNotificationCommandHandler(unitOfWork);
+        var notificationRepository = Substitute.For<INotificationRepository>();
+        notificationRepository.SoftDeleteByIdAndUserAsync(5, 9, Arg.Any<CancellationToken>()).Returns(true);
+        var handler = new DeleteNotificationCommandHandler(notificationRepository, unitOfWork);
 
         var response = await handler.Handle(new DeleteNotificationCommand { Id = 5, UserId = 9 }, CancellationToken.None);
 
@@ -202,8 +215,9 @@ public class TagAndNotificationHandlerTests
     public async Task DeleteNotification_ForeignNotification_ShouldThrowNotFound()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.NotificationRepository.SoftDeleteByIdAndUserAsync(5, 9, Arg.Any<CancellationToken>()).Returns(false);
-        var handler = new DeleteNotificationCommandHandler(unitOfWork);
+        var notificationRepository = Substitute.For<INotificationRepository>();
+        notificationRepository.SoftDeleteByIdAndUserAsync(5, 9, Arg.Any<CancellationToken>()).Returns(false);
+        var handler = new DeleteNotificationCommandHandler(notificationRepository, unitOfWork);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new DeleteNotificationCommand { Id = 5, UserId = 9 }, CancellationToken.None));
     }
@@ -211,10 +225,10 @@ public class TagAndNotificationHandlerTests
     [Fact]
     public async Task GetNotifications_ShouldForwardUnreadFilterAndBuildPagedResponse()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
+        var notificationRepository = Substitute.For<INotificationRepository>();
         var items = new List<NotificationDto> { new() { Id = 1, Message = "mesaj" } };
-        unitOfWork.NotificationRepository.GetPagedByUserIdAsync(9, 2, 10, true, Arg.Any<CancellationToken>()).Returns((items, 11));
-        var handler = new GetAllNotificationsByUserIdQueryHandler(unitOfWork);
+        notificationRepository.GetPagedByUserIdAsync(9, 2, 10, true, Arg.Any<CancellationToken>()).Returns((items, 11));
+        var handler = new GetAllNotificationsByUserIdQueryHandler(notificationRepository);
 
         var result = await handler.Handle(new GetAllNotificationsByUserIdQuery { UserId = 9, Page = 2, Size = 10, OnlyUnread = true }, CancellationToken.None);
 
@@ -225,9 +239,9 @@ public class TagAndNotificationHandlerTests
     [Fact]
     public async Task GetUnreadNotificationCount_ShouldReturnRepositoryValue()
     {
-        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        unitOfWork.NotificationRepository.GetUnreadCountAsync(9, Arg.Any<CancellationToken>()).Returns(7);
-        var handler = new GetUnreadNotificationCountQueryHandler(unitOfWork);
+        var notificationRepository = Substitute.For<INotificationRepository>();
+        notificationRepository.GetUnreadCountAsync(9, Arg.Any<CancellationToken>()).Returns(7);
+        var handler = new GetUnreadNotificationCountQueryHandler(notificationRepository);
 
         var response = await handler.Handle(new GetUnreadNotificationCountQuery { UserId = 9 }, CancellationToken.None);
 

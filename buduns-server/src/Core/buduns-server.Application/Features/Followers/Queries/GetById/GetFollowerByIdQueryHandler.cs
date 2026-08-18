@@ -1,7 +1,7 @@
 using buduns_server.Application.Dtos;
 using buduns_server.Application.Exceptions;
 using buduns_server.Application.Mapping;
-using buduns_server.Application.UnitOfWork;
+using buduns_server.Application.Repositories;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -13,16 +13,16 @@ namespace buduns_server.Application.Features.Followers.Queries.GetById
 {
     public class GetFollowerByIdQueryHandler : IRequestHandler<GetFollowerByIdQuery, FollowerDto>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IFollowerRepository _followerRepository;
 
-        public GetFollowerByIdQueryHandler(IUnitOfWork unitOfWork)
+        public GetFollowerByIdQueryHandler(IFollowerRepository followerRepository)
         {
-            _unitOfWork = unitOfWork;
+            _followerRepository = followerRepository;
         }
 
         public async Task<FollowerDto> Handle(GetFollowerByIdQuery request, CancellationToken cancellationToken)
         {
-            var follower = await _unitOfWork.FollowerRepository.GetByIdAsync(request.Id);
+            var follower = await _followerRepository.GetByIdAsync(request.Id);
             if (follower == null)
             {
                 throw new NotFoundException("Takipçi bulunamadı!");
