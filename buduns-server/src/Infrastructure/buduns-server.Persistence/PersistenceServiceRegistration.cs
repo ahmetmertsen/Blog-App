@@ -47,6 +47,7 @@ namespace buduns_server.Persistence
             services.AddScoped<IModerationActionRepository, ModerationActionRepository>();
             services.AddScoped<IMenuRepository, MenuRepository>();
             services.AddScoped<IEndpointRepository, EndpointRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();

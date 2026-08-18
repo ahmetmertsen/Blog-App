@@ -11,9 +11,8 @@ using NSubstitute;
 namespace buduns_server.UnitTests.Handlers;
 
 /// <summary>
-/// Handler testlerinin ortak kurulumu. IUnitOfWork on iki repository tasidigi
-/// ve UserManager'in dokuz bagimliligi oldugu icin her testte elle kurmak
-/// gurultuye yol aciyordu.
+/// Handler testlerinin ortak kurulumu. IUnitOfWork on uc repository tasidigi
+/// icin her testte elle kurmak gurultuye yol aciyordu.
 /// </summary>
 internal static class HandlerTestContext
 {
@@ -32,28 +31,21 @@ internal static class HandlerTestContext
         unitOfWork.ModerationActionRepository.Returns(Substitute.For<IModerationActionRepository>());
         unitOfWork.EndpointRepository.Returns(Substitute.For<IEndpointRepository>());
         unitOfWork.MenuRepository.Returns(Substitute.For<IMenuRepository>());
+        unitOfWork.UserRepository.Returns(Substitute.For<IUserRepository>());
         return unitOfWork;
     }
 
-    public static UserManager<User> CreateUserManager(params User[] users)
+    /// <summary>
+    /// Verilen kullanicilari IUserRepository uzerinden bulunabilir yapar.
+    /// Kaydedilmeyen bir id icin repository null doner; "kullanici yok" hali
+    /// icin ayrica kurulum gerekmiyor.
+    /// </summary>
+    public static void RegisterUsers(IUnitOfWork unitOfWork, params User[] users)
     {
-        var manager = Substitute.For<UserManager<User>>(
-            Substitute.For<IUserStore<User>>(),
-            Options.Create(new IdentityOptions()),
-            new PasswordHasher<User>(),
-            Array.Empty<IUserValidator<User>>(),
-            Array.Empty<IPasswordValidator<User>>(),
-            new UpperInvariantLookupNormalizer(),
-            new IdentityErrorDescriber(),
-            Substitute.For<IServiceProvider>(),
-            NullLogger<UserManager<User>>.Instance);
-
         foreach (var user in users)
         {
-            manager.FindByIdAsync(user.Id.ToString()).Returns(user);
+            unitOfWork.UserRepository.GetByIdAsync(user.Id, Arg.Any<CancellationToken>()).Returns(user);
         }
-
-        return manager;
     }
 
     public static IHttpContextAccessor CreateHttpContextAccessor(int? viewerUserId)

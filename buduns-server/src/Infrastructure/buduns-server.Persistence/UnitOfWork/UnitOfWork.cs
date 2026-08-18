@@ -27,9 +27,10 @@ namespace buduns_server.Persistence.UnitOfWork
         public IModerationActionRepository ModerationActionRepository { get; }
         public IMenuRepository MenuRepository { get; }
         public IEndpointRepository EndpointRepository { get; }
+        public IUserRepository UserRepository { get; }
 
 
-        public UnitOfWork(BudunsDbContext context, IBookmarkRepository bookmarkRepository, ICommentRepository commentRepository, IFollowerRepository followerRepository, ILikeRepository likeRepository, INotificationRepository notificationRepository, IPostRepository postRepository, ITagRepository tagRepository, IUtilityRepository utilityRepository, IReportRepository reportRepository, IModerationActionRepository moderationActionRepository, IEndpointRepository endpointRepository, IMenuRepository menuRepository)
+        public UnitOfWork(BudunsDbContext context, IBookmarkRepository bookmarkRepository, ICommentRepository commentRepository, IFollowerRepository followerRepository, ILikeRepository likeRepository, INotificationRepository notificationRepository, IPostRepository postRepository, ITagRepository tagRepository, IUtilityRepository utilityRepository, IReportRepository reportRepository, IModerationActionRepository moderationActionRepository, IEndpointRepository endpointRepository, IMenuRepository menuRepository, IUserRepository userRepository)
         {
             _context = context;
             BookmarkRepository = bookmarkRepository;
@@ -44,6 +45,7 @@ namespace buduns_server.Persistence.UnitOfWork
             ModerationActionRepository = moderationActionRepository;
             EndpointRepository = endpointRepository;
             MenuRepository = menuRepository;
+            UserRepository = userRepository;
         }
 
         // EF Core'a ozgu eszamanlilik istisnasi burada uygulama seviyesine

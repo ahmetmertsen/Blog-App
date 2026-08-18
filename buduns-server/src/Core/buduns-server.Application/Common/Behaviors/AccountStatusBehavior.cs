@@ -1,9 +1,8 @@
 using buduns_server.Application.Exceptions;
-using buduns_server.Domain.Entities.Identity;
+using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -12,12 +11,12 @@ namespace buduns_server.Application.Common.Behaviors
     public class AccountStatusBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly UserManager<User> _userManager;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AccountStatusBehavior(IHttpContextAccessor httpContextAccessor, UserManager<User> userManager)
+        public AccountStatusBehavior(IHttpContextAccessor httpContextAccessor, IUnitOfWork unitOfWork)
         {
             _httpContextAccessor = httpContextAccessor;
-            _userManager = userManager;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
@@ -37,7 +36,7 @@ namespace buduns_server.Application.Common.Behaviors
                 throw new UnauthorizedAccesException("Geçerli kullanıcı bilgisi bulunamadı.");
             }
 
-            var user = await _userManager.FindByIdAsync(userId.ToString());
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId, cancellationToken);
             if (user == null)
             {
                 throw new UnauthorizedAccesException("Kullanıcı hesabı bulunamadı.");
@@ -57,11 +56,8 @@ namespace buduns_server.Application.Common.Behaviors
 
                 user.Status = UserStatus.Active;
                 user.SuspendedUntil = null;
-                var updateResult = await _userManager.UpdateAsync(user);
-                if (!updateResult.Succeeded)
-                {
-                    throw new UnauthorizedAccesException("Kullanıcı hesabı güncellenemedi.");
-                }
+                _unitOfWork.UserRepository.Update(user);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
 
             if (!user.EmailConfirmed && request is not Application.Common.Interfaces.IAllowUnverifiedEmail)

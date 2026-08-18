@@ -153,10 +153,10 @@ public class ReportHandlerTests
         var unitOfWork = CreateUnitOfWork();
         var target = HandlerTestContext.CreateUser(3, "hedef");
         target.Bio = "  profil metni  ";
-        var userManager = HandlerTestContext.CreateUserManager(target);
+        HandlerTestContext.RegisterUsers(unitOfWork, target);
         ReportEntity? persisted = null;
         await unitOfWork.ReportRepository.AddAsync(Arg.Do<ReportEntity>(report => persisted = report));
-        var handler = new CreateUserReportCommandHandler(unitOfWork, userManager, NullLogger<CreateUserReportCommandHandler>.Instance, Options.Create(new ReportPolicyOptions()));
+        var handler = new CreateUserReportCommandHandler(unitOfWork, NullLogger<CreateUserReportCommandHandler>.Instance, Options.Create(new ReportPolicyOptions()));
 
         var response = await handler.Handle(new CreateUserReportCommand { TargetUserId = 3, UserId = 9, Reason = ReportReason.Impersonation }, CancellationToken.None);
 
@@ -171,21 +171,19 @@ public class ReportHandlerTests
     public async Task CreateUserReport_SelfReport_ShouldThrowBadRequestBeforeLookup()
     {
         var unitOfWork = CreateUnitOfWork();
-        var userManager = HandlerTestContext.CreateUserManager();
-        var handler = new CreateUserReportCommandHandler(unitOfWork, userManager, NullLogger<CreateUserReportCommandHandler>.Instance, Options.Create(new ReportPolicyOptions()));
+        var handler = new CreateUserReportCommandHandler(unitOfWork, NullLogger<CreateUserReportCommandHandler>.Instance, Options.Create(new ReportPolicyOptions()));
 
         await Assert.ThrowsAsync<BadRequestException>(() => handler.Handle(new CreateUserReportCommand { TargetUserId = 9, UserId = 9, Reason = ReportReason.Spam }, CancellationToken.None));
 
-        await userManager.DidNotReceiveWithAnyArgs().FindByIdAsync(default!);
+        await unitOfWork.UserRepository.DidNotReceiveWithAnyArgs().GetByIdAsync(default, default);
     }
 
     [Fact]
     public async Task CreateUserReport_MissingTargetUser_ShouldThrowNotFound()
     {
         var unitOfWork = CreateUnitOfWork();
-        var userManager = HandlerTestContext.CreateUserManager();
-        userManager.FindByIdAsync("3").Returns((User?)null);
-        var handler = new CreateUserReportCommandHandler(unitOfWork, userManager, NullLogger<CreateUserReportCommandHandler>.Instance, Options.Create(new ReportPolicyOptions()));
+        unitOfWork.UserRepository.GetByIdAsync(3, Arg.Any<CancellationToken>()).Returns((User?)null);
+        var handler = new CreateUserReportCommandHandler(unitOfWork, NullLogger<CreateUserReportCommandHandler>.Instance, Options.Create(new ReportPolicyOptions()));
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new CreateUserReportCommand { TargetUserId = 3, UserId = 9, Reason = ReportReason.Spam }, CancellationToken.None));
     }
@@ -194,8 +192,8 @@ public class ReportHandlerTests
     public async Task CreateUserReport_AlreadyBannedTarget_ShouldThrowBadRequest()
     {
         var unitOfWork = CreateUnitOfWork();
-        var userManager = HandlerTestContext.CreateUserManager(HandlerTestContext.CreateUser(3, "hedef", UserStatus.Banned));
-        var handler = new CreateUserReportCommandHandler(unitOfWork, userManager, NullLogger<CreateUserReportCommandHandler>.Instance, Options.Create(new ReportPolicyOptions()));
+        HandlerTestContext.RegisterUsers(unitOfWork, HandlerTestContext.CreateUser(3, "hedef", UserStatus.Banned));
+        var handler = new CreateUserReportCommandHandler(unitOfWork, NullLogger<CreateUserReportCommandHandler>.Instance, Options.Create(new ReportPolicyOptions()));
 
         await Assert.ThrowsAsync<BadRequestException>(() => handler.Handle(new CreateUserReportCommand { TargetUserId = 3, UserId = 9, Reason = ReportReason.Spam }, CancellationToken.None));
     }

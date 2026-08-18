@@ -255,21 +255,19 @@ public class InteractionHandlerTests
     public async Task CreateFollower_SelfFollow_ShouldThrowBadRequestBeforeLookup()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        var userManager = HandlerTestContext.CreateUserManager();
-        var handler = new CreateFollowersCommandHandler(unitOfWork, userManager, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
+        var handler = new CreateFollowersCommandHandler(unitOfWork, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
 
         await Assert.ThrowsAsync<BadRequestException>(() => handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 9 }, CancellationToken.None));
 
-        await userManager.DidNotReceiveWithAnyArgs().FindByIdAsync(default!);
+        await unitOfWork.UserRepository.DidNotReceiveWithAnyArgs().GetByIdAsync(default, default);
     }
 
     [Fact]
     public async Task CreateFollower_MissingTargetUser_ShouldThrowNotFound()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        var userManager = HandlerTestContext.CreateUserManager();
-        userManager.FindByIdAsync("3").Returns((User?)null);
-        var handler = new CreateFollowersCommandHandler(unitOfWork, userManager, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
+        unitOfWork.UserRepository.GetByIdAsync(3, Arg.Any<CancellationToken>()).Returns((User?)null);
+        var handler = new CreateFollowersCommandHandler(unitOfWork, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None));
     }
@@ -278,8 +276,8 @@ public class InteractionHandlerTests
     public async Task CreateFollower_BannedTargetUser_ShouldThrowBadRequest()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        var userManager = HandlerTestContext.CreateUserManager(HandlerTestContext.CreateUser(3, "yasakli", UserStatus.Banned));
-        var handler = new CreateFollowersCommandHandler(unitOfWork, userManager, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
+        HandlerTestContext.RegisterUsers(unitOfWork, HandlerTestContext.CreateUser(3, "yasakli", UserStatus.Banned));
+        var handler = new CreateFollowersCommandHandler(unitOfWork, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
 
         await Assert.ThrowsAsync<BadRequestException>(() => handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None));
     }
@@ -289,9 +287,9 @@ public class InteractionHandlerTests
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
         unitOfWork.FollowerRepository.CreateIfNotExistsAsync(Arg.Any<Follower>(), Arg.Any<Notification?>(), Arg.Any<CancellationToken>()).Returns((new Follower { Id = 33 }, true));
-        var userManager = HandlerTestContext.CreateUserManager(HandlerTestContext.CreateUser(3));
+        HandlerTestContext.RegisterUsers(unitOfWork, HandlerTestContext.CreateUser(3));
         var notificationService = Substitute.For<INotificationService>();
-        var handler = new CreateFollowersCommandHandler(unitOfWork, userManager, NullLogger<CreateFollowersCommandHandler>.Instance, notificationService);
+        var handler = new CreateFollowersCommandHandler(unitOfWork, NullLogger<CreateFollowersCommandHandler>.Instance, notificationService);
 
         var response = await handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None);
 
@@ -306,8 +304,8 @@ public class InteractionHandlerTests
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
         unitOfWork.FollowerRepository.CreateIfNotExistsAsync(Arg.Any<Follower>(), Arg.Any<Notification?>(), Arg.Any<CancellationToken>()).Returns((new Follower { Id = 33 }, false));
-        var userManager = HandlerTestContext.CreateUserManager(HandlerTestContext.CreateUser(3));
-        var handler = new CreateFollowersCommandHandler(unitOfWork, userManager, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
+        HandlerTestContext.RegisterUsers(unitOfWork, HandlerTestContext.CreateUser(3));
+        var handler = new CreateFollowersCommandHandler(unitOfWork, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
 
         var response = await handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None);
 
@@ -331,8 +329,8 @@ public class InteractionHandlerTests
     public async Task GetFollowerStatus_BannedTargetUser_ShouldThrowNotFound()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        var userManager = HandlerTestContext.CreateUserManager(HandlerTestContext.CreateUser(3, "yasakli", UserStatus.Banned));
-        var handler = new GetFollowerStatusQueryHandler(unitOfWork, userManager);
+        HandlerTestContext.RegisterUsers(unitOfWork, HandlerTestContext.CreateUser(3, "yasakli", UserStatus.Banned));
+        var handler = new GetFollowerStatusQueryHandler(unitOfWork);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new GetFollowerStatusQuery { UserId = 9, FollowingId = 3 }, CancellationToken.None));
     }
@@ -342,8 +340,8 @@ public class InteractionHandlerTests
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
         unitOfWork.FollowerRepository.GetByUsersAsync(9, 3, Arg.Any<CancellationToken>()).Returns(new Follower { Id = 33 });
-        var userManager = HandlerTestContext.CreateUserManager(HandlerTestContext.CreateUser(3));
-        var handler = new GetFollowerStatusQueryHandler(unitOfWork, userManager);
+        HandlerTestContext.RegisterUsers(unitOfWork, HandlerTestContext.CreateUser(3));
+        var handler = new GetFollowerStatusQueryHandler(unitOfWork);
 
         var response = await handler.Handle(new GetFollowerStatusQuery { UserId = 9, FollowingId = 3 }, CancellationToken.None);
 
@@ -355,8 +353,8 @@ public class InteractionHandlerTests
     public async Task GetFollowersByUserId_BannedUser_ShouldThrowNotFound()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        var userManager = HandlerTestContext.CreateUserManager(HandlerTestContext.CreateUser(3, "yasakli", UserStatus.Banned));
-        var handler = new GetAllFollowersByUserIdQueryHandler(unitOfWork, userManager);
+        HandlerTestContext.RegisterUsers(unitOfWork, HandlerTestContext.CreateUser(3, "yasakli", UserStatus.Banned));
+        var handler = new GetAllFollowersByUserIdQueryHandler(unitOfWork);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new GetAllFollowersByUserIdQuery { UserId = 3 }, CancellationToken.None));
     }
@@ -367,8 +365,8 @@ public class InteractionHandlerTests
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
         var items = new List<FollowerDto> { new() { Id = 1, UserId = 9 } };
         unitOfWork.FollowerRepository.GetPagedFollowersByUserIdAsync(3, 1, 20, Arg.Any<CancellationToken>()).Returns((items, 1));
-        var userManager = HandlerTestContext.CreateUserManager(HandlerTestContext.CreateUser(3));
-        var handler = new GetAllFollowersByUserIdQueryHandler(unitOfWork, userManager);
+        HandlerTestContext.RegisterUsers(unitOfWork, HandlerTestContext.CreateUser(3));
+        var handler = new GetAllFollowersByUserIdQueryHandler(unitOfWork);
 
         var result = await handler.Handle(new GetAllFollowersByUserIdQuery { UserId = 3, Page = 1, Size = 20 }, CancellationToken.None);
 
@@ -379,9 +377,8 @@ public class InteractionHandlerTests
     public async Task GetFollowingsByUserId_MissingUser_ShouldThrowNotFound()
     {
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
-        var userManager = HandlerTestContext.CreateUserManager();
-        userManager.FindByIdAsync("3").Returns((User?)null);
-        var handler = new GetAllFollowingsByUserIdQueryHandler(unitOfWork, userManager);
+        unitOfWork.UserRepository.GetByIdAsync(3, Arg.Any<CancellationToken>()).Returns((User?)null);
+        var handler = new GetAllFollowingsByUserIdQueryHandler(unitOfWork);
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new GetAllFollowingsByUserIdQuery { UserId = 3 }, CancellationToken.None));
     }

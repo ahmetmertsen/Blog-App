@@ -6,7 +6,6 @@ using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Entities.Identity;
 using buduns_server.Domain.Enums;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -20,14 +19,12 @@ namespace buduns_server.Application.Features.Report.Commands.CreateUserReport
     public class CreateUserReportCommandHandler : IRequestHandler<CreateUserReportCommand, CreateUserReportCommandResponse>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly UserManager<User> _userManager;
         private readonly ILogger<CreateUserReportCommandHandler> _logger;
         private readonly ReportPolicyOptions _reportPolicyOptions;
 
-        public CreateUserReportCommandHandler(IUnitOfWork unitOfWork, UserManager<User> userManager, ILogger<CreateUserReportCommandHandler> logger, IOptions<ReportPolicyOptions> reportPolicyOptions)
+        public CreateUserReportCommandHandler(IUnitOfWork unitOfWork, ILogger<CreateUserReportCommandHandler> logger, IOptions<ReportPolicyOptions> reportPolicyOptions)
         {
             _unitOfWork = unitOfWork;
-            _userManager = userManager;
             _logger = logger;
             _reportPolicyOptions = reportPolicyOptions.Value;
         }
@@ -39,7 +36,7 @@ namespace buduns_server.Application.Features.Report.Commands.CreateUserReport
                 throw new BadRequestException("Kendinizi şikayet edemezsiniz.");
             }
                 
-            User? targetUser = await _userManager.FindByIdAsync(request.TargetUserId.ToString());
+            User? targetUser = await _unitOfWork.UserRepository.GetByIdAsync(request.TargetUserId, cancellationToken);
             if (targetUser == null)
             {
                 throw new NotFoundException("Şikayet edilen kullanıcı bulunamadı.");

@@ -21,6 +21,7 @@ namespace buduns_server.Application.UnitOfWork
         public IModerationActionRepository ModerationActionRepository { get; }
         public IEndpointRepository EndpointRepository { get; }
         public IMenuRepository MenuRepository { get; }
+        public IUserRepository UserRepository { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }

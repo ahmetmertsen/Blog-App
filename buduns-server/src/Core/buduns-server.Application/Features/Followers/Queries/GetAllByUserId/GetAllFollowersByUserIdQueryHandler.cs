@@ -4,24 +4,21 @@ using buduns_server.Application.UnitOfWork;
 using buduns_server.Domain.Entities.Identity;
 using buduns_server.Domain.Enums;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 
 namespace buduns_server.Application.Features.Followers.Queries.GetAllByUserId
 {
     public class GetAllFollowersByUserIdQueryHandler : IRequestHandler<GetAllFollowersByUserIdQuery, PagedResponse<FollowerDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly UserManager<User> _userManager;
 
-        public GetAllFollowersByUserIdQueryHandler(IUnitOfWork unitOfWork, UserManager<User> userManager)
+        public GetAllFollowersByUserIdQueryHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _userManager = userManager;
         }
 
         public async Task<PagedResponse<FollowerDto>> Handle(GetAllFollowersByUserIdQuery request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByIdAsync(request.UserId.ToString());
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(request.UserId, cancellationToken);
             if (user == null || user.Status == UserStatus.Banned)
             {
                 throw new NotFoundException("Kullanıcı bulunamadı.");

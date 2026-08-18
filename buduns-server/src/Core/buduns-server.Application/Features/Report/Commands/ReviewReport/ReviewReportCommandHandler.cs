@@ -6,7 +6,6 @@ using buduns_server.Domain.Entities;
 using buduns_server.Domain.Entities.Identity;
 using buduns_server.Domain.Enums;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using ReportEntity = buduns_server.Domain.Entities.Report;
 
@@ -15,15 +14,13 @@ namespace buduns_server.Application.Features.Report.Commands.ReviewReport
     public class ReviewReportCommandHandler : IRequestHandler<ReviewReportCommand, ReviewReportCommandResponse>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly UserManager<User> _userManager;
         private readonly ILogger<ReviewReportCommandHandler> _logger;
         private readonly IAuthSessionService _authSessionService;
         private readonly INotificationService _notificationService;
 
-        public ReviewReportCommandHandler(IUnitOfWork unitOfWork, UserManager<User> userManager, ILogger<ReviewReportCommandHandler> logger, IAuthSessionService authSessionService, INotificationService notificationService)
+        public ReviewReportCommandHandler(IUnitOfWork unitOfWork, ILogger<ReviewReportCommandHandler> logger, IAuthSessionService authSessionService, INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
-            _userManager = userManager;
             _logger = logger;
             _authSessionService = authSessionService;
             _notificationService = notificationService;
@@ -159,14 +156,14 @@ namespace buduns_server.Application.Features.Report.Commands.ReviewReport
                     await AddTargetNotificationAsync(warnedUserId, NotificationType.MODERATION_WARNING, "Hesabınız bir topluluk kuralı ihlali nedeniyle uyarıldı.", null, null, cancellationToken);
                     return null;
                 case ModerationActionType.SuspendUser:
-                    var suspendedUser = await GetActionTargetUserAsync(report);
+                    var suspendedUser = await GetActionTargetUserAsync(report, cancellationToken);
                     var suspensionEnd = DateTime.UtcNow.AddDays(request.SuspensionDays!.Value);
                     suspendedUser.Status = UserStatus.Suspended;
                     suspendedUser.SuspendedUntil = suspensionEnd;
                     await AddTargetNotificationAsync(suspendedUser.Id, NotificationType.ACCOUNT_SUSPENDED, $"Hesabınız {request.SuspensionDays.Value} gün süreyle askıya alındı.", null, null, cancellationToken);
                     return suspensionEnd;
                 case ModerationActionType.BanUser:
-                    var bannedUser = await GetActionTargetUserAsync(report);
+                    var bannedUser = await GetActionTargetUserAsync(report, cancellationToken);
                     bannedUser.Status = UserStatus.Banned;
                     bannedUser.SuspendedUntil = null;
                     await AddTargetNotificationAsync(bannedUser.Id, NotificationType.ACCOUNT_BANNED, "Hesabınız moderasyon kararıyla kalıcı olarak yasaklandı.", null, null, cancellationToken);
@@ -211,10 +208,10 @@ namespace buduns_server.Application.Features.Report.Commands.ReviewReport
             }
         }
 
-        private async Task<User> GetActionTargetUserAsync(ReportEntity report)
+        private async Task<User> GetActionTargetUserAsync(ReportEntity report, CancellationToken cancellationToken)
         {
             var targetUserId = ResolveActionTargetUserId(report, ModerationActionType.WarnUser) ?? throw new NotFoundException("Moderasyon uygulanacak kullanıcı bulunamadı.");
-            return await _userManager.FindByIdAsync(targetUserId.ToString()) ?? throw new NotFoundException("Moderasyon uygulanacak kullanıcı bulunamadı.");
+            return await _unitOfWork.UserRepository.GetByIdAsync(targetUserId, cancellationToken) ?? throw new NotFoundException("Moderasyon uygulanacak kullanıcı bulunamadı.");
         }
 
         private static int? ResolveActionTargetUserId(ReportEntity report, ModerationActionType actionType)

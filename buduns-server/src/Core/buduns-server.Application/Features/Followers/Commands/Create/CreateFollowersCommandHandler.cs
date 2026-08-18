@@ -6,7 +6,6 @@ using buduns_server.Domain.Entities;
 using buduns_server.Domain.Entities.Identity;
 using buduns_server.Domain.Enums;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
 namespace buduns_server.Application.Features.Followers.Commands.Create
@@ -14,14 +13,12 @@ namespace buduns_server.Application.Features.Followers.Commands.Create
     public class CreateFollowersCommandHandler : IRequestHandler<CreateFollowersCommand, CreateFollowersCommandResponse>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly UserManager<User> _userManager;
         private readonly ILogger<CreateFollowersCommandHandler> _logger;
         private readonly INotificationService _notificationService;
 
-        public CreateFollowersCommandHandler(IUnitOfWork unitOfWork, UserManager<User> userManager, ILogger<CreateFollowersCommandHandler> logger, INotificationService notificationService)
+        public CreateFollowersCommandHandler(IUnitOfWork unitOfWork, ILogger<CreateFollowersCommandHandler> logger, INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
-            _userManager = userManager;
             _logger = logger;
             _notificationService = notificationService;
         }
@@ -33,7 +30,7 @@ namespace buduns_server.Application.Features.Followers.Commands.Create
                 throw new BadRequestException("Kullanıcı kendisini takip edemez!");
             }
 
-            var followingUser = await _userManager.FindByIdAsync(request.FollowingId.ToString());
+            var followingUser = await _unitOfWork.UserRepository.GetByIdAsync(request.FollowingId, cancellationToken);
             if (followingUser == null)
             {
                 throw new NotFoundException("Takip edilecek kullanıcı bulunamadı.");
