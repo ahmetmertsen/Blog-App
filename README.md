@@ -6,7 +6,7 @@ Buduns, blog altyapısı üzerine kurulan sosyal platform API'sidir. Proje; kull
 
 ## Projenin Özellikleri
 
-Teknolojiler: .NET 8, ASP.NET Core Web API, Entity Framework Core, PostgreSQL, ASP.NET Core Identity, MediatR, CQRS, FluentValidation, AutoMapper, JWT Bearer Authentication, Serilog, Seq, Swagger, xUnit
+Teknolojiler: .NET 8, ASP.NET Core Web API, Entity Framework Core, PostgreSQL, Redis, ASP.NET Core Identity, MediatR, CQRS, FluentValidation, JWT Bearer Authentication, Serilog, Seq, Swagger, xUnit, Testcontainers
 
 Mimari: Onion Architecture / katmanlı backend yapısı: Domain, Application, Persistence, Infrastructure ve WebAPI
 
@@ -16,6 +16,9 @@ Uygulama Akışı:
 - MediatR ile controller -> handler akışı
 - FluentValidation ile feature bazlı validator yapısı
 - MediatR pipeline içinde validation, logging, current user ve account status kontrolleri
+- İstisnasız her cevap ortak `ApiResponse` zarfında döner: `{ isSuccess, data, error, traceId }`
+- Açılışta seeder'lar çalışır: sistem rolleri, ilk admin, endpoint yetki kataloğu ve mail şablonları
+- `daily-top50` gibi ağır sorgular ve endpoint yetkileri Redis'te önbelleklenir
 
 Kimlik ve Güvenlik:
 
@@ -50,6 +53,12 @@ Logging ve Gözlemlenebilirlik:
 
 
 
+## Depo Yapısı
+
+- `buduns-server/` — .NET 8 API (bu dokümanın konusu)
+- `buduns-web/` — Vite + React 19 istemci
+- `docker-compose.yml` — PostgreSQL, Redis, Seq ve API'yi birlikte ayağa kaldırır. Backend kodu değiştiyse `--build` ile çalıştırılmalı
+
 ## Katmanlar
 
 ### WebAPI
@@ -69,7 +78,8 @@ Logging ve Gözlemlenebilirlik:
   - `LoggingBehavior`
   - `CurrentUserBehavior`
   - `AccountStatusBehavior`
-- DTO'lar, mapping profilleri, servis arayüzleri, repository arayüzleri ve uygulama exception'ları bu katmanda yer alır.
+- DTO'lar, elle yazılan mapping'ler, servis arayüzleri, repository arayüzleri ve uygulama exception'ları bu katmanda yer alır.
+- Bu katmana EF Core referansı eklenmez; veri erişimi `IUnitOfWork` ve repository soyutlamaları üzerinden yapılır.
 
 ### Domain
 
