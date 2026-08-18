@@ -1,0 +1,6 @@
+# Satir sonu tek kural: depoda ve calisma kopyasinda LF.
+# Oncesinde 211 CRLF / 412 LF / 46 karisik satir sonlu dosya vardi; ayni dosya
+# iki makinede farkli gorunuyor, diff'ler gercek degisikligi gizliyordu.
+* text=auto eol=lf
+
+*.png binary

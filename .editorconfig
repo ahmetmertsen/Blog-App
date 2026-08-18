@@ -6,8 +6,9 @@ root = true
 # U+FFFD'ye donusur. Yani ayni kaynak, derlendigi makineye gore farkli metin
 # uretir. Bu ayar editorlerin dosyalari yanlislikla ANSI kaydetmesini onler.
 #
-# Satir sonu ayari bilerek konulmadi: depoda su an CRLF/LF karisik ve
-# core.autocrlf=true ile calisiliyor. Zorlamak genis bir gurultulu diff
-# uretir; ayri bir is olarak .gitattributes ile ele alinmali.
+# Satir sonu LF: .gitattributes depoya ve checkout'a LF dayatiyor, bu satir da
+# editorlerin yeni dosyalari CRLF ile yazmasini onluyor. Ikisi olmadan calisma
+# kopyasi yeniden karisir.
 [*]
 charset = utf-8
+end_of_line = lf
