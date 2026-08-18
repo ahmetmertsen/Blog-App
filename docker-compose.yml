@@ -84,6 +84,7 @@ services:
       Cors__AllowedOrigins__0: ${CORS_ORIGIN:-http://localhost:5173}
       Mail__Username: ${MAIL_USERNAME:-}
       Mail__Password: ${MAIL_PASSWORD:-}
+      BootstrapAdmin__Email: ${BOOTSTRAP_ADMIN_EMAIL:-}
     ports:
       - "8080:8080"
     depends_on:

@@ -28,19 +28,26 @@ namespace buduns_server.Persistence.Services
 
         public async Task SeedAsync(CancellationToken cancellationToken)
         {
-            var email = _options.Value.Email;
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                _logger.LogDebug("Bootstrap admin e-postasi yapilandirilmamis, yukseltme yapilmadi.");
-                return;
-            }
-
-            // Sistemde admin varsa bir daha karisilmaz; aksi halde her acilis
-            // elle alinmis bir admin yetkisini geri getirirdi.
+            // Once admin var mi diye bakilir: yapilandirma eksikligini yalnizca
+            // gercekten onemli oldugu durumda (sistemde hic admin yokken)
+            // raporlayabilmek icin. Sistemde admin varsa bir daha karisilmaz;
+            // aksi halde her acilis elle alinmis bir admin yetkisini geri getirirdi.
             var existingAdmins = await _userManager.GetUsersInRoleAsync(RoleConstants.Admin);
             if (existingAdmins.Count > 0)
             {
                 _logger.LogDebug("Sistemde {AdminCount} admin mevcut, bootstrap yukseltmesi atlandi.", existingAdmins.Count);
+                return;
+            }
+
+            var email = _options.Value.Email;
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                // Admin'i olmayan bir sistem yonetilemez. Bu durumda sessiz
+                // kalmak, yapilandirmayi baska bir dosyaya yazip bekleyen
+                // birini saatlerce oyalayabilir.
+                _logger.LogWarning(
+                    "Sistemde hic admin yok ve '{SettingName}' yapilandirilmamis. Yonetim uclari kullanilamayacak.",
+                    $"{BootstrapAdminOptions.SectionName}:{nameof(BootstrapAdminOptions.Email)}");
                 return;
             }
 

@@ -18,14 +18,31 @@ public class AdminSeederTests
     private const string ConfiguredEmail = "bootstrap@buduns.test";
 
     [Fact]
-    public async Task SeedAsync_EmailNotConfigured_ShouldDoNothing()
+    public async Task SeedAsync_EmailNotConfigured_ShouldNotPromoteAnyone()
     {
         var userManager = CreateUserManager();
+        userManager.GetUsersInRoleAsync(RoleConstants.Admin).Returns(new List<User>());
 
         await CreateSeeder(userManager, email: null).SeedAsync(CancellationToken.None);
 
-        await userManager.DidNotReceiveWithAnyArgs().GetUsersInRoleAsync(default!);
+        await userManager.DidNotReceiveWithAnyArgs().FindByEmailAsync(default!);
         await userManager.DidNotReceiveWithAnyArgs().AddToRoleAsync(default!, default!);
+    }
+
+    /// <summary>
+    /// Yapilandirma eksikligi yalnizca sistemde hic admin yokken anlamli;
+    /// admin varken yapilandirma hic okunmamali ki gereksiz uyari uretilmesin.
+    /// </summary>
+    [Fact]
+    public async Task SeedAsync_EmailNotConfiguredButAdminExists_ShouldStopAtTheAdminCheck()
+    {
+        var userManager = CreateUserManager();
+        userManager.GetUsersInRoleAsync(RoleConstants.Admin).Returns(new List<User> { new() { Id = 7, FullName = "Mevcut Admin" } });
+
+        await CreateSeeder(userManager, email: null).SeedAsync(CancellationToken.None);
+
+        await userManager.Received(1).GetUsersInRoleAsync(RoleConstants.Admin);
+        await userManager.DidNotReceiveWithAnyArgs().FindByEmailAsync(default!);
     }
 
     [Fact]
