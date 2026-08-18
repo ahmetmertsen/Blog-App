@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Posts.Commands.Update
 {
-    public class UpdatePostsCommand : IRequest<UpdatePostsCommandResponse>, ICurrentUserRequest
+    public class UpdatePostsCommand : IRequest<UpdatePostsCommandResponse>, ITransactionalRequest, ICurrentUserRequest
     {
         public int Id { get; set; }
         public string Content { get; set; } = string.Empty;

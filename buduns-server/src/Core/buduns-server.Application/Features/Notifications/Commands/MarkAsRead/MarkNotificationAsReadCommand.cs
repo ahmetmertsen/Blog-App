@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace buduns_server.Application.Features.Notifications.Commands.MarkAsRead
 {
-    public class MarkNotificationAsReadCommand : IRequest<MarkNotificationAsReadCommandResponse>, ICurrentUserRequest
+    public class MarkNotificationAsReadCommand : IRequest<MarkNotificationAsReadCommandResponse>, ITransactionalRequest, ICurrentUserRequest
     {
         public int Id { get; set; }
 

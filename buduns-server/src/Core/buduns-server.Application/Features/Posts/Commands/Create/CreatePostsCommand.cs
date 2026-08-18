@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Posts.Commands.Create
 {
-    public class CreatePostsCommand : IRequest<CreatePostsCommandResponse>, ICurrentUserRequest
+    public class CreatePostsCommand : IRequest<CreatePostsCommandResponse>, ITransactionalRequest, ICurrentUserRequest
     {
         [JsonIgnore]
         public int UserId { get; set; }

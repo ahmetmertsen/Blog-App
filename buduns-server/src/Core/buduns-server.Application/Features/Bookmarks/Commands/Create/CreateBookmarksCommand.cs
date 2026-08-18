@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Bookmarks.Commands.Create
 {
-    public class CreateBookmarksCommand : IRequest<CreateBookmarksCommandResponse> , ICurrentUserRequest
+    public class CreateBookmarksCommand : IRequest<CreateBookmarksCommandResponse>, ITransactionalRequest , ICurrentUserRequest
     {
         public int PostId { get; set; }
 

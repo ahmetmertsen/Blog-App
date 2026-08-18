@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Followers.Commands.Create
 {
-    public class CreateFollowersCommand : IRequest<CreateFollowersCommandResponse>, ICurrentUserRequest
+    public class CreateFollowersCommand : IRequest<CreateFollowersCommandResponse>, ITransactionalRequest, ICurrentUserRequest
     {
         [JsonIgnore]
         public int UserId { get; set; }

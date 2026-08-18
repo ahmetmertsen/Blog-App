@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Users.Commands.AssignRoleToUser
 {
-    public class AssignRoleToUserCommand : IRequest<AssignRoleToUserCommandResponse>, ICurrentUserRequest
+    public class AssignRoleToUserCommand : IRequest<AssignRoleToUserCommandResponse>, ITransactionalRequest, ICurrentUserRequest
     {
         [JsonIgnore]
         public int UserId { get; set; }

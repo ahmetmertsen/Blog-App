@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Comments.Commands.Delete
 {
-    public class DeleteCommentsCommand : IRequest<DeleteCommentsCommandResponse>, ICurrentUserRequest
+    public class DeleteCommentsCommand : IRequest<DeleteCommentsCommandResponse>, ITransactionalRequest, ICurrentUserRequest
     {
         public int Id { get; set; }
 

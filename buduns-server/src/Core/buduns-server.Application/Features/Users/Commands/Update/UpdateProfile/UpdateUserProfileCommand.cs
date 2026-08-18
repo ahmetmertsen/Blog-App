@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Users.Commands.Update.UpdateProfile
 {
-    public class UpdateUserProfileCommand : IRequest<UpdateUserProfileCommandResponse>, ICurrentUserRequest
+    public class UpdateUserProfileCommand : IRequest<UpdateUserProfileCommandResponse>, ITransactionalRequest, ICurrentUserRequest
     {
         [JsonIgnore]
         public int UserId { get; set; }

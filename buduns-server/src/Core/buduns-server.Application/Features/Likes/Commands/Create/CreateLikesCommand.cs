@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Likes.Commands.Create
 {
-    public class CreateLikesCommand : IRequest<CreateLikesCommandResponse>, ICurrentUserRequest
+    public class CreateLikesCommand : IRequest<CreateLikesCommandResponse>, ITransactionalRequest, ICurrentUserRequest
     {
         [JsonIgnore]
         public int UserId { get; set; }

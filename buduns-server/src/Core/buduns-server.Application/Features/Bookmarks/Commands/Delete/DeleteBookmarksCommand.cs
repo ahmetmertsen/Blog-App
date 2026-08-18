@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Bookmarks.Commands.Delete
 {
-    public class DeleteBookmarksCommand : IRequest<DeleteBookmarksCommandResponse>, ICurrentUserRequest
+    public class DeleteBookmarksCommand : IRequest<DeleteBookmarksCommandResponse>, ITransactionalRequest, ICurrentUserRequest
     {
         public int PostId { get; set; }
 

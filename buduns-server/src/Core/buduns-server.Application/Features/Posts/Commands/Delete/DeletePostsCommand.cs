@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Posts.Commands.Delete
 {
-    public class DeletePostsCommand : IRequest<DeletePostsCommandResponse>, ICurrentUserRequest
+    public class DeletePostsCommand : IRequest<DeletePostsCommandResponse>, ITransactionalRequest, ICurrentUserRequest
     {
         public int Id { get; set; }
 

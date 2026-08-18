@@ -27,5 +27,23 @@ namespace buduns_server.Persistence.UnitOfWork
                 throw new ConcurrencyConflictException();
             }
         }
+
+        public async Task<TResult> ExecuteInTransactionAsync<TResult>(Func<CancellationToken, Task<TResult>> operation, CancellationToken cancellationToken)
+        {
+            // Sinir zaten acik: ikinci bir transaction acmak EF'te
+            // InvalidOperationException uretir. Mevcut sinira katilmak,
+            // ic ice cagriyi ayri bir isleme bolmekten de dogru.
+            if (_context.Database.CurrentTransaction != null)
+            {
+                return await operation(cancellationToken);
+            }
+
+            // Dispose commit edilmemis transaction'i geri alir; istisna
+            // yolunda ayrica RollbackAsync cagirmaya gerek yok.
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            var result = await operation(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return result;
+        }
     }
 }

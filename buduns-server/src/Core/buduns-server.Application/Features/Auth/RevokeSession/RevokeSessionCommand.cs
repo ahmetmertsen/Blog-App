@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace buduns_server.Application.Features.Auth.RevokeSession
 {
-    public class RevokeSessionCommand : IRequest<RevokeSessionCommandResponse>, ICurrentUserRequest, IAllowUnverifiedEmail
+    public class RevokeSessionCommand : IRequest<RevokeSessionCommandResponse>, ITransactionalRequest, ICurrentUserRequest, IAllowUnverifiedEmail
     {
         [JsonIgnore]
         public int UserId { get; set; }

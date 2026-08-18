@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Notifications.Commands.Delete
 {
-    public class DeleteNotificationCommand : IRequest<DeleteNotificationCommandResponse>, ICurrentUserRequest
+    public class DeleteNotificationCommand : IRequest<DeleteNotificationCommandResponse>, ITransactionalRequest, ICurrentUserRequest
     {
         public int Id { get; set; }
 

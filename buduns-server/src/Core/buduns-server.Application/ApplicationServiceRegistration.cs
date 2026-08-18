@@ -23,6 +23,10 @@ namespace buduns_server.Application
                 cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
                 cfg.AddOpenBehavior(typeof(CurrentUserBehavior<,>));
                 cfg.AddOpenBehavior(typeof(AccountStatusBehavior<,>));
+                // En sonda: transaction sinirini handler'a en yakin yere kurar.
+                // Doğrulama ve hesap durumu kontrolleri disarda kalir, boylece
+                // reddedilen bir istek bos transaction acmaz.
+                cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
             });
 
             services.AddValidatorsFromAssembly(typeof(ApplicationServiceRegistration).Assembly);

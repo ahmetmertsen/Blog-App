@@ -1,3 +1,4 @@
+using buduns_server.Application.Common.Interfaces;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Tags.Commands.Delete
 {
-    public record DeleteTagsCommand(int Id) : IRequest<DeleteTagsCommandResponse>
+    public record DeleteTagsCommand(int Id) : IRequest<DeleteTagsCommandResponse>, ITransactionalRequest
     {
     }
 }

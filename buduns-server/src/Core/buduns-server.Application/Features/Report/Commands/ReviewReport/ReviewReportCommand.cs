@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Report.Commands.ReviewReport
 {
-    public class ReviewReportCommand : IRequest<ReviewReportCommandResponse>, ICurrentUserRequest
+    public class ReviewReportCommand : IRequest<ReviewReportCommandResponse>, ITransactionalRequest, ICurrentUserRequest
     {
         [JsonIgnore]
         public int UserId { get; set; }

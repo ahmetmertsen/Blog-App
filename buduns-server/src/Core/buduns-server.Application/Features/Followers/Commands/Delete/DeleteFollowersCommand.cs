@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Followers.Commands.Delete
 {
-    public class DeleteFollowersCommand : IRequest<DeleteFollowersCommandResponse>, ICurrentUserRequest
+    public class DeleteFollowersCommand : IRequest<DeleteFollowersCommandResponse>, ITransactionalRequest, ICurrentUserRequest
     {
         [JsonIgnore]
         public int UserId { get; set; }

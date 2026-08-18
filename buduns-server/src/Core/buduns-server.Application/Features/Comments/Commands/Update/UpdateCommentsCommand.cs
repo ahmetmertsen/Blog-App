@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace buduns_server.Application.Features.Comments.Commands.Update
 {
-    public class UpdateCommentsCommand : IRequest<UpdateCommentsCommandResponse>, ICurrentUserRequest
+    public class UpdateCommentsCommand : IRequest<UpdateCommentsCommandResponse>, ITransactionalRequest, ICurrentUserRequest
     {
         [JsonIgnore]
         public int Id { get; set; }

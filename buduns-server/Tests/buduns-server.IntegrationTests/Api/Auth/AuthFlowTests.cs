@@ -108,6 +108,50 @@ public sealed class AuthFlowTests : IntegrationTestBase
             .Should().Be((await unknownUser.ReadErrorAsync()).Message);
     }
 
+    /// <summary>
+    /// Basarisiz giris sayaci istisna firlatilmadan once yaziliyor. Bu davranis
+    /// kayit altinda degildi ve transaction siniri gelince fark edildi: giris
+    /// komutu transaction'a alinsaydi rollback sayaci da silecek, hesap asla
+    /// kilitlenmeyecekti. Test o sozlesmeyi kilitliyor.
+    /// </summary>
+    [Fact]
+    public async Task Failed_login_attempts_should_survive_and_lock_the_account()
+    {
+        await CreateUserAsync("lockout-user");
+        using var client = Factory.CreateHttpsClient();
+        var wrongCredentials = new LoginUserCommand("lockout-user", "YanlisSifre1!");
+
+        // Identity yapilandirmasi: MaxFailedAccessAttempts = 5.
+        for (var attempt = 0; attempt < 4; attempt++)
+        {
+            (await client.PostAsJsonAsync("/api/Auth/login", wrongCredentials)).StatusCode
+                .Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        var afterFourFailures = await ReadLockoutStateAsync();
+        afterFourFailures.AccessFailedCount.Should().Be(4, "sayac istisnaya ragmen kalici olmali");
+        afterFourFailures.LockoutEnd.Should().BeNull("esik asilmadan kilitlenmemeli");
+
+        (await client.PostAsJsonAsync("/api/Auth/login", wrongCredentials)).StatusCode
+            .Should().Be(HttpStatusCode.Unauthorized);
+
+        // Esige gelince Identity sayaci sifirlayip kilit bitis zamanini yaziyor.
+        var afterLimit = await ReadLockoutStateAsync();
+        afterLimit.LockoutEnd.Should().NotBeNull("besinci hatali denemede hesap kilitlenmeli");
+
+        // Dogru sifreyle bile girilemez: hesap kilitli.
+        var afterLockout = await client.PostAsJsonAsync("/api/Auth/login", new LoginUserCommand("lockout-user", "Integration123!"));
+
+        afterLockout.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        (await afterLockout.ReadErrorAsync()).Message.Should().Contain("Çok fazla başarısız giriş");
+
+        Task<(int AccessFailedCount, DateTimeOffset? LockoutEnd)> ReadLockoutStateAsync() =>
+            Factory.ExecuteScopeAsync(services => services.GetRequiredService<BudunsDbContext>().Users
+                .Where(user => user.UserName == "lockout-user")
+                .Select(user => new ValueTuple<int, DateTimeOffset?>(user.AccessFailedCount, user.LockoutEnd))
+                .SingleAsync());
+    }
+
     [Fact]
     public async Task Login_with_email_should_work_like_login_with_username()
     {
