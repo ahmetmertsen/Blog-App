@@ -73,8 +73,9 @@ public sealed class ReportTests : IntegrationTestBase
 
     /// <summary>
     /// PostRepository.GetByIdAsync yalnizca gorunur paylasimlari donduruyor;
-    /// bu yuzden gizlenmis/silinmis bir paylasim handler'daki "sikayet edilmeye
-    /// uygun degil" dalina hic ulasmadan 404 uretir. Beklenen sozlesme budur.
+    /// gizlenmis/silinmis bir paylasim 404 uretir. Handler'da ayrica bir
+    /// gorunurluk dali yok, o yuzden bu test ayni zamanda VisiblePosts()
+    /// filtresinin kilidi: filtre gevserse burasi 404 dondurmez.
     /// </summary>
     [Fact]
     public async Task Report_on_a_deleted_post_should_be_rejected()

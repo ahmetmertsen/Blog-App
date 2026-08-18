@@ -42,11 +42,9 @@ namespace buduns_server.Application.Features.Report.Commands.CreatePostReport
                 throw new BadRequestException("Kendi gönderinizi şikayet edemezsiniz.");
             }
 
-            if (post.Status != PostStatus.Published || !post.isPublished || post.isDeleted)
-            {
-                throw new BadRequestException("Bu gönderi şikayet edilmeye uygun değil.");
-            }
-
+            // Gorunurluk kontrolu burada yok: PostRepository.GetByIdAsync
+            // yalnizca gorunur paylasimlari donduruyor, gizlenmis bir paylasim
+            // yukaridaki NotFound dalinda kaliyor.
             var recentReportCount = await _unitOfWork.ReportRepository.CountRecentReportsByUserAsync(request.UserId, DateTime.UtcNow.AddHours(-24), cancellationToken);
             var dailyReportLimit = Math.Max(1, _reportPolicyOptions.DailyReportLimit);
             if (recentReportCount >= dailyReportLimit)

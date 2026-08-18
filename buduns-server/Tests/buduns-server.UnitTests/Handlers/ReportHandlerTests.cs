@@ -60,19 +60,6 @@ public class ReportHandlerTests
         await Assert.ThrowsAsync<BadRequestException>(() => handler.Handle(new CreatePostReportCommand { PostId = 7, UserId = 9, Reason = ReportReason.Spam }, CancellationToken.None));
     }
 
-    [Theory]
-    [InlineData(PostStatus.HiddenByModerator, true, false)]
-    [InlineData(PostStatus.Published, false, false)]
-    [InlineData(PostStatus.Published, true, true)]
-    public async Task CreatePostReport_InvisiblePost_ShouldThrowBadRequest(PostStatus status, bool isPublished, bool isDeleted)
-    {
-        var unitOfWork = CreateUnitOfWork();
-        unitOfWork.PostRepository.GetByIdAsync(7).Returns(new Post { Id = 7, UserId = 3, Status = status, isPublished = isPublished, isDeleted = isDeleted });
-        var handler = new CreatePostReportCommandHandler(unitOfWork, NullLogger<CreatePostReportCommandHandler>.Instance, Options.Create(new ReportPolicyOptions()));
-
-        await Assert.ThrowsAsync<BadRequestException>(() => handler.Handle(new CreatePostReportCommand { PostId = 7, UserId = 9, Reason = ReportReason.Spam }, CancellationToken.None));
-    }
-
     [Fact]
     public async Task CreatePostReport_AtDailyLimit_ShouldThrowTooManyRequests()
     {
