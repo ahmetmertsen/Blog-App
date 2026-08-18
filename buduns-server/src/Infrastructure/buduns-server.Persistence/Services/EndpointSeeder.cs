@@ -113,7 +113,7 @@ namespace buduns_server.Persistence.Services
                 .OrderBy(code => code, StringComparer.Ordinal)
                 .ToList();
 
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveTranslatedAsync(cancellationToken);
 
             // Yeni kod, onbellekte "kaydi yok" olarak durabilir; o girdi
             // dusurulmezse uc TTL boyunca varsayilan rollerle degil, eski

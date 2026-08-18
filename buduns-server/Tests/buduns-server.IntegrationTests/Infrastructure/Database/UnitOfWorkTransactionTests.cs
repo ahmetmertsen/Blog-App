@@ -63,7 +63,6 @@ public sealed class UnitOfWorkTransactionTests : IntegrationTestBase
                 // Bu cagri kendi SaveChangesAsync'ini atiyor.
                 await followerRepository.CreateIfNotExistsAsync(
                     new Follower { FollowerId = follower.Id, FollowingId = following.Id, CreatedAt = DateTime.UtcNow, isActive = true, isDeleted = false },
-                    notification: null,
                     token);
 
                 throw new InvalidOperationException("is yarida kaldi");

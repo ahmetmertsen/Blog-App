@@ -28,7 +28,7 @@ namespace buduns_server.Persistence.Services
         {
             var session = CreateSession(userId, sessionId, tokenFamilyId, refreshToken, expiresAt);
             await _context.AuthSessions.AddAsync(session, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveTranslatedAsync(cancellationToken);
         }
 
         public async Task<AuthSessionRotationResult> RotateSessionAsync(string currentRefreshToken, Guid replacementSessionId, string replacementRefreshToken, DateTime replacementExpiresAt, CancellationToken cancellationToken)
@@ -60,7 +60,7 @@ namespace buduns_server.Persistence.Services
             {
                 currentSession.RevokedAt = DateTime.UtcNow;
                 currentSession.RevokedReason = "Expired";
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveTranslatedAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
                 throw new InvalidRefreshTokenException("Refresh token gecersiz veya suresi dolmus.");
             }
@@ -74,7 +74,7 @@ namespace buduns_server.Persistence.Services
             var replacement = CreateSession(currentSession.UserId, replacementSessionId, currentSession.TokenFamilyId, replacementRefreshToken, replacementExpiresAt);
 
             await _context.AuthSessions.AddAsync(replacement, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveTranslatedAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
             return new AuthSessionRotationResult(currentSession.UserId, replacementSessionId);
@@ -124,7 +124,7 @@ namespace buduns_server.Persistence.Services
             {
                 session.RevokedAt = DateTime.UtcNow;
                 session.RevokedReason = Limit(reason, 200);
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveTranslatedAsync(cancellationToken);
 
                 _logger.LogInformation(
                     "Auth session revoked. UserId: {UserId}, SessionId: {SessionId}, Reason: {Reason}",
@@ -151,7 +151,7 @@ namespace buduns_server.Persistence.Services
 
             if (activeSessions.Count > 0)
             {
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveTranslatedAsync(cancellationToken);
 
                 _logger.LogInformation(
                     "All auth sessions revoked. UserId: {UserId}, SessionCount: {SessionCount}, Reason: {Reason}",
@@ -187,7 +187,7 @@ namespace buduns_server.Persistence.Services
                 session.RevokedReason = reason;
             }
 
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveTranslatedAsync(cancellationToken);
         }
 
         private static string HashRefreshToken(string refreshToken)

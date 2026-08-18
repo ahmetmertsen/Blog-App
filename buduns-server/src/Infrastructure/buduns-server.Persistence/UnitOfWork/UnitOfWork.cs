@@ -14,19 +14,8 @@ namespace buduns_server.Persistence.UnitOfWork
             _context = context;
         }
 
-        // EF Core'a ozgu eszamanlilik istisnasi burada uygulama seviyesine
-        // cevriliyor; boylece Application katmani EF Core'a bagli kalmiyor.
-        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
-        {
-            try
-            {
-                return await _context.SaveChangesAsync(cancellationToken);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                throw new ConcurrencyConflictException();
-            }
-        }
+        public Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+            => _context.SaveTranslatedAsync(cancellationToken);
 
         public async Task<TResult> ExecuteInTransactionAsync<TResult>(Func<CancellationToken, Task<TResult>> operation, CancellationToken cancellationToken)
         {

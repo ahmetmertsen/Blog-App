@@ -32,7 +32,7 @@ namespace buduns_server.Persistence.Repositories
                 existingBookmark.isActive = true;
                 existingBookmark.isDeleted = false;
                 existingBookmark.CreatedAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveTranslatedAsync(cancellationToken);
                 return (existingBookmark, true);
             }
 
@@ -40,7 +40,10 @@ namespace buduns_server.Persistence.Repositories
 
             try
             {
-                await _context.SaveChangesAsync(cancellationToken);
+                // Bu flush bir commit degil: benzersizlik ihlalini
+                // yakalayabilmek icin yazmanin veritabanina inmesi gerekiyor.
+                // Commit sinirini TransactionBehavior yonetiyor.
+                await _context.SaveTranslatedAsync(cancellationToken);
                 return (bookmark, true);
             }
             catch (DbUpdateException exception) when (IsDuplicateBookmark(exception))
@@ -66,8 +69,9 @@ namespace buduns_server.Persistence.Repositories
                 return false;
             }
 
+            // Kaydetme cagirana birakiliyor: silme, ayni istekteki diger
+            // yazmalarla ayni sinirda kalici olmali.
             _context.Bookmarks.Remove(bookmark);
-            await _context.SaveChangesAsync(cancellationToken);
             return true;
         }
 

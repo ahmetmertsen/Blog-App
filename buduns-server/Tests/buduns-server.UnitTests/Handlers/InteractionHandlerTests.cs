@@ -35,13 +35,15 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateLike_NewLike_ShouldReportCreatedAndBuildCooldownNotification()
     {
+        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
+        var notificationRepository = Substitute.For<INotificationRepository>();
         var likeRepository = Substitute.For<ILikeRepository>();
         var postRepository = Substitute.For<IPostRepository>();
         postRepository.GetVisibleOwnerIdAsync(7, Arg.Any<CancellationToken>()).Returns(3);
         var like = new Like { Id = 15, PostId = 7, UserId = 9 };
-        likeRepository.CreateIfNotExistsAsync(Arg.Any<Like>(), Arg.Any<Notification?>(), Arg.Any<CancellationToken>()).Returns((like, true));
+        likeRepository.CreateIfNotExistsAsync(Arg.Any<Like>(), Arg.Any<CancellationToken>()).Returns((like, true));
         var notificationService = Substitute.For<INotificationService>();
-        var handler = new CreateLikesCommandHandler(likeRepository, postRepository, notificationService);
+        var handler = new CreateLikesCommandHandler(likeRepository, postRepository, notificationRepository, unitOfWork, notificationService);
 
         var response = await handler.Handle(new CreateLikesCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
@@ -54,11 +56,13 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateLike_ExistingLike_ShouldReportAlreadyLikedWithoutFailing()
     {
+        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
+        var notificationRepository = Substitute.For<INotificationRepository>();
         var likeRepository = Substitute.For<ILikeRepository>();
         var postRepository = Substitute.For<IPostRepository>();
         postRepository.GetVisibleOwnerIdAsync(7, Arg.Any<CancellationToken>()).Returns(3);
-        likeRepository.CreateIfNotExistsAsync(Arg.Any<Like>(), Arg.Any<Notification?>(), Arg.Any<CancellationToken>()).Returns((new Like { Id = 15 }, false));
-        var handler = new CreateLikesCommandHandler(likeRepository, postRepository, Substitute.For<INotificationService>());
+        likeRepository.CreateIfNotExistsAsync(Arg.Any<Like>(), Arg.Any<CancellationToken>()).Returns((new Like { Id = 15 }, false));
+        var handler = new CreateLikesCommandHandler(likeRepository, postRepository, notificationRepository, unitOfWork, Substitute.For<INotificationService>());
 
         var response = await handler.Handle(new CreateLikesCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
@@ -68,10 +72,12 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateLike_InvisiblePost_ShouldThrowNotFound()
     {
+        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
+        var notificationRepository = Substitute.For<INotificationRepository>();
         var likeRepository = Substitute.For<ILikeRepository>();
         var postRepository = Substitute.For<IPostRepository>();
         postRepository.GetVisibleOwnerIdAsync(7, Arg.Any<CancellationToken>()).Returns((int?)null);
-        var handler = new CreateLikesCommandHandler(likeRepository, postRepository, Substitute.For<INotificationService>());
+        var handler = new CreateLikesCommandHandler(likeRepository, postRepository, notificationRepository, unitOfWork, Substitute.For<INotificationService>());
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new CreateLikesCommand { PostId = 7, UserId = 9 }, CancellationToken.None));
     }
@@ -81,9 +87,10 @@ public class InteractionHandlerTests
     [InlineData(false)]
     public async Task DeleteLike_ShouldSucceedRegardlessOfExistingLike(bool deleted)
     {
+        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
         var likeRepository = Substitute.For<ILikeRepository>();
         likeRepository.DeleteByUserAndPostAsync(9, 7, Arg.Any<CancellationToken>()).Returns(deleted);
-        var handler = new DeleteLikesCommandHandler(likeRepository);
+        var handler = new DeleteLikesCommandHandler(likeRepository, unitOfWork);
 
         var response = await handler.Handle(new DeleteLikesCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
@@ -228,9 +235,10 @@ public class InteractionHandlerTests
     [InlineData(false)]
     public async Task DeleteBookmark_ShouldSucceedRegardlessOfExistingBookmark(bool deleted)
     {
+        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
         var bookmarkRepository = Substitute.For<IBookmarkRepository>();
         bookmarkRepository.DeleteByUserAndPostAsync(9, 7, Arg.Any<CancellationToken>()).Returns(deleted);
-        var handler = new DeleteBookmarksCommandHandler(bookmarkRepository);
+        var handler = new DeleteBookmarksCommandHandler(bookmarkRepository, unitOfWork);
 
         var response = await handler.Handle(new DeleteBookmarksCommand { PostId = 7, UserId = 9 }, CancellationToken.None);
 
@@ -266,9 +274,11 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateFollower_SelfFollow_ShouldThrowBadRequestBeforeLookup()
     {
+        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
+        var notificationRepository = Substitute.For<INotificationRepository>();
         var followerRepository = Substitute.For<IFollowerRepository>();
         var userRepository = Substitute.For<IUserRepository>();
-        var handler = new CreateFollowersCommandHandler(followerRepository, userRepository, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
+        var handler = new CreateFollowersCommandHandler(followerRepository, notificationRepository, userRepository, unitOfWork, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
 
         await Assert.ThrowsAsync<BadRequestException>(() => handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 9 }, CancellationToken.None));
 
@@ -278,10 +288,12 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateFollower_MissingTargetUser_ShouldThrowNotFound()
     {
+        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
+        var notificationRepository = Substitute.For<INotificationRepository>();
         var followerRepository = Substitute.For<IFollowerRepository>();
         var userRepository = Substitute.For<IUserRepository>();
         userRepository.GetByIdAsync(3, Arg.Any<CancellationToken>()).Returns((User?)null);
-        var handler = new CreateFollowersCommandHandler(followerRepository, userRepository, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
+        var handler = new CreateFollowersCommandHandler(followerRepository, notificationRepository, userRepository, unitOfWork, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
 
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None));
     }
@@ -289,11 +301,12 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateFollower_BannedTargetUser_ShouldThrowBadRequest()
     {
+        var notificationRepository = Substitute.For<INotificationRepository>();
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
         var followerRepository = Substitute.For<IFollowerRepository>();
         var userRepository = Substitute.For<IUserRepository>();
         HandlerTestContext.RegisterUsers(userRepository, HandlerTestContext.CreateUser(3, "yasakli", UserStatus.Banned));
-        var handler = new CreateFollowersCommandHandler(followerRepository, userRepository, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
+        var handler = new CreateFollowersCommandHandler(followerRepository, notificationRepository, userRepository, unitOfWork, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
 
         await Assert.ThrowsAsync<BadRequestException>(() => handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None));
     }
@@ -301,13 +314,14 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateFollower_NewFollow_ShouldBuildDailyCooldownNotification()
     {
+        var notificationRepository = Substitute.For<INotificationRepository>();
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
         var userRepository = Substitute.For<IUserRepository>();
         var followerRepository = Substitute.For<IFollowerRepository>();
-        followerRepository.CreateIfNotExistsAsync(Arg.Any<Follower>(), Arg.Any<Notification?>(), Arg.Any<CancellationToken>()).Returns((new Follower { Id = 33 }, true));
+        followerRepository.CreateIfNotExistsAsync(Arg.Any<Follower>(), Arg.Any<CancellationToken>()).Returns((new Follower { Id = 33 }, true));
         HandlerTestContext.RegisterUsers(userRepository, HandlerTestContext.CreateUser(3));
         var notificationService = Substitute.For<INotificationService>();
-        var handler = new CreateFollowersCommandHandler(followerRepository, userRepository, NullLogger<CreateFollowersCommandHandler>.Instance, notificationService);
+        var handler = new CreateFollowersCommandHandler(followerRepository, notificationRepository, userRepository, unitOfWork, NullLogger<CreateFollowersCommandHandler>.Instance, notificationService);
 
         var response = await handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None);
 
@@ -320,12 +334,13 @@ public class InteractionHandlerTests
     [Fact]
     public async Task CreateFollower_ExistingFollow_ShouldReportAlreadyFollowing()
     {
+        var notificationRepository = Substitute.For<INotificationRepository>();
         var unitOfWork = HandlerTestContext.CreateUnitOfWork();
         var userRepository = Substitute.For<IUserRepository>();
         var followerRepository = Substitute.For<IFollowerRepository>();
-        followerRepository.CreateIfNotExistsAsync(Arg.Any<Follower>(), Arg.Any<Notification?>(), Arg.Any<CancellationToken>()).Returns((new Follower { Id = 33 }, false));
+        followerRepository.CreateIfNotExistsAsync(Arg.Any<Follower>(), Arg.Any<CancellationToken>()).Returns((new Follower { Id = 33 }, false));
         HandlerTestContext.RegisterUsers(userRepository, HandlerTestContext.CreateUser(3));
-        var handler = new CreateFollowersCommandHandler(followerRepository, userRepository, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
+        var handler = new CreateFollowersCommandHandler(followerRepository, notificationRepository, userRepository, unitOfWork, NullLogger<CreateFollowersCommandHandler>.Instance, Substitute.For<INotificationService>());
 
         var response = await handler.Handle(new CreateFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None);
 
@@ -337,9 +352,10 @@ public class InteractionHandlerTests
     [InlineData(false)]
     public async Task DeleteFollower_ShouldSucceedRegardlessOfExistingFollow(bool deleted)
     {
+        var unitOfWork = HandlerTestContext.CreateUnitOfWork();
         var followerRepository = Substitute.For<IFollowerRepository>();
         followerRepository.DeleteByUsersAsync(9, 3, Arg.Any<CancellationToken>()).Returns(deleted);
-        var handler = new DeleteFollowersCommandHandler(followerRepository, NullLogger<DeleteFollowersCommandHandler>.Instance);
+        var handler = new DeleteFollowersCommandHandler(followerRepository, unitOfWork, NullLogger<DeleteFollowersCommandHandler>.Instance);
 
         var response = await handler.Handle(new DeleteFollowersCommand { UserId = 9, FollowingId = 3 }, CancellationToken.None);
 

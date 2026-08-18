@@ -19,7 +19,7 @@ namespace buduns_server.Persistence.Repositories
             _context = context;
         }
 
-        public async Task<(Like Like, bool Created)> CreateIfNotExistsAsync(Like like, Notification? notification, CancellationToken cancellationToken)
+        public async Task<(Like Like, bool Created)> CreateIfNotExistsAsync(Like like, CancellationToken cancellationToken)
         {
             var existingLike = await _context.Likes.FirstOrDefaultAsync(item => item.UserId == like.UserId && item.PostId == like.PostId, cancellationToken);
             if (existingLike != null)
@@ -32,23 +32,23 @@ namespace buduns_server.Persistence.Repositories
                 existingLike.isActive = true;
                 existingLike.isDeleted = false;
                 existingLike.CreatedAt = DateTime.UtcNow;
-                await AddNotificationAsync(notification, cancellationToken);
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveTranslatedAsync(cancellationToken);
                 return (existingLike, true);
             }
 
             await _context.Likes.AddAsync(like, cancellationToken);
-            await AddNotificationAsync(notification, cancellationToken);
 
             try
             {
-                await _context.SaveChangesAsync(cancellationToken);
+                // Bu flush bir commit degil: benzersizlik ihlalini
+                // yakalayabilmek icin yazmanin veritabanina inmesi gerekiyor.
+                // Commit sinirini TransactionBehavior yonetiyor.
+                await _context.SaveTranslatedAsync(cancellationToken);
                 return (like, true);
             }
             catch (DbUpdateException exception) when (IsDuplicateLike(exception))
             {
                 _context.Entry(like).State = EntityState.Detached;
-                DetachAddedNotification(notification);
 
                 existingLike = await _context.Likes.AsNoTracking().FirstOrDefaultAsync(item => item.UserId == like.UserId && item.PostId == like.PostId, cancellationToken);
                 if (existingLike != null)
@@ -68,8 +68,9 @@ namespace buduns_server.Persistence.Repositories
                 return false;
             }
 
+            // Kaydetme cagirana birakiliyor: silme, ayni istekteki diger
+            // yazmalarla ayni sinirda kalici olmali.
             _context.Likes.Remove(like);
-            await _context.SaveChangesAsync(cancellationToken);
             return true;
         }
 
@@ -125,22 +126,6 @@ namespace buduns_server.Persistence.Repositories
         }
 
         private IQueryable<Like> VisibleLikes() => _context.Likes.Where(like => like.isActive && !like.isDeleted && like.Post.Status == PostStatus.Published && like.Post.isPublished && like.Post.isActive && !like.Post.isDeleted && like.Post.User.Status != UserStatus.Banned);
-
-        private async Task AddNotificationAsync(Notification? notification, CancellationToken cancellationToken)
-        {
-            if (notification != null)
-            {
-                await _context.Notifications.AddAsync(notification, cancellationToken);
-            }
-        }
-
-        private void DetachAddedNotification(Notification? notification)
-        {
-            if (notification != null && _context.Entry(notification).State == EntityState.Added)
-            {
-                _context.Entry(notification).State = EntityState.Detached;
-            }
-        }
 
         private static bool IsDuplicateLike(DbUpdateException exception) => exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: UserPostUniqueIndex };
     }

@@ -56,7 +56,7 @@ namespace buduns_server.Persistence.Services
             };
 
             await _context.VerificationChallenges.AddAsync(challenge, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveTranslatedAsync(cancellationToken);
             return code;
         }
 
@@ -89,13 +89,13 @@ namespace buduns_server.Persistence.Services
             {
                 challenge.AttemptCount++;
                 challenge.UpdateAt = now;
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveTranslatedAsync(cancellationToken);
                 throw new BadRequestException("Doğrulama kodu hatalı.");
             }
 
             challenge.ConsumedAt = now;
             challenge.UpdateAt = now;
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveTranslatedAsync(cancellationToken);
         }
 
         public async Task ValidateEmailChangeCodesAsync(int userId, string targetEmail, string oldEmailCode, string newEmailCode, CancellationToken cancellationToken)
@@ -120,7 +120,7 @@ namespace buduns_server.Persistence.Services
             {
                 MarkFailedAttempt(oldEmailChallenge, oldEmailCodeMatches, now);
                 MarkFailedAttempt(newEmailChallenge, newEmailCodeMatches, now);
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveTranslatedAsync(cancellationToken);
                 throw new BadRequestException("Doğrulama kodları hatalı.");
             }
 
@@ -128,7 +128,7 @@ namespace buduns_server.Persistence.Services
             oldEmailChallenge.UpdateAt = now;
             newEmailChallenge.ConsumedAt = now;
             newEmailChallenge.UpdateAt = now;
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveTranslatedAsync(cancellationToken);
         }
 
         private static string GenerateCode()

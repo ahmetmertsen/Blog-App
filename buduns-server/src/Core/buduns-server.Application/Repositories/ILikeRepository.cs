@@ -6,7 +6,7 @@ namespace buduns_server.Application.Repositories
 {
     public interface ILikeRepository : IRepository<Like>
     {
-        Task<(Like Like, bool Created)> CreateIfNotExistsAsync(Like like, Notification? notification, CancellationToken cancellationToken);
+        Task<(Like Like, bool Created)> CreateIfNotExistsAsync(Like like, CancellationToken cancellationToken);
         Task<bool> DeleteByUserAndPostAsync(int userId, int postId, CancellationToken cancellationToken);
         Task<Like?> GetByUserAndPostAsync(int userId, int postId, CancellationToken cancellationToken);
         Task<(List<LikeDto> Items, int TotalCount)> GetPagedByPostIdAsync(int postId, int page, int size, CancellationToken cancellationToken);

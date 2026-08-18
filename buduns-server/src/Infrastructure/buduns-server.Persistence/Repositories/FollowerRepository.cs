@@ -19,7 +19,7 @@ namespace buduns_server.Persistence.Repositories
             _context = context;
         }
 
-        public async Task<(Follower Follower, bool Created)> CreateIfNotExistsAsync(Follower follower, Notification? notification, CancellationToken cancellationToken)
+        public async Task<(Follower Follower, bool Created)> CreateIfNotExistsAsync(Follower follower, CancellationToken cancellationToken)
         {
             var existingFollow = await _context.Followers.FirstOrDefaultAsync(item => item.FollowerId == follower.FollowerId && item.FollowingId == follower.FollowingId, cancellationToken);
             if (existingFollow != null)
@@ -32,32 +32,23 @@ namespace buduns_server.Persistence.Repositories
                 existingFollow.isActive = true;
                 existingFollow.isDeleted = false;
                 existingFollow.CreatedAt = DateTime.UtcNow;
-                if (notification != null)
-                {
-                    await _context.Notifications.AddAsync(notification, cancellationToken);
-                }
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveTranslatedAsync(cancellationToken);
                 return (existingFollow, true);
             }
 
             await _context.Followers.AddAsync(follower, cancellationToken);
-            if (notification != null)
-            {
-                await _context.Notifications.AddAsync(notification, cancellationToken);
-            }
 
             try
             {
-                await _context.SaveChangesAsync(cancellationToken);
+                // Bu flush bir commit degil: benzersizlik ihlalini
+                // yakalayabilmek icin yazmanin veritabanina inmesi gerekiyor.
+                // Commit sinirini TransactionBehavior yonetiyor.
+                await _context.SaveTranslatedAsync(cancellationToken);
                 return (follower, true);
             }
             catch (DbUpdateException exception) when (IsDuplicateFollow(exception))
             {
                 _context.Entry(follower).State = EntityState.Detached;
-                if (notification != null)
-                {
-                    _context.Entry(notification).State = EntityState.Detached;
-                }
 
                 existingFollow = await _context.Followers.AsNoTracking().FirstOrDefaultAsync(item => item.FollowerId == follower.FollowerId && item.FollowingId == follower.FollowingId, cancellationToken);
                 if (existingFollow != null)
@@ -77,8 +68,9 @@ namespace buduns_server.Persistence.Repositories
                 return false;
             }
 
+            // Kaydetme cagirana birakiliyor: silme, ayni istekteki diger
+            // yazmalarla ayni sinirda kalici olmali.
             _context.Followers.Remove(follow);
-            await _context.SaveChangesAsync(cancellationToken);
             return true;
         }
 
